@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { rarityKeySchema, seriesKindSchema, slugSchema } from '../catalog'
 import { localizedTextSchema } from '../localized-text'
 import { booleanQuery, paginatedSchema, paginationQuerySchema } from './pagination'
+import { themeDtoSchema, themeKeySchema } from '../themes'
 import { progressionUpdateSchema } from './progression'
 
 const idSchema = z.number().int().positive()
@@ -67,11 +68,15 @@ export const boostersResponseSchema = z.object({
   free: freeBoosterStatusSchema,
   cardsPerBooster: z.number().int().positive(),
   gemBalance: z.number().int().nonnegative(),
+  /** Active packs with at least one drawable character. */
+  themes: z.array(themeDtoSchema),
 })
 export type BoostersResponse = z.infer<typeof boostersResponseSchema>
 
 export const openBoostersRequestSchema = z.object({
   tier: z.string().min(1).max(64),
+  /** A pack (theme) key; none = the whole catalog. */
+  theme: themeKeySchema.optional(),
   quantity: z.union(BOOSTER_QUANTITIES.map((value) => z.literal(value))),
 })
 export type OpenBoostersRequest = z.infer<typeof openBoostersRequestSchema>
@@ -88,6 +93,7 @@ export type OpenedCard = z.infer<typeof openedCardSchema>
 export const openBoostersResponseSchema = z.object({
   openingId: idSchema,
   tier: z.string(),
+  theme: z.string().nullable(),
   quantity: z.number().int().positive(),
   cardsPerBooster: z.number().int().positive(),
   cards: z.array(openedCardSchema),
@@ -136,6 +142,8 @@ export const collectionQuerySchema = paginationQuerySchema.extend({
   search: z.string().trim().max(100).optional(),
   rarity: rarityKeySchema.optional(),
   seriesId: z.coerce.number().int().positive().optional(),
+  /** Pack (theme) key. */
+  theme: themeKeySchema.optional(),
   /** Owned now (default), missing (never obtained or no copy left), or the whole catalog. */
   ownership: z.enum(COLLECTION_OWNERSHIP).default('owned'),
   /** Only characters owned more than once. */
