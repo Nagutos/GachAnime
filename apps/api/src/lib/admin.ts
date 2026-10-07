@@ -1,9 +1,10 @@
 import type { AdminActor } from '@gachanime/core'
 import { AppError } from '@gachanime/core'
-import { z } from 'zod'
 import { route } from './http'
 import { enforceRateLimit, type RateLimitPolicy } from './rate-limit'
 import { requireAdmin } from './session'
+
+export { parseId, parseQuery } from './http'
 
 /** Client IP as forwarded by Caddy (first hop), for the audit log. */
 export function clientIp(request: Request): string | null {
@@ -31,20 +32,6 @@ export function adminRoute<P = Record<string, never>>(
     const params = (await context?.params) ?? ({} as P)
     return handler({ request, actor: { actorId: user.id, ip: clientIp(request) }, params })
   })
-}
-
-const idParamSchema = z.coerce.number().int().positive()
-
-/** Parses a numeric route parameter (`/series/[id]`). */
-export function parseId(value: string | undefined): number {
-  const result = idParamSchema.safeParse(value)
-  if (!result.success) throw new AppError('NOT_FOUND', 'Not found')
-  return result.data
-}
-
-/** Parses the query string with a Zod schema. */
-export function parseQuery<T>(request: Request, schema: z.ZodType<T>): T {
-  return schema.parse(Object.fromEntries(new URL(request.url).searchParams))
 }
 
 /** Reads the `file` field of a multipart upload. */

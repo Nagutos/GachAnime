@@ -14,6 +14,9 @@ const STATUS_BY_CODE: Record<ErrorCode, number> = {
   IDEMPOTENCY_IN_PROGRESS: 409,
   IMPORT_IN_PROGRESS: 409,
   NOT_MANUAL_ENTRY: 409,
+  BOOSTER_UNAVAILABLE: 409,
+  NOT_ENOUGH_CHARGES: 409,
+  EMPTY_POOL: 409,
   INVALID_IMAGE: 400,
   ANILIST_UNAVAILABLE: 502,
   RATE_LIMITED: 429,
@@ -57,4 +60,18 @@ export async function parseJsonBody<T>(request: Request, schema: z.ZodType<T>): 
     throw new AppError('BAD_REQUEST', 'Request body must be valid JSON')
   }
   return schema.parse(body)
+}
+
+const idParamSchema = z.coerce.number().int().positive()
+
+/** Parses a numeric route parameter (`/series/[id]`). */
+export function parseId(value: string | undefined): number {
+  const result = idParamSchema.safeParse(value)
+  if (!result.success) throw new AppError('NOT_FOUND', 'Not found')
+  return result.data
+}
+
+/** Parses the query string with a Zod schema. */
+export function parseQuery<T>(request: Request, schema: z.ZodType<T>): T {
+  return schema.parse(Object.fromEntries(new URL(request.url).searchParams))
 }
