@@ -5,7 +5,7 @@ import { Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 import pino from 'pino'
 import { parseWorkerEnv } from './env'
-import { QUEUE_NAME, importBullJobId, runJob } from './jobs'
+import { QUEUE_NAME, SWEEP_INTERVAL_MS, importBullJobId, runJob } from './jobs'
 
 const env = parseWorkerEnv(process.env)
 const logger = pino({ name: 'worker', level: env.LOG_LEVEL })
@@ -42,6 +42,18 @@ async function requeueUnfinishedImports(): Promise<void> {
   await queue.close()
 }
 requeueUnfinishedImports().catch((error) => logger.error({ err: error }, 'requeue failed'))
+
+/** Repeated jobs (idempotent: upserting a scheduler keeps a single one). */
+async function scheduleRepeatedJobs(): Promise<void> {
+  const queue = new Queue(QUEUE_NAME, { connection })
+  await queue.upsertJobScheduler(
+    'market-sweep',
+    { every: SWEEP_INTERVAL_MS },
+    { name: 'market.sweep', data: {}, opts: { removeOnComplete: true, removeOnFail: true } },
+  )
+  await queue.close()
+}
+scheduleRepeatedJobs().catch((error) => logger.error({ err: error }, 'scheduling failed'))
 
 async function shutdown(signal: string): Promise<void> {
   logger.info({ signal }, 'shutting down')

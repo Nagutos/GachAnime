@@ -115,6 +115,8 @@ export type AchievementsResponse = z.infer<typeof achievementsResponseSchema>
 export const progressionSummarySchema = z.object({
   claimableMissions: z.number().int().nonnegative(),
   claimableAchievements: z.number().int().nonnegative(),
+  /** Trade offers waiting for the player's answer. */
+  pendingTrades: z.number().int().nonnegative(),
 })
 export type ProgressionSummary = z.infer<typeof progressionSummarySchema>
 

@@ -1,6 +1,7 @@
 import {
   achievements,
   missions,
+  trades,
   userAchievements,
   userMissions,
   type Database,
@@ -246,8 +247,19 @@ export async function getProgressionSummary(
         isNull(userAchievements.claimedAt),
       ),
     )
+  const [tradeRow] = await db
+    .select({ value: sql<number>`count(*)::int` })
+    .from(trades)
+    .where(
+      and(
+        eq(trades.recipientId, userId),
+        eq(trades.status, 'pending'),
+        sql`(${trades.expiresAt} IS NULL OR ${trades.expiresAt} > ${now.toISOString()}::timestamptz)`,
+      ),
+    )
   return {
     claimableMissions: missionRow?.value ?? 0,
     claimableAchievements: achievementRow?.value ?? 0,
+    pendingTrades: tradeRow?.value ?? 0,
   }
 }

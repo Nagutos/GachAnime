@@ -19,19 +19,7 @@ import {
   type PlayerProfile,
   type PlayerSummary,
 } from '@gachanime/shared'
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gt,
-  ilike,
-  isNotNull,
-  or,
-  sql,
-  type SQL,
-} from 'drizzle-orm'
+import { and, asc, count, desc, eq, gt, ilike, isNotNull, or, sql, type SQL } from 'drizzle-orm'
 import { containsPattern } from '../catalog/admin-series'
 import { AppError } from '../errors'
 import { characterCardColumns, toCharacterCard } from '../players/cards'

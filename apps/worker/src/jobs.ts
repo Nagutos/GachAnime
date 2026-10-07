@@ -1,5 +1,10 @@
 import type { Database } from '@gachanime/db'
-import { rebuildAllThemePools, recomputeStateAchievementsForAll } from '@gachanime/core'
+import {
+  expireListings,
+  expireTrades,
+  rebuildAllThemePools,
+  recomputeStateAchievementsForAll,
+} from '@gachanime/core'
 import { runImportJob, type AniListClient } from '@gachanime/importer'
 import type { Logger } from 'pino'
 import { z } from 'zod'
@@ -18,6 +23,9 @@ export type JobHandler = (data: unknown, context: JobContext) => Promise<unknown
 const importJobDataSchema = z.object({ importJobId: z.number().int().positive() })
 
 /** BullMQ job id of an import: one queued job per import row. */
+/** Every 5 minutes. */
+export const SWEEP_INTERVAL_MS = 5 * 60_000
+
 export const importBullJobId = (importJobId: number) => `anilist-import-${importJobId}`
 
 /**
@@ -44,6 +52,12 @@ export const jobHandlers: Record<string, JobHandler> = {
     return { outcome }
   },
   'catalog.refresh': async (_data, { db, logger }) => refreshCatalog(db, logger),
+  /** Repeated every few minutes: expired listings and trade offers release their cards. */
+  'market.sweep': async (_data, { db, logger }) => {
+    const result = { listings: await expireListings(db), trades: await expireTrades(db) }
+    if (result.listings || result.trades) logger.info(result, 'expired listings and trades')
+    return result
+  },
 }
 
 export async function runJob(name: string, data: unknown, context: JobContext): Promise<unknown> {
