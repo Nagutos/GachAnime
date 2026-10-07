@@ -1,3 +1,4 @@
+import type { MetricKeyName } from '@gachanime/shared'
 import { z } from 'zod'
 import type { GameEventType } from './events'
 
@@ -51,7 +52,7 @@ export const METRICS = {
     params: noParams,
     listensTo: ['card_obtained', 'card_sold', 'trade_completed'],
   },
-} as const satisfies Record<string, MetricDefinition>
+} as const satisfies Record<MetricKeyName, MetricDefinition>
 
 export type MetricKey = keyof typeof METRICS
 export const METRIC_KEYS = Object.keys(METRICS) as MetricKey[]

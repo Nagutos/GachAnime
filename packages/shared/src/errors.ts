@@ -23,6 +23,7 @@ export const ERROR_CODES = [
   'NOT_ENOUGH_GEMS',
   'NOTHING_TO_RECYCLE',
   'PREVIEW_OUTDATED',
+  'NOT_CLAIMABLE',
   'INTERNAL_ERROR',
 ] as const
 

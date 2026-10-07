@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { rarityKeySchema, seriesKindSchema, slugSchema } from '../catalog'
 import { localizedTextSchema } from '../localized-text'
 import { booleanQuery, paginatedSchema, paginationQuerySchema } from './pagination'
+import { progressionUpdateSchema } from './progression'
 
 const idSchema = z.number().int().positive()
 
@@ -93,6 +94,7 @@ export const openBoostersResponseSchema = z.object({
   free: freeBoosterStatusSchema,
   gemsSpent: z.number().int().nonnegative(),
   gemBalance: z.number().int().nonnegative(),
+  progression: progressionUpdateSchema,
 })
 export type OpenBoostersResponse = z.infer<typeof openBoostersResponseSchema>
 
@@ -180,7 +182,10 @@ export type CollectionResponse = z.infer<typeof collectionResponseSchema>
 
 // ─── Wishlist ────────────────────────────────────────────────────────────────
 
-export const wishlistResponseSchema = z.object({ wishlisted: z.boolean() })
+export const wishlistResponseSchema = z.object({
+  wishlisted: z.boolean(),
+  progression: progressionUpdateSchema,
+})
 
 // ─── Gems and recycling ──────────────────────────────────────────────────────
 
@@ -250,6 +255,7 @@ export const recycleResultSchema = z.object({
   cards: z.number().int().nonnegative(),
   gems: z.number().int().nonnegative(),
   gemBalance: z.number().int().nonnegative(),
+  progression: progressionUpdateSchema,
 })
 export type RecycleResult = z.infer<typeof recycleResultSchema>
 

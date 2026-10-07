@@ -1,3 +1,5 @@
+import type { GameEventTypeName } from '@gachanime/shared'
+
 /**
  * Domain events emitted by core services inside their transaction (ADR-010). Missions match them
  * by type and filter; achievements read the counters they update.
@@ -17,19 +19,10 @@ export type GameEvent =
 
 export type GameEventType = GameEvent['type']
 
-export const GAME_EVENT_TYPES = [
-  'account_created',
-  'booster_opened',
-  'card_obtained',
-  'card_recycled',
-  'wishlist_added',
-  'wiki_entry_viewed',
-  'feedback_submitted',
-  'card_listed',
-  'card_sold',
-  'card_bought',
-  'trade_completed',
-] as const satisfies readonly GameEventType[]
+/** The shared list (used by admin forms) must name exactly these events. */
+type SameMembers<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false
+const eventTypesMatch: SameMembers<GameEventType, GameEventTypeName> = true
+void eventTypesMatch
 
 /** How much an event advances a mission (`count`/`quantity` when it carries one, else 1). */
 export function eventAmount(event: GameEvent): number {
