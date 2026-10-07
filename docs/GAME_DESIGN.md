@@ -342,6 +342,14 @@ Counters are lifetime values in `user_counters` (keys like `cards_obtained:epic`
 | `trade_25`           | Negotiator          | Négociateur           | trades_completed                           | 25     | 250    |
 | `feedback_1`         | Critic              | Critique              | feedback_submitted                         | 1      | 100    |
 
+Implementation notes (Phase 4):
+
+- Achievements on the market and trades (`sell_*`, `trade_*`) are seeded **inactive** until
+  Phase 6.
+- The achievements page refreshes the player's progress before listing, so achievements created
+  later (or players who played before progression existed) show the right progress.
+- A completed mission of a past day stays claimable (missions page only shows the current day).
+
 The achievements page shows a global counter (completed / active), filters All / To do / Completed,
 progress bars and claim buttons.
 

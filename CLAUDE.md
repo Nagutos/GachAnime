@@ -143,6 +143,10 @@ Gotchas:
   it writes the `gem_transactions` row; never update `gem_balance` directly.
 - `.env` `PUBLIC_URL` must match the URL in the browser (dev: `http://localhost:5173`), otherwise
   Better Auth rejects sign-in with "Invalid origin".
+- Any new player action that should count for missions/achievements calls `emitEvents(tx, …)`
+  (core `progression/engine`) inside its transaction and returns its `ProgressionUpdate`; the
+  web app shows toasts from it (`notifyProgression`). New event types go in `GAME_EVENT_TYPES`
+  (shared) and the `GameEvent` union (game); the compiler checks they match.
 - Game outcomes take a `GameClock` (`{ rng, now }`) in core services: tests inject `seededRng`
   and a fixed date; production uses `cryptoRng` (`@gachanime/core`).
 - Uploaded images live in `UPLOADS_DIR` (default `<repo>/uploads` in dev, the `uploads` volume in
@@ -208,3 +212,7 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   settings/rarities/tiers editors, `admin:grant-gems` and `economy:simulate` CLIs. Top 200 import
   done (140 series, 11 429 characters, **no Mythic**: highest favourites 39 217 < 50 000 threshold;
   maintainer to decide the threshold). Next: Phase 4.
+- 2026-10-07 — **Phase 4 done**: progression engine (counters, daily/once missions with dedup,
+  achievements from a code metric registry, sticky completion), claim flows, worker recompute after
+  catalog changes, feedback, admin editors for missions/achievements and feedback list, missions /
+  achievements / feedback pages with toasts and badges. Next: Phase 5 (themed boosters).
