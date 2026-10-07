@@ -317,15 +317,6 @@ export const DEFAULT_ACHIEVEMENTS: AchievementSeed[] = [
   sell('sell_100', 100, 500, 'Wealth Manager', 'Gestion de patrimoine'),
   trade('trade_1', 1, 30, 'Handshake', 'Poignée de main'),
   trade('trade_25', 25, 250, 'Negotiator', 'Négociateur'),
-  {
-    key: 'feedback_1',
-    name: { en: 'Critic', fr: 'Critique' },
-    description: { en: 'Send your feedback about the game.', fr: 'Donne ton avis sur le jeu.' },
-    metric: 'feedback_submitted',
-    target: 1,
-    rewardGems: 100,
-    iconToken: 'feedback',
-  },
 ]
 
 const group = (...rules: ThemeRule[]): ThemeRule => ({ type: 'group', mode: 'all', rules })

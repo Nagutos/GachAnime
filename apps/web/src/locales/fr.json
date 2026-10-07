@@ -59,7 +59,6 @@
       "settings": "Réglages",
       "missions": "Missions",
       "achievements": "Succès",
-      "feedback": "Avis",
       "themes": "Packs"
     },
     "openAdmin": "Administration",
@@ -384,15 +383,10 @@
         "cards_recycled": "Cartes recyclées",
         "cards_sold": "Cartes vendues",
         "trades_completed": "Échanges terminés",
-        "feedback_submitted": "Avis envoyé",
         "distinct_characters_owned": "Personnages différents possédés",
         "series_completed": "Séries complètes",
         "catalog_completion": "Complétion du catalogue (%)"
       }
-    },
-    "feedback": {
-      "title": "Avis des joueurs",
-      "average": "Note moyenne"
     },
     "themes": {
       "title": "Packs",
@@ -654,18 +648,6 @@
     },
     "empty": "Rien ici.",
     "completedOn": "Obtenu le {date}"
-  },
-  "feedback": {
-    "menu": "Donner mon avis",
-    "title": "Ton avis",
-    "subtitle": "Dis-nous ce que tu penses du jeu. Tu peux modifier ton avis à tout moment.",
-    "rating": "Ta note",
-    "stars": "{count} étoile | {count} étoiles",
-    "comment": "Commentaire (facultatif)",
-    "placeholder": "Qu'est-ce qui te plaît ? Que changerais-tu ?",
-    "send": "Envoyer",
-    "update": "Mettre à jour",
-    "thanks": "Merci !"
   },
   "errors": {
     "BAD_REQUEST": "La requête est invalide.",

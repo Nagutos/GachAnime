@@ -85,6 +85,8 @@ export const themeDtoSchema = z.object({
   surchargePercent: z.number().int().min(0).max(1000),
   /** Drawable characters in the pack. */
   characterCount: z.number().int().nonnegative(),
+  /** Price of one booster of each paid tier with this pack (surcharge included). */
+  prices: z.record(z.string(), z.number().int().nonnegative()),
 })
 export type ThemeDto = z.infer<typeof themeDtoSchema>
 

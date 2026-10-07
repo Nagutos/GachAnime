@@ -2,15 +2,11 @@ import {
   achievementsResponseSchema,
   claimResultSchema,
   missionsResponseSchema,
-  myFeedbackResponseSchema,
   progressionSummarySchema,
-  submitFeedbackResponseSchema,
   type ClaimMissionRequest,
-  type FeedbackRequest,
 } from '@gachanime/shared'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { notifyProgression } from '@/app/toasts'
 import { apiFetch, toQueryString } from './client'
 import { meQueryKey } from './me'
 
@@ -18,7 +14,6 @@ export const progressionKeys = {
   missions: ['missions'] as const,
   achievements: ['achievements'] as const,
   summary: ['progression-summary'] as const,
-  feedback: ['feedback'] as const,
 }
 
 /** After an action that may have advanced missions or achievements. */
@@ -76,25 +71,5 @@ export function useProgressionSummaryQuery(enabled: MaybeRefOrGetter<boolean>) {
     queryFn: () => apiFetch('/progression/summary', { schema: progressionSummarySchema }),
     enabled: computed(() => toValue(enabled)),
     refetchInterval: 60_000,
-  })
-}
-
-export function useMyFeedbackQuery() {
-  return useQuery({
-    queryKey: progressionKeys.feedback,
-    queryFn: () => apiFetch('/feedback', { schema: myFeedbackResponseSchema }),
-  })
-}
-
-export function useSubmitFeedbackMutation() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (input: FeedbackRequest) =>
-      apiFetch('/feedback', { method: 'PUT', body: input, schema: submitFeedbackResponseSchema }),
-    onSuccess: (result) => {
-      queryClient.setQueryData(progressionKeys.feedback, { feedback: result.feedback })
-      notifyProgression(result.progression)
-      invalidateProgression(queryClient)
-    },
   })
 }

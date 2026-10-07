@@ -10,7 +10,7 @@ import {
 } from '@gachanime/db'
 import { isMetricKey, METRICS, seededRng, type Rng } from '@gachanime/game'
 import { GAME_EVENT_TYPES, type ProgressionUpdate } from '@gachanime/shared'
-import { and, eq, sql } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { createAchievement, createMission, updateAchievement } from '../admin/objectives'
 import { openBoosters } from '../boosters/boosters'
@@ -26,7 +26,6 @@ import {
   testDatabaseUrl,
 } from '../test/database'
 import { emitEvents } from './engine'
-import { getMyFeedback, submitFeedback } from './feedback'
 import {
   claimAchievement,
   claimMission,
@@ -324,21 +323,6 @@ describe.skipIf(!testDatabaseUrl)('progression (integration)', () => {
       expect(result.players).toBe(1)
       const done = await listAchievements(db, 'p1', 'completed')
       expect(done.items.map((item) => item.key)).toContain('complete_1_series')
-    })
-  })
-
-  describe('feedback', () => {
-    it('emits feedback_submitted on the first submission only', async () => {
-      const first = await submitFeedback(db, 'p1', { rating: 4, comment: 'Nice' })
-      expect(completedKeys(first.progression)).toEqual(['Critic'])
-      const edit = await submitFeedback(db, 'p1', { rating: 5, comment: null })
-      expect(edit.progression.completed).toEqual([])
-      expect((await getMyFeedback(db, 'p1')).feedback).toMatchObject({ rating: 5, comment: null })
-      const [counter] = await db
-        .select()
-        .from(userCounters)
-        .where(and(eq(userCounters.userId, 'p1'), eq(userCounters.key, 'feedback_submitted')))
-      expect(counter?.value).toBe(1)
     })
   })
 

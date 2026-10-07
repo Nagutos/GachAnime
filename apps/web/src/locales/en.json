@@ -59,7 +59,6 @@
       "settings": "Settings",
       "missions": "Missions",
       "achievements": "Achievements",
-      "feedback": "Feedback",
       "themes": "Packs"
     },
     "openAdmin": "Administration",
@@ -384,15 +383,10 @@
         "cards_recycled": "Cards recycled",
         "cards_sold": "Cards sold",
         "trades_completed": "Trades completed",
-        "feedback_submitted": "Feedback sent",
         "distinct_characters_owned": "Different characters owned",
         "series_completed": "Series completed",
         "catalog_completion": "Catalog completion (%)"
       }
-    },
-    "feedback": {
-      "title": "Player feedback",
-      "average": "Average rating"
     },
     "themes": {
       "title": "Packs",
@@ -654,18 +648,6 @@
     },
     "empty": "Nothing here.",
     "completedOn": "Completed on {date}"
-  },
-  "feedback": {
-    "menu": "Give feedback",
-    "title": "Your feedback",
-    "subtitle": "Tell us what you think of the game. You can change your feedback at any time.",
-    "rating": "Your rating",
-    "stars": "{count} star | {count} stars",
-    "comment": "Comment (optional)",
-    "placeholder": "What do you like? What would you change?",
-    "send": "Send",
-    "update": "Update",
-    "thanks": "Thank you!"
   },
   "errors": {
     "BAD_REQUEST": "The request is invalid.",

@@ -35,7 +35,6 @@ export const METRICS = {
   },
   cards_sold: { kind: 'counter', params: noParams, listensTo: ['card_sold'] },
   trades_completed: { kind: 'counter', params: noParams, listensTo: ['trade_completed'] },
-  feedback_submitted: { kind: 'counter', params: noParams, listensTo: ['feedback_submitted'] },
   distinct_characters_owned: {
     kind: 'state',
     params: z.object({ rarity: rarityParam.optional() }).strict(),
@@ -95,7 +94,6 @@ export function counterKeysFor(
       return atLeast(params.minRarity).map((rarity) => `cards_recycled:${rarity}`)
     case 'cards_sold':
     case 'trades_completed':
-    case 'feedback_submitted':
       return [metric]
     default:
       return []

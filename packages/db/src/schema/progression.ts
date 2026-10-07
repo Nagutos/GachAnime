@@ -140,20 +140,3 @@ export const userAchievements = pgTable(
       .where(sql`${table.completedAt} IS NULL`),
   ],
 )
-
-/** One feedback per player, editable. */
-export const feedback = pgTable(
-  'feedback',
-  {
-    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-    userId: text()
-      .notNull()
-      .unique()
-      .references(() => playerProfiles.userId, { onDelete: 'cascade' }),
-    rating: smallint().notNull(),
-    comment: text(),
-    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-    updatedAt,
-  },
-  (table) => [check('feedback_rating_range', sql`${table.rating} BETWEEN 1 AND 5`)],
-)

@@ -1,7 +1,6 @@
 import {
   adminAchievementsResponseSchema,
   adminBoosterTiersResponseSchema,
-  adminFeedbackListSchema,
   adminMissionsResponseSchema,
   adminThemesResponseSchema,
   themePreviewSchema,
@@ -61,7 +60,6 @@ export const adminKeys = {
   tiers: ['admin', 'tiers'] as const,
   missions: ['admin', 'missions'] as const,
   achievements: ['admin', 'achievements'] as const,
-  feedback: ['admin', 'feedback'] as const,
   themes: ['admin', 'themes'] as const,
 }
 
@@ -306,7 +304,7 @@ export function useUpdateTierMutation() {
   })
 }
 
-// ─── Missions, achievements, feedback ────────────────────────────────────────
+// ─── Missions and achievements ────────────────────────────────────────
 
 export function useAdminMissionsQuery() {
   return useQuery({
@@ -376,17 +374,6 @@ export function useSaveAchievementMutation() {
       void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
       void queryClient.invalidateQueries({ queryKey: ['achievements'] })
     },
-  })
-}
-
-export function useAdminFeedbackQuery(page: MaybeRefOrGetter<number>) {
-  return useQuery({
-    queryKey: computed(() => [...adminKeys.feedback, toValue(page)]),
-    queryFn: () =>
-      apiFetch(`/admin/feedback${toQueryString({ page: toValue(page), pageSize: 20 })}`, {
-        schema: adminFeedbackListSchema,
-      }),
-    placeholderData: keepPreviousData,
   })
 }
 

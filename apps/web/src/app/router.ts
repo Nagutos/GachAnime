@@ -21,7 +21,6 @@ export const router = createRouter({
       name: 'achievements',
       component: () => import('@/pages/AchievementsPage.vue'),
     },
-    { path: '/feedback', name: 'feedback', component: () => import('@/pages/FeedbackPage.vue') },
     { path: '/gems', name: 'gems', component: () => import('@/pages/GemsPage.vue') },
     { path: '/wiki', name: 'wiki', component: () => import('@/pages/WikiPage.vue') },
     {
@@ -107,11 +106,6 @@ export const router = createRouter({
           path: 'achievements',
           name: 'admin-achievements',
           component: () => import('@/admin/pages/AdminAchievementsPage.vue'),
-        },
-        {
-          path: 'feedback',
-          name: 'admin-feedback',
-          component: () => import('@/admin/pages/AdminFeedbackPage.vue'),
         },
         {
           path: 'audit',

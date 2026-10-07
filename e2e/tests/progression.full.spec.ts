@@ -4,10 +4,7 @@ import { signInNewPlayer } from '../support/session'
 test.use({ locale: 'en-US' })
 test.describe.configure({ timeout: 90_000 })
 
-test('a new player claims missions, unlocks achievements and sends feedback', async ({
-  page,
-  context,
-}) => {
+test('a new player claims missions and unlocks achievements', async ({ page, context }) => {
   await signInNewPlayer(context)
   await page.goto('/missions')
 
@@ -34,18 +31,16 @@ test('a new player claims missions, unlocks achievements and sends feedback', as
   await expect(daily).toContainText('Claimed')
   await expect(page.getByTestId('header-gems')).toHaveText('50 gems')
 
-  // Feedback unlocks the "Critic" achievement.
-  await page.goto('/feedback')
-  await page.getByTestId('rating-5').click()
-  await page.getByRole('textbox').fill('Great game!')
-  await page.getByTestId('submit-feedback').click()
-  await expect(page.getByTestId('toast').filter({ hasText: 'Critic' })).toBeVisible({
-    timeout: 30_000,
-  })
+  // Ten more boosters complete the "First Steps" achievement.
+  await page.getByTestId('nav-boosters').click()
+  await page.getByTestId('open-10').click()
+  await page.getByTestId('booster-opening').getByTestId('skip').click()
+  await expect(page.getByTestId('toast').filter({ hasText: 'First Steps' })).toBeVisible()
+  await page.getByTestId('booster-opening').getByTestId('close-opening').click()
 
   await page.getByTestId('nav-achievements').click()
-  const critic = page.getByTestId('achievement-feedback_1')
-  await critic.getByTestId('claim-achievement').click()
-  await expect(critic).toContainText('Claimed')
-  await expect(page.getByTestId('header-gems')).toHaveText('150 gems')
+  const firstSteps = page.getByTestId('achievement-open_10')
+  await firstSteps.getByTestId('claim-achievement').click()
+  await expect(firstSteps).toContainText('Claimed')
+  await expect(page.getByTestId('header-gems')).toHaveText('60 gems')
 })

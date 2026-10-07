@@ -13,7 +13,7 @@ describe('events', () => {
 
   it('dedups wishlist additions per character', () => {
     expect(eventSubject({ type: 'wishlist_added', characterId: 4 })).toBe('character:4')
-    expect(eventSubject({ type: 'feedback_submitted' })).toBeNull()
+    expect(eventSubject({ type: 'account_created' })).toBeNull()
   })
 
   it('matches mission filters on event fields', () => {

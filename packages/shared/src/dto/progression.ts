@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { localizedTextSchema } from '../localized-text'
-import { paginatedSchema, paginationQuerySchema } from './pagination'
 
 const idSchema = z.number().int().positive()
 
@@ -12,7 +11,6 @@ export const GAME_EVENT_TYPES = [
   'card_recycled',
   'wishlist_added',
   'wiki_entry_viewed',
-  'feedback_submitted',
   'card_listed',
   'card_sold',
   'card_bought',
@@ -27,7 +25,6 @@ export const METRIC_KEYS = [
   'cards_recycled',
   'cards_sold',
   'trades_completed',
-  'feedback_submitted',
   'distinct_characters_owned',
   'series_completed',
   'catalog_completion',
@@ -120,47 +117,6 @@ export const progressionSummarySchema = z.object({
   claimableAchievements: z.number().int().nonnegative(),
 })
 export type ProgressionSummary = z.infer<typeof progressionSummarySchema>
-
-// ─── Feedback ────────────────────────────────────────────────────────────────
-
-export const FEEDBACK_COMMENT_MAX = 2000
-
-export const feedbackRequestSchema = z.object({
-  rating: z.number().int().min(1).max(5),
-  comment: z
-    .string()
-    .trim()
-    .max(FEEDBACK_COMMENT_MAX)
-    .nullable()
-    .optional()
-    .transform((value) => value || null),
-})
-export type FeedbackRequest = z.infer<typeof feedbackRequestSchema>
-
-export const feedbackDtoSchema = z.object({
-  rating: z.number().int().min(1).max(5),
-  comment: z.string().nullable(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-})
-export const myFeedbackResponseSchema = z.object({ feedback: feedbackDtoSchema.nullable() })
-export const submitFeedbackResponseSchema = myFeedbackResponseSchema.extend({
-  progression: progressionUpdateSchema,
-})
-
-export const adminFeedbackItemSchema = feedbackDtoSchema.extend({
-  id: idSchema,
-  userId: z.string(),
-  username: z.string(),
-  displayName: z.string(),
-})
-export const adminFeedbackListSchema = paginatedSchema(adminFeedbackItemSchema).extend({
-  average: z.number().nullable(),
-  /** Count per rating, index 0 = 1 star. */
-  distribution: z.array(z.number().int().nonnegative()).length(5),
-})
-export type AdminFeedbackList = z.infer<typeof adminFeedbackListSchema>
-export const adminFeedbackQuerySchema = paginationQuerySchema
 
 // ─── Admin: missions and achievements ────────────────────────────────────────
 

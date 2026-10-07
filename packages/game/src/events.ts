@@ -11,7 +11,6 @@ export type GameEvent =
   | { type: 'card_recycled'; rarity: string; count: number }
   | { type: 'wishlist_added'; characterId: number }
   | { type: 'wiki_entry_viewed'; characterId: number }
-  | { type: 'feedback_submitted' }
   | { type: 'card_listed' }
   | { type: 'card_sold'; rarity: string }
   | { type: 'card_bought' }
@@ -62,8 +61,6 @@ export function counterIncrements(event: GameEvent): Record<string, number> {
       return { cards_sold: 1 }
     case 'trade_completed':
       return { trades_completed: 1 }
-    case 'feedback_submitted':
-      return { feedback_submitted: 1 }
     default:
       return {}
   }
