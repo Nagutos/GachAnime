@@ -13,8 +13,13 @@ export async function grantGems(userId: string, amount: number): Promise<void> {
   }
 }
 
-/** Gives `quantity` copies of the first `count` catalog characters. */
-export async function giveCards(userId: string, count: number, quantity: number): Promise<void> {
+/** Gives `quantity` copies of `count` catalog characters, starting at the `offset`-th one. */
+export async function giveCards(
+  userId: string,
+  count: number,
+  quantity: number,
+  offset = 0,
+): Promise<number[]> {
   const { db, pool } = createDatabase(e2eDatabaseUrl(), { max: 1 })
   try {
     const rows = await db
@@ -22,9 +27,11 @@ export async function giveCards(userId: string, count: number, quantity: number)
       .from(characters)
       .orderBy(asc(characters.id))
       .limit(count)
+      .offset(offset)
     await db
       .insert(userCards)
       .values(rows.map((row) => ({ userId, characterId: row.id, quantity })))
+    return rows.map((row) => row.id)
   } finally {
     await pool.end()
   }

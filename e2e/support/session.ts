@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { ensurePlayerProfile } from '@gachanime/core'
-import { accounts, createDatabase, schema, users } from '@gachanime/db'
+import { accounts, createDatabase, playerProfiles, schema, users } from '@gachanime/db'
+import { eq } from 'drizzle-orm'
 import type { BrowserContext } from '@playwright/test'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
@@ -20,7 +21,7 @@ export async function signInNewPlayer(
   name = 'E2E Player',
   databaseUrl = e2eDatabaseUrl(),
   role: 'user' | 'admin' = 'user',
-): Promise<{ userId: string }> {
+): Promise<{ userId: string; username: string }> {
   const { db, pool } = createDatabase(databaseUrl, { max: 2 })
   const redis = new Redis(process.env.REDIS_URL as string)
   try {
@@ -33,6 +34,10 @@ export async function signInNewPlayer(
       accountId: String(Date.now()) + String(Math.floor(Math.random() * 1000)),
     })
     await ensurePlayerProfile(db, { userId, displayName: name })
+    const [profile] = await db
+      .select({ username: playerProfiles.username })
+      .from(playerProfiles)
+      .where(eq(playerProfiles.userId, userId))
 
     const auth = betterAuth({
       baseURL: baseUrl,
@@ -58,7 +63,7 @@ export async function signInNewPlayer(
     const { test } = (await auth.$context) as unknown as { test: TestHelpers }
     const { cookies } = await test.login({ userId })
     await context.addCookies(cookies)
-    return { userId }
+    return { userId, username: profile!.username }
   } finally {
     redis.disconnect()
     await pool.end()
