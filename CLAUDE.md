@@ -35,24 +35,24 @@ design, colors, copy and assets must be 100% original. Never copy any asset, tex
 
 ## Stack
 
-| Concern            | Choice                                                                  |
-| ------------------ | ----------------------------------------------------------------------- |
-| Monorepo           | pnpm workspaces + Turborepo                                             |
-| Language           | TypeScript (strict) everywhere                                          |
-| API                | Next.js (App Router) route handlers only, `apps/api`                    |
-| Background jobs    | Node worker with BullMQ, `apps/worker`                                  |
-| Frontend           | Vue 3 + Vite + Vue Router + Pinia + TanStack Vue Query, `apps/web`      |
-| Styling / UI       | Tailwind CSS v4 + Reka UI (headless components)                         |
-| Animations         | Motion for Vue (`motion-v`)                                             |
+| Concern            | Choice                                                                       |
+| ------------------ | ---------------------------------------------------------------------------- |
+| Monorepo           | pnpm workspaces + Turborepo                                                  |
+| Language           | TypeScript (strict) everywhere                                               |
+| API                | Next.js (App Router) route handlers only, `apps/api`                         |
+| Background jobs    | Node worker with BullMQ, `apps/worker`                                       |
+| Frontend           | Vue 3 + Vite + Vue Router + Pinia + TanStack Vue Query, `apps/web`           |
+| Styling / UI       | Tailwind CSS v4 + Reka UI (headless components)                              |
+| Animations         | Motion for Vue (`motion-v`)                                                  |
 | i18n               | vue-i18n (+ `@intlify/unplugin-vue-i18n`, `@intlify/eslint-plugin-vue-i18n`) |
-| Database           | PostgreSQL 17 + Drizzle ORM + drizzle-kit migrations                    |
-| Cache / RL / queue | Redis (rate limiting, auth secondary storage, BullMQ). Never game state |
-| Auth               | Better Auth (Discord OAuth only, admin plugin)                          |
-| Validation         | Zod v4, shared schemas in `packages/shared`                             |
-| Tests              | Vitest (unit/integration), Playwright (e2e)                             |
-| Logs               | pino                                                                    |
-| Deployment         | Docker + docker compose (caddy/web, api, worker, postgres, redis)       |
-| Runtime / PM       | Node 24 LTS (Docker), pnpm 12 (`packageManager`)                        |
+| Database           | PostgreSQL 17 + Drizzle ORM + drizzle-kit migrations                         |
+| Cache / RL / queue | Redis (rate limiting, auth secondary storage, BullMQ). Never game state      |
+| Auth               | Better Auth (Discord OAuth only, admin plugin)                               |
+| Validation         | Zod v4, shared schemas in `packages/shared`                                  |
+| Tests              | Vitest (unit/integration), Playwright (e2e)                                  |
+| Logs               | pino                                                                         |
+| Deployment         | Docker + docker compose (caddy/web, api, worker, postgres, redis)            |
+| Runtime / PM       | Node 24 LTS (Docker), pnpm 12 (`packageManager`)                             |
 
 Rationale for each choice: `docs/DECISIONS.md`.
 
@@ -102,24 +102,33 @@ Dependency direction: `apps/*` → `core` → (`game`, `db`, `shared`); `game` d
 - Tests: pure logic in `packages/game` is unit-tested; services in `packages/core` get
   integration tests against a real Postgres (testcontainers or the compose db).
 
-## Commands (to be created in Phase 0)
+## Commands
 
 ```bash
 pnpm install
-pnpm dev                 # turbo: api + worker + web in watch mode (needs postgres + redis)
-docker compose -f docker-compose.dev.yml up -d   # postgres (port 5433) + redis (6380) for local dev
+cp .env.example .env     # dev: PUBLIC_URL=http://localhost:5173; fill BETTER_AUTH_SECRET + Discord app
+docker compose -f docker-compose.dev.yml up -d   # postgres :5433 (db gachanime + gachanime_test), redis :6380
+pnpm db:migrate          # apply migrations + idempotent seed (settings…)
+pnpm dev                 # turbo: web :5173 (proxies /api), api :3000, worker
 pnpm build
-pnpm lint && pnpm typecheck
-pnpm test                # vitest (all packages)
-pnpm test:e2e            # playwright
+pnpm format:check && pnpm lint && pnpm typecheck
+pnpm test                # vitest; core DB integration tests use TEST_DATABASE_URL (from .env)
+pnpm test:e2e            # playwright (builds web, runs vite preview)
 pnpm i18n:check          # missing/extra translation keys between locales
 pnpm db:generate         # drizzle-kit generate (new migration from schema diff)
-pnpm db:migrate          # apply migrations
-pnpm db:seed             # rarities, rate tables, boosters, missions, achievements, settings
-pnpm import:anilist -- --top 200        # import catalog (see packages/importer)
 pnpm admin:promote -- --discord-id 123456789012345678
-docker compose up -d     # full self-hosted stack
+docker compose up -d     # full self-hosted stack on :8080 (needs .env)
 ```
+
+Gotchas:
+
+- pnpm 12 enforces `minimumReleaseAge`: brand-new package versions are refused; pin the previous one
+  (e.g. Next.js was pinned to 16.3.x). Build scripts must be approved in `pnpm-workspace.yaml` (`allowBuilds`).
+- `@gachanime/db/migrate` is a separate entry point: Next.js cannot bundle the migrations folder URL.
+- Inside Docker, `tsx` is resolved per package: run tool commands from the package directory
+  (`-w /app/packages/core`, etc.).
+- Vitest tests reading files must use `// @vitest-environment node` in the web app (happy-dom default).
+- `turbo.json` sets `agentGuidance: false` (turbo otherwise writes an AGENTS.md).
 
 ## Architecture decisions (summary — details in docs/DECISIONS.md)
 
@@ -149,6 +158,12 @@ before an answer. Ask the maintainer (in French) before any architecture or game
 
 ## Progress
 
-- 2026-10-07 — Session 1: read spec, wrote `CLAUDE.md` and `docs/` (architecture, game design,
-  database, roadmap, decisions). Waiting for validation of open questions, monorepo layout and roadmap.
-  No code yet.
+- 2026-10-07 — Session 1: read spec, wrote `CLAUDE.md` and `docs/`. Maintainer answered the open
+  questions (name GachAnime, AGPL, Discord only, cap 15, packs, franchises, manual game series…);
+  docs updated accordingly.
+- 2026-10-07 — **Phase 0 done**: monorepo, shared/db/core packages, Next.js API (health, me, Better
+  Auth Discord + admin plugin + Redis storage, rate limit, idempotency helpers), BullMQ worker
+  skeleton, Vue web app (Discord sign-in, i18n en/fr with detection + profile sync, Tailwind tokens),
+  Docker stack verified end-to-end (`docker compose up` → healthy api/worker, Caddy serving SPA + API),
+  CI workflow. Tests: 32 unit/integration (Vitest) + 4 e2e (Playwright), lint/typecheck/i18n clean.
+  Not verified: a real Discord sign-in (needs a Discord application). Next: Phase 1 (catalog & AniList import).

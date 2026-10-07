@@ -16,20 +16,23 @@ with warning, wiki stays unlocked · series = AniList franchise (seasons + movie
 characters imported, top 500 + manual AniList additions + manual series (games) · favourites
 thresholds OK · no anti-multi-account protection (friends) · Discord-only sign-in.
 
-## Phase 0 — Foundations
-- [ ] pnpm workspace, Turborepo, shared tsconfig/eslint/prettier (`packages/config`)
-- [ ] `packages/shared`, `packages/db` (Drizzle client, first migration: auth + player_profiles + settings)
-- [ ] `apps/api` Next.js (route handlers only, standalone output), health endpoint, error format, pino
-- [ ] Better Auth: Discord OAuth only, admin plugin, `ADMIN_DISCORD_IDS` bootstrap + `admin:promote` CLI
-- [ ] Redis + rate limiting helper, idempotency-key helper
-- [ ] `apps/web` Vue + Vite + Router + Pinia + Vue Query + Tailwind + Reka UI, layout, auth pages
-- [ ] vue-i18n (en/fr), language switcher, detection + profile persistence, `pnpm i18n:check`, eslint no-raw-text
-- [ ] `apps/worker` skeleton with BullMQ
-- [ ] Docker: Dockerfiles, `docker-compose.yml` (web/caddy, api, worker, migrate, postgres, redis), `.env.example`
-- [ ] CI (GitHub Actions): lint, typecheck, unit tests, i18n check, build
-- [ ] README (self-hosting, image rights notice), LICENSE
+## Phase 0 — Foundations ✅ (2026-10-07)
+
+- [x] pnpm workspace, Turborepo, shared tsconfig/eslint/prettier (`packages/config`)
+- [x] `packages/shared`, `packages/db` (Drizzle client, first migration: auth + player_profiles + settings + admin_audit_log)
+- [x] `packages/core` (player profiles, admin promotion, audit log helper)
+- [x] `apps/api` Next.js (route handlers only, standalone output), health endpoint, error format, pino
+- [x] Better Auth: Discord OAuth only, admin plugin, `ADMIN_DISCORD_IDS` bootstrap + `admin:promote` CLI
+- [x] Redis + rate limiting helper, idempotency-key helper (idempotency gets integration tests in Phase 2, its first user)
+- [x] `apps/web` Vue + Vite + Router + Pinia + Vue Query + Tailwind + Reka UI, layout, Discord sign-in
+- [x] vue-i18n (en/fr), language switcher, detection + profile persistence, `pnpm i18n:check`, eslint no-raw-text / no-missing-keys
+- [x] `apps/worker` skeleton with BullMQ
+- [x] Docker: one multi-target Dockerfile, `docker-compose.yml` (web/caddy, api, worker, migrate, postgres, redis), `docker-compose.dev.yml`, `.env.example`
+- [x] CI (GitHub Actions): format, lint, typecheck, i18n, unit + DB integration tests, build, e2e, docker builds (not run yet: no remote)
+- [x] README (self-hosting, image rights notice), LICENSE (AGPL-3.0)
 
 ## Phase 1 — Catalog & AniList import
+
 - [ ] Schema: series, media, anilist_tags, media_tags, characters, character_media, series_characters, rarities
 - [ ] AniList client (typed queries, throttling, 429 handling), pagination
 - [ ] Import pipeline: top-N (default 500) by popularity or explicit ids, isAdult excluded, franchise expansion and grouping (seasons + movies), all character roles, upserts, resumable
@@ -41,6 +44,7 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 - [ ] Tests: mapping, rarity computation, idempotent re-import
 
 ## Phase 2 — Core loop: free boosters, collection, wiki
+
 - [ ] `packages/game`: rate math, weighted draw with Rng, timer arithmetic + **statistical test**
 - [ ] Schema: booster_tiers, booster_openings(+cards), user_cards, gem_transactions; seed
 - [ ] `openBoosters` service (x1/x5/x10, one transaction), free timer endpoint (cap 15)
@@ -50,6 +54,7 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 - [ ] E2E: sign up → open free booster → see card in collection and wiki
 
 ## Phase 3 — Economy
+
 - [ ] Paid boosters (Epic / Legendary / Mythic / Divine), shop page, gem balance & history
 - [ ] Recycling (single, bulk with rarity filter + preview + confirmation)
 - [ ] Wishlist; collection: all filters, multi-sort, series progress page
@@ -58,6 +63,7 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 - [ ] Tests: ledger invariant, recycle never touches first copy / locked copies
 
 ## Phase 4 — Missions, achievements, feedback
+
 - [ ] Event emitter + progression engine, metric registry, user_counters
 - [ ] Missions (daily periods, once), claim flow; achievements with sticky completion, claim flow
 - [ ] Worker job: recompute state metrics after catalog changes
@@ -67,6 +73,7 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 - [ ] Tests: period keys across DST, each seeded mission/achievement
 
 ## Phase 5 — Themed boosters
+
 - [ ] Themes schema + rule evaluation + materialized pools (rebuild on save/import)
 - [ ] Empty-rarity fallback in draw
 - [ ] Admin **pack editor**: categories, rule builder, free/paid toggles, surcharge, live preview (count per rarity, warnings)
@@ -75,6 +82,7 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 - [ ] Collection filter by theme
 
 ## Phase 6 — Social: profiles, trades, market
+
 - [ ] Public profile (collection, achievements)
 - [ ] Trades: propose, counter, accept (atomic), decline, cancel, optional expiry, locks; last-copy warning
 - [ ] Market: list, browse (filters, wishlist highlight), buy (atomic), withdraw, expiry, limits
@@ -83,6 +91,7 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 - [ ] E2E: full trade between two users; market sale
 
 ## Phase 7 — Hardening & release 1.0
+
 - [ ] Rate limits review on all sensitive routes, security headers, abuse tests
 - [ ] Optional local image cache (worker + Caddy)
 - [ ] Performance pass (indexes, pool caching), accessibility pass, mobile layout
@@ -90,5 +99,6 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 - [ ] Self-hosting guide, upgrade guide, v1.0.0 tag
 
 ## Later (not scheduled)
+
 - [ ] Upgrades raising the free booster cap per player.
 - [ ] Booster rewards (missions/achievements granting boosters) — pending decision.
