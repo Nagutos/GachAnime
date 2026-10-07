@@ -27,13 +27,13 @@ Same origin for SPA and API (Caddy reverse proxy) → auth cookies are first-par
 
 ## Services
 
-| Service    | Role                                                                                  |
-| ---------- | ------------------------------------------------------------------------------------- |
-| `web`      | Caddy serving the built SPA, proxying `/api`, serving cached images.                  |
-| `api`      | Next.js App Router, **route handlers only** (`output: "standalone"`). Stateless.      |
+| Service    | Role                                                                                                                                                |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `web`      | Caddy serving the built SPA, proxying `/api`, serving cached images.                                                                                |
+| `api`      | Next.js App Router, **route handlers only** (`output: "standalone"`). Stateless.                                                                    |
 | `worker`   | Long-running jobs: AniList import, image caching, achievement recomputation after catalog changes, theme pool rebuild, listing/trade expiry sweeps. |
-| `postgres` | Single source of truth for every game state.                                          |
-| `redis`    | Rate limiter counters, Better Auth secondary storage (session cache), BullMQ queues.   |
+| `postgres` | Single source of truth for every game state.                                                                                                        |
+| `redis`    | Rate limiter counters, Better Auth secondary storage (session cache), BullMQ queues.                                                                |
 
 A one-shot `migrate` step runs `drizzle-kit migrate` + idempotent seed before `api` starts
 (compose `depends_on: condition: service_completed_successfully`).

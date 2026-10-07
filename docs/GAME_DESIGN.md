@@ -92,13 +92,13 @@ next charge in = interval − ((now − anchor) mod interval)   (when available 
 Rule: the booster's rarity is strongly boosted, higher rarities slightly boosted, price grows with
 rarity. Per-card weights (%), and resulting "≥1 per booster" chances:
 
-| Booster    | Price (gems) | Common | Rare | Epic | Legendary | Mythic | ≥1 Epic+ | ≥1 Legendary+ | ≥1 Mythic |
-| ---------- | ------------ | ------ | ---- | ---- | --------- | ------ | -------- | ------------- | --------- |
-| Free       | 0            | 52.51  | 43.22| 3.80 | 0.40      | 0.066  | 19.6 %   | 2.3 %         | 0.33 %    |
-| Epic       | 150          | 40     | 40   | 18   | 1.6       | 0.4    | 67.2 %   | 9.6 %         | 2.0 %     |
-| Legendary  | 500          | 30     | 40   | 20   | 8.5       | 1.5    | 83.2 %   | 41.0 %        | 7.3 %     |
-| Mythic     | 1 500        | 20     | 40   | 25   | 10        | 5      | 92.2 %   | 55.6 %        | 22.6 %    |
-| **Divine** | 5 000        | 0      | 0    | 55   | 30        | 15     | 100 %    | 95.0 %        | 55.6 %    |
+| Booster    | Price (gems) | Common | Rare  | Epic | Legendary | Mythic | ≥1 Epic+ | ≥1 Legendary+ | ≥1 Mythic |
+| ---------- | ------------ | ------ | ----- | ---- | --------- | ------ | -------- | ------------- | --------- |
+| Free       | 0            | 52.51  | 43.22 | 3.80 | 0.40      | 0.066  | 19.6 %   | 2.3 %         | 0.33 %    |
+| Epic       | 150          | 40     | 40    | 18   | 1.6       | 0.4    | 67.2 %   | 9.6 %         | 2.0 %     |
+| Legendary  | 500          | 30     | 40    | 20   | 8.5       | 1.5    | 83.2 %   | 41.0 %        | 7.3 %     |
+| Mythic     | 1 500        | 20     | 40    | 25   | 10        | 5      | 92.2 %   | 55.6 %        | 22.6 %    |
+| **Divine** | 5 000        | 0      | 0     | 55   | 30        | 15     | 100 %    | 95.0 %        | 55.6 %    |
 
 - Divine: Epic or better only; opening one unlocks "Touched by the Gods". There is no "Divine"
   card rarity. Obtained by purchase (rewarding boosters instead of gems is a possible later feature).
@@ -134,10 +134,10 @@ Safety check — recycling a paid booster's content must never pay back its pric
 
 ### Income model (used to size prices)
 
-| Player profile                      | Free boosters/day | Gems/day (mid-game) |
-| ----------------------------------- | ----------------- | ------------------- |
-| Casual (3–4 visits)                 | ~25               | 80 missions + ~150 recycling ≈ 230 |
-| Active (cap never wasted, 15/2h30)  | ~70               | 80 + ~450 ≈ 530     |
+| Player profile                     | Free boosters/day | Gems/day (mid-game)                |
+| ---------------------------------- | ----------------- | ---------------------------------- |
+| Casual (3–4 visits)                | ~25               | 80 missions + ~150 recycling ≈ 230 |
+| Active (cap never wasted, 15/2h30) | ~70               | 80 + ~450 ≈ 530                    |
 
 Early game, most cards are new (few duplicates) so recycling income is lower; one-time achievements
 (≈ 9 200 gems in total, most of them long-term) and the welcome mission (+30) fill the gap.
@@ -161,14 +161,14 @@ script (Phase 3) will validate this with the real catalog size.
 
 ### Limits (proposal)
 
-| Limit                              | Default                    | Protects against |
-| ---------------------------------- | -------------------------- | ---------------- |
-| Max active listings per player     | 20                         | Market flooding, hoarding the order book. |
-| Max sales per seller per day       | 20                         | Turning the market into an infinite gem faucet for one account. |
-| Max purchases per buyer per day    | 20                         | Gem funneling from alt accounts (each alt buys from the main). |
-| Min price per rarity               | = recycle value (1/2/10/50/250) | Selling a rare card for 1 gem to a second account (card funneling); also prevents pointless dumping below the guaranteed recycle value. |
-| Max price per rarity               | Common 100 · Rare 200 · Epic 1 000 · Legendary 5 000 · Mythic 20 000 | Gem funneling (alt buys a Common for 50 000), price manipulation, inflation of perceived value. |
-| Listing lifetime                   | 7 days (then expires, card unlocked) | Stale listings at outdated prices. |
+| Limit                           | Default                                                              | Protects against                                                                                                                        |
+| ------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Max active listings per player  | 20                                                                   | Market flooding, hoarding the order book.                                                                                               |
+| Max sales per seller per day    | 20                                                                   | Turning the market into an infinite gem faucet for one account.                                                                         |
+| Max purchases per buyer per day | 20                                                                   | Gem funneling from alt accounts (each alt buys from the main).                                                                          |
+| Min price per rarity            | = recycle value (1/2/10/50/250)                                      | Selling a rare card for 1 gem to a second account (card funneling); also prevents pointless dumping below the guaranteed recycle value. |
+| Max price per rarity            | Common 100 · Rare 200 · Epic 1 000 · Legendary 5 000 · Mythic 20 000 | Gem funneling (alt buys a Common for 50 000), price manipulation, inflation of perceived value.                                         |
+| Listing lifetime                | 7 days (then expires, card unlocked)                                 | Stale listings at outdated prices.                                                                                                      |
 
 The game targets groups of friends: no account-age or anti-multi-account restriction (decided).
 All limits above are settings and can be relaxed or disabled (0 = unlimited).
@@ -247,17 +247,18 @@ Starting packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos.
 ### Missions (daily or once)
 
 A mission = `event_type` + optional `filter` (JSON, e.g. `{ "rateTable": "divine" }`) + `target`
-+ `reward_gems` + `kind` (`daily` | `once`). Progress is stored per period key: the date of the
-current period computed from the reset hour/timezone (default 00:00 Europe/Paris), or `once`.
-Rewards are claimed manually. No cron: a new day simply means a new period key.
 
-| Key                  | EN                                | FR                                   | Event              | Target | Reward |
-| -------------------- | --------------------------------- | ------------------------------------ | ------------------ | ------ | ------ |
-| `daily_open_booster` | Open your first booster           | Ouvre ton premier booster            | booster_opened     | 1      | 20     |
-| `daily_recycle`      | Recycle a duplicate               | Recycle un doublon                   | card_recycled      | 1      | 20     |
-| `daily_wishlist`     | Add 3 characters to your wishlist | Ajoute 3 persos à ta wishlist        | wishlist_added     | 3      | 20     |
-| `daily_wiki`         | Open a wiki entry                 | Ouvre une fiche du wiki              | wiki_entry_viewed  | 1      | 20     |
-| `welcome`  (once)    | Create your account               | Crée ton compte                      | account_created    | 1      | 30     |
+- `reward_gems` + `kind` (`daily` | `once`). Progress is stored per period key: the date of the
+  current period computed from the reset hour/timezone (default 00:00 Europe/Paris), or `once`.
+  Rewards are claimed manually. No cron: a new day simply means a new period key.
+
+| Key                  | EN                                | FR                            | Event             | Target | Reward |
+| -------------------- | --------------------------------- | ----------------------------- | ----------------- | ------ | ------ |
+| `daily_open_booster` | Open your first booster           | Ouvre ton premier booster     | booster_opened    | 1      | 20     |
+| `daily_recycle`      | Recycle a duplicate               | Recycle un doublon            | card_recycled     | 1      | 20     |
+| `daily_wishlist`     | Add 3 characters to your wishlist | Ajoute 3 persos à ta wishlist | wishlist_added    | 3      | 20     |
+| `daily_wiki`         | Open a wiki entry                 | Ouvre une fiche du wiki       | wiki_entry_viewed | 1      | 20     |
+| `welcome` (once)     | Create your account               | Crée ton compte               | account_created   | 1      | 30     |
 
 `wiki_entry_viewed` only counts unlocked entries; `wishlist_added` counts additions (removing and
 re-adding the same character on the same day counts once — dedup per character per period).
@@ -270,22 +271,23 @@ requires code.
 
 Metric registry (initial):
 
-| Metric                          | Kind    | Params                 | Listens to |
-| ------------------------------- | ------- | ---------------------- | ---------- |
-| `boosters_opened`               | counter | `rateTable?`           | booster_opened |
-| `cards_obtained`                | counter | `minRarity?`           | card_obtained |
-| `cards_recycled`                | counter | `minRarity?`           | card_recycled |
-| `cards_sold`                    | counter | —                      | card_sold |
-| `trades_completed`              | counter | —                      | trade_completed |
-| `feedback_submitted`            | counter | —                      | feedback_submitted |
-| `distinct_characters_owned`     | state   | `rarity?`              | card_obtained, card ownership changes |
-| `series_completed`              | state   | —                      | card ownership changes, catalog changes |
-| `catalog_completion`            | state   | — (target = 1)         | card ownership changes, catalog changes |
+| Metric                      | Kind    | Params         | Listens to                              |
+| --------------------------- | ------- | -------------- | --------------------------------------- |
+| `boosters_opened`           | counter | `rateTable?`   | booster_opened                          |
+| `cards_obtained`            | counter | `minRarity?`   | card_obtained                           |
+| `cards_recycled`            | counter | `minRarity?`   | card_recycled                           |
+| `cards_sold`                | counter | —              | card_sold                               |
+| `trades_completed`          | counter | —              | trade_completed                         |
+| `feedback_submitted`        | counter | —              | feedback_submitted                      |
+| `distinct_characters_owned` | state   | `rarity?`      | card_obtained, card ownership changes   |
+| `series_completed`          | state   | —              | card ownership changes, catalog changes |
+| `catalog_completion`        | state   | — (target = 1) | card ownership changes, catalog changes |
 
 Counters are lifetime values in `user_counters` (keys like `cards_obtained:epic`), so
 "first Epic or better" = sum of counters for rarities ≥ Epic.
 
 **State metrics and catalog changes** (decision):
+
 - `distinct_characters_owned` counts characters currently owned (quantity ≥ 1), **including** those
   of deactivated series (the player keeps them).
 - `series_completed` and `catalog_completion` only consider **active** series/characters.
@@ -294,31 +296,31 @@ Counters are lifetime values in `user_counters` (keys like `cards_obtained:epic`
 - **Completion is sticky**: once `completed_at` is set, an achievement is never revoked, even if
   the player later loses cards or the catalog grows. Unclaimed completed rewards stay claimable.
 
-| Key                    | EN                    | FR                     | Metric / params                         | Target | Reward |
-| ---------------------- | --------------------- | ---------------------- | --------------------------------------- | ------ | ------ |
-| `open_10`              | First Steps           | Premiers pas           | boosters_opened                         | 10     | 10     |
-| `open_100`             | Regular               | Habitué                | boosters_opened                         | 100    | 50     |
-| `open_1000`            | Hooked                | Accro                  | boosters_opened                         | 1 000  | 300    |
-| `open_10000`           | Go Touch Grass        | Va donc jouer dehors   | boosters_opened                         | 10 000 | 2 000  |
-| `own_50`               | Collector             | Collectionneur         | distinct_characters_owned               | 50     | 20     |
-| `own_250`              | Archivist             | Archiviste             | distinct_characters_owned               | 250    | 75     |
-| `own_1000`             | Encyclopedist         | Encyclopédiste         | distinct_characters_owned               | 1 000  | 300    |
-| `own_2000`             | Librarian             | Bibliothécaire         | distinct_characters_owned               | 2 000  | 800    |
-| `own_all`              | Completionist         | Collection complète    | catalog_completion                      | 1      | 2 000  |
-| `first_epic`           | Epic!                 | Épique !               | cards_obtained {minRarity: epic}        | 1      | 20     |
-| `first_legendary`      | Legendary!            | Légendaire !           | cards_obtained {minRarity: legendary}   | 1      | 75     |
-| `first_mythic`         | Mythic!               | Mythique !             | cards_obtained {minRarity: mythic}      | 1      | 200    |
-| `own_10_mythics`       | Pantheon              | Panthéon               | distinct_characters_owned {rarity: mythic} | 10  | 500    |
-| `open_divine`          | Touched by the Gods   | Touché par les dieux   | boosters_opened {rateTable: divine}     | 1      | 500    |
-| `complete_1_series`    | First Album           | Premier album          | series_completed                        | 1      | 50     |
-| `complete_10_series`   | Album Series          | Albums en série        | series_completed                        | 10     | 300    |
-| `complete_50_series`   | Curator               | Conservateur           | series_completed                        | 50     | 1 000  |
-| `sell_1`               | First Sale            | Première vente         | cards_sold                              | 1      | 30     |
-| `sell_10`              | Merchant              | Marchand               | cards_sold                              | 10     | 100    |
-| `sell_100`             | Wealth Manager        | Gestion de patrimoine  | cards_sold                              | 100    | 500    |
-| `trade_1`              | Handshake             | Poignée de main        | trades_completed                        | 1      | 30     |
-| `trade_25`             | Negotiator            | Négociateur            | trades_completed                        | 25     | 250    |
-| `feedback_1`           | Critic                | Critique               | feedback_submitted                      | 1      | 100    |
+| Key                  | EN                  | FR                    | Metric / params                            | Target | Reward |
+| -------------------- | ------------------- | --------------------- | ------------------------------------------ | ------ | ------ |
+| `open_10`            | First Steps         | Premiers pas          | boosters_opened                            | 10     | 10     |
+| `open_100`           | Regular             | Habitué               | boosters_opened                            | 100    | 50     |
+| `open_1000`          | Hooked              | Accro                 | boosters_opened                            | 1 000  | 300    |
+| `open_10000`         | Go Touch Grass      | Va donc jouer dehors  | boosters_opened                            | 10 000 | 2 000  |
+| `own_50`             | Collector           | Collectionneur        | distinct_characters_owned                  | 50     | 20     |
+| `own_250`            | Archivist           | Archiviste            | distinct_characters_owned                  | 250    | 75     |
+| `own_1000`           | Encyclopedist       | Encyclopédiste        | distinct_characters_owned                  | 1 000  | 300    |
+| `own_2000`           | Librarian           | Bibliothécaire        | distinct_characters_owned                  | 2 000  | 800    |
+| `own_all`            | Completionist       | Collection complète   | catalog_completion                         | 1      | 2 000  |
+| `first_epic`         | Epic!               | Épique !              | cards_obtained {minRarity: epic}           | 1      | 20     |
+| `first_legendary`    | Legendary!          | Légendaire !          | cards_obtained {minRarity: legendary}      | 1      | 75     |
+| `first_mythic`       | Mythic!             | Mythique !            | cards_obtained {minRarity: mythic}         | 1      | 200    |
+| `own_10_mythics`     | Pantheon            | Panthéon              | distinct_characters_owned {rarity: mythic} | 10     | 500    |
+| `open_divine`        | Touched by the Gods | Touché par les dieux  | boosters_opened {rateTable: divine}        | 1      | 500    |
+| `complete_1_series`  | First Album         | Premier album         | series_completed                           | 1      | 50     |
+| `complete_10_series` | Album Series        | Albums en série       | series_completed                           | 10     | 300    |
+| `complete_50_series` | Curator             | Conservateur          | series_completed                           | 50     | 1 000  |
+| `sell_1`             | First Sale          | Première vente        | cards_sold                                 | 1      | 30     |
+| `sell_10`            | Merchant            | Marchand              | cards_sold                                 | 10     | 100    |
+| `sell_100`           | Wealth Manager      | Gestion de patrimoine | cards_sold                                 | 100    | 500    |
+| `trade_1`            | Handshake           | Poignée de main       | trades_completed                           | 1      | 30     |
+| `trade_25`           | Negotiator          | Négociateur           | trades_completed                           | 25     | 250    |
+| `feedback_1`         | Critic              | Critique              | feedback_submitted                         | 1      | 100    |
 
 The achievements page shows a global counter (completed / active), filters All / To do / Completed,
 progress bars and claim buttons.
