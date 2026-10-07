@@ -12,6 +12,7 @@ import {
 import { recyclableCopies } from '@gachanime/game'
 import type {
   Paginated,
+  ProgressionUpdate,
   WikiCharacter,
   WikiCharactersQuery,
   WikiEntrySummary,
@@ -36,6 +37,7 @@ import {
 import { containsPattern } from '../catalog/admin-series'
 import { publicImageUrl } from '../catalog/images'
 import { AppError } from '../errors'
+import { emitEvents } from '../progression/engine'
 import { activeSeriesList } from './cards'
 
 /**
@@ -343,4 +345,13 @@ export async function getWikiCharacter(
     wishlisted: row.wishlisted,
     firstObtainedAt: row.firstObtainedAt.toISOString(),
   }
+}
+
+/** A player read an unlocked entry (daily wiki mission). Locked entries do not count. */
+export async function recordWikiView(
+  db: Executor,
+  userId: string,
+  characterId: number,
+): Promise<ProgressionUpdate> {
+  return emitEvents(db, userId, [{ type: 'wiki_entry_viewed', characterId }])
 }

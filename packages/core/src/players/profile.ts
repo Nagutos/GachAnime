@@ -2,6 +2,7 @@ import { accounts, playerProfiles, users, type Executor } from '@gachanime/db'
 import type { MeResponse, Role } from '@gachanime/shared'
 import { and, eq } from 'drizzle-orm'
 import { AppError } from '../errors'
+import { emitEvents } from '../progression/engine'
 import { toUsernameBase, usernameCandidate } from './username'
 
 const MAX_USERNAME_ATTEMPTS = 50
@@ -24,7 +25,10 @@ export async function ensurePlayerProfile(
       .values({ userId: input.userId, username: usernameCandidate(base, attempt) })
       .onConflictDoNothing()
       .returning({ userId: playerProfiles.userId })
-    if (inserted.length > 0) return
+    if (inserted.length > 0) {
+      await emitEvents(db, input.userId, [{ type: 'account_created' }])
+      return
+    }
 
     // The conflict may come from a concurrent call creating the same profile.
     const created = await db.query.playerProfiles.findFirst({

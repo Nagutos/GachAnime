@@ -31,6 +31,7 @@ import { AppError } from '../errors'
 import { loadCharacterCards } from '../players/cards'
 import { changeGems, lockPlayer } from '../players/gems'
 import { cryptoRng } from '../random'
+import { emitEvents } from '../progression/engine'
 import { getSetting } from '../settings'
 
 export interface GameClock {
@@ -245,6 +246,28 @@ export async function openBoosters(
       })),
     )
 
+    const obtained = new Map<string, { count: number; newCount: number }>()
+    for (const card of withNew) {
+      const key = keyById.get(card.rarityId)!
+      const entry = obtained.get(key) ?? { count: 0, newCount: 0 }
+      entry.count++
+      if (card.isNew) entry.newCount++
+      obtained.set(key, entry)
+    }
+    const progression = await emitEvents(
+      tx,
+      userId,
+      [
+        { type: 'booster_opened', tier: tier.key, quantity: input.quantity },
+        ...[...obtained].map(([rarity, entry]) => ({
+          type: 'card_obtained' as const,
+          rarity,
+          ...entry,
+        })),
+      ],
+      now,
+    )
+
     const details = await loadCharacterCards(tx, distinctIds)
     return {
       openingId: opening!.id,
@@ -260,6 +283,7 @@ export async function openBoosters(
       free: toFreeStatus(nextAnchor, now, rules),
       gemsSpent,
       gemBalance,
+      progression,
     }
   })
 }

@@ -8,6 +8,7 @@ import type {
 } from '@gachanime/shared'
 import { and, eq, inArray, sql, type SQL } from 'drizzle-orm'
 import { AppError } from '../errors'
+import { emitEvents } from '../progression/engine'
 import { changeGems, lockPlayer } from './gems'
 
 /** Copies beyond the first, minus locked copies (GAME_DESIGN §3), in SQL. */
@@ -25,7 +26,7 @@ export async function recycleCards(
   return database.transaction(async (tx) => {
     await lockPlayer(tx, userId)
     const [card] = await tx
-      .select({ recyclable, recycleValue: rarities.recycleValue })
+      .select({ recyclable, recycleValue: rarities.recycleValue, rarityKey: rarities.key })
       .from(userCards)
       .innerJoin(characters, eq(characters.id, userCards.characterId))
       .innerJoin(rarities, eq(rarities.id, characters.rarityId))
@@ -61,7 +62,10 @@ export async function recycleCards(
             refId: input.characterId,
           })
         : (await lockPlayer(tx, userId)).gemBalance
-    return { cards: input.count, gems, gemBalance }
+    const progression = await emitEvents(tx, userId, [
+      { type: 'card_recycled', rarity: card.rarityKey, count: input.count },
+    ])
+    return { cards: input.count, gems, gemBalance, progression }
   })
 }
 
@@ -133,6 +137,15 @@ export async function recycleAllDuplicates(
       preview.gems > 0
         ? await changeGems(tx, { userId, amount: preview.gems, reason: 'recycle', refType: 'bulk' })
         : (await lockPlayer(tx, userId)).gemBalance
-    return { cards: preview.cards, gems: preview.gems, gemBalance }
+    const progression = await emitEvents(
+      tx,
+      userId,
+      preview.byRarity.map((row) => ({
+        type: 'card_recycled' as const,
+        rarity: row.rarityKey,
+        count: row.cards,
+      })),
+    )
+    return { cards: preview.cards, gems: preview.gems, gemBalance, progression }
   })
 }

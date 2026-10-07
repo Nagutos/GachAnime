@@ -153,7 +153,7 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
     it('recycles duplicates, never the first copy nor locked copies', async () => {
       await setCards('Epic A', 5, 2)
       const result = await recycleCards(db, 'p1', { characterId: ids['Epic A']!, count: 2 })
-      expect(result).toEqual({ cards: 2, gems: 20, gemBalance: 20 })
+      expect(result).toMatchObject({ cards: 2, gems: 20, gemBalance: 20 })
       expect(await quantityOf('Epic A')).toBe(3)
       // 3 copies, 2 locked: the remaining one is the first copy.
       await expect(
@@ -191,7 +191,7 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
         ...filter,
         expected: { cards: 4, gems: 5 },
       })
-      expect(result).toEqual({ cards: 4, gems: 5, gemBalance: 5 })
+      expect(result).toMatchObject({ cards: 4, gems: 5, gemBalance: 5 })
       expect(await quantityOf('Common A')).toBe(1)
       expect(await quantityOf('Rare A')).toBe(2) // first copy + locked copy
       expect(await quantityOf('Legendary A')).toBe(2)
