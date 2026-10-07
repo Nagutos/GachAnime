@@ -47,6 +47,10 @@
     "CONFLICT": "This action conflicts with the current state. Please retry.",
     "RATE_LIMITED": "Too many requests. Please wait a moment.",
     "IDEMPOTENCY_IN_PROGRESS": "This action is already in progress.",
+    "IMPORT_IN_PROGRESS": "An import is already running.",
+    "ANILIST_UNAVAILABLE": "AniList is not reachable right now. Please retry later.",
+    "INVALID_IMAGE": "This image cannot be used (PNG, JPEG, WebP or GIF, 8 MB max).",
+    "NOT_MANUAL_SERIES": "Only manually created series can be edited this way.",
     "INTERNAL_ERROR": "Something went wrong on our side.",
     "NETWORK": "Cannot reach the server."
   }

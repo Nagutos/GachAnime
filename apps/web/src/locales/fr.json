@@ -47,6 +47,10 @@
     "CONFLICT": "Cette action est en conflit avec l'état actuel. Réessaie.",
     "RATE_LIMITED": "Trop de requêtes. Patiente un instant.",
     "IDEMPOTENCY_IN_PROGRESS": "Cette action est déjà en cours.",
+    "IMPORT_IN_PROGRESS": "Un import est déjà en cours.",
+    "ANILIST_UNAVAILABLE": "AniList est injoignable pour le moment. Réessaie plus tard.",
+    "INVALID_IMAGE": "Cette image est inutilisable (PNG, JPEG, WebP ou GIF, 8 Mo max).",
+    "NOT_MANUAL_SERIES": "Seules les séries créées à la main peuvent être modifiées ainsi.",
     "INTERNAL_ERROR": "Une erreur est survenue de notre côté.",
     "NETWORK": "Impossible de joindre le serveur."
   }
