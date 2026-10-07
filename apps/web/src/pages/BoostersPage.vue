@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import {
   resolveLocalizedText,
+  THEME_CATEGORIES,
   type BoosterQuantity,
   type BoosterTierDto,
   type OpenBoostersResponse,
+  type ThemeDto,
 } from '@gachanime/shared'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -54,23 +56,58 @@ watch(now, (value) => {
   }
 })
 
-const opening = ref<{ result: OpenBoostersResponse; label: string; art: string } | null>(null)
+const opening = ref<{
+  result: OpenBoostersResponse
+  label: string
+  art: string
+  ribbon: string | null
+} | null>(null)
+
+/** Selected pack (theme key); null = the whole catalog. */
+const themeKey = ref<string | null>(null)
+const selectedTheme = computed<ThemeDto | null>(
+  () => data.value?.themes.find((theme) => theme.key === themeKey.value) ?? null,
+)
+const themeGroups = computed(() =>
+  THEME_CATEGORIES.map((category) => ({
+    category,
+    themes: (data.value?.themes ?? []).filter((theme) => theme.category === category),
+  })).filter((group) => group.themes.length > 0),
+)
+const freeAvailable = computed(() => !selectedTheme.value || selectedTheme.value.freeEnabled)
+const paidAvailable = computed(() => !selectedTheme.value || selectedTheme.value.paidEnabled)
 
 function tierName(tier: BoosterTierDto): string {
   return resolveLocalizedText(tier.name, locale.value)
 }
 
+function themeName(theme: ThemeDto | null): string | null {
+  return theme ? resolveLocalizedText(theme.name, locale.value) : null
+}
+
+/** Price of one booster: the server gives the pack prices (surcharge included). */
+function unitPrice(tier: BoosterTierDto): number {
+  return selectedTheme.value?.prices[tier.key] ?? tier.priceGems ?? 0
+}
+
 /** Display only: the server checks charges and gems again. */
 function canOpen(tier: BoosterTierDto, quantity: BoosterQuantity): boolean {
   if (open.isPending.value || !data.value) return false
-  if (tier.priceGems === null) return (free.value?.available ?? 0) >= quantity
-  return data.value.gemBalance >= tier.priceGems * quantity
+  if (tier.priceGems === null) {
+    return freeAvailable.value && (free.value?.available ?? 0) >= quantity
+  }
+  return paidAvailable.value && data.value.gemBalance >= unitPrice(tier) * quantity
 }
 
 async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Promise<void> {
   lastTier.value = tier.key
-  const result = await open.mutateAsync({ tier: tier.key, quantity }).catch(() => null)
-  if (result) opening.value = { result, label: tierName(tier), art: tier.artToken }
+  const theme = selectedTheme.value
+  const result = await open
+    .mutateAsync({ tier: tier.key, quantity, theme: theme?.key })
+    .catch(() => null)
+  if (result) {
+    opening.value = { result, label: tierName(tier), art: tier.artToken, ribbon: themeName(theme) }
+  }
 }
 </script>
 
@@ -92,6 +129,69 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
         </RouterLink>
       </header>
 
+      <section
+        v-if="themeGroups.length"
+        :class="[playerUi.panel, 'flex flex-col gap-3']"
+        data-testid="pack-selector"
+      >
+        <div>
+          <h2 class="font-display text-lg font-bold">{{ t('boosters.packs.title') }}</h2>
+          <p class="text-sm text-mist-300">{{ t('boosters.packs.help') }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2" role="radiogroup" :aria-label="t('boosters.packs.title')">
+          <button
+            type="button"
+            role="radio"
+            :aria-checked="themeKey === null"
+            class="rounded-full border px-3 py-1.5 text-sm"
+            :class="
+              themeKey === null
+                ? 'border-sakura-400 bg-sakura-400/15 text-mist-100'
+                : 'border-night-700 text-mist-300 hover:text-mist-100'
+            "
+            data-testid="pack-all"
+            @click="themeKey = null"
+          >
+            {{ t('boosters.packs.all') }}
+          </button>
+          <template v-for="group in themeGroups" :key="group.category">
+            <span class="self-center pl-2 text-xs tracking-wide text-mist-300 uppercase">
+              {{ t(`boosters.packs.categories.${group.category}`) }}
+            </span>
+            <button
+              v-for="theme in group.themes"
+              :key="theme.key"
+              type="button"
+              role="radio"
+              :aria-checked="themeKey === theme.key"
+              class="rounded-full border px-3 py-1.5 text-sm"
+              :class="
+                themeKey === theme.key
+                  ? 'border-sakura-400 bg-sakura-400/15 text-mist-100'
+                  : 'border-night-700 text-mist-300 hover:text-mist-100'
+              "
+              :title="
+                theme.description ? resolveLocalizedText(theme.description, locale) : undefined
+              "
+              :data-testid="`pack-${theme.key}`"
+              @click="themeKey = theme.key"
+            >
+              {{ resolveLocalizedText(theme.name, locale) }}
+              <span class="text-xs text-mist-300 tabular-nums">
+                {{ n(theme.characterCount, 'integer') }}
+              </span>
+            </button>
+          </template>
+        </div>
+        <p v-if="selectedTheme" class="text-sm text-mist-300" data-testid="pack-summary">
+          <template v-if="selectedTheme.paidEnabled && selectedTheme.surchargePercent > 0">
+            {{ t('boosters.packs.surcharge', { percent: selectedTheme.surchargePercent }) }}
+          </template>
+          <template v-if="!selectedTheme.freeEnabled">{{ t('boosters.packs.noFree') }}</template>
+          <template v-if="!selectedTheme.paidEnabled">{{ t('boosters.packs.noPaid') }}</template>
+        </p>
+      </section>
+
       <p v-if="boosters.isPending.value" class="text-mist-300">{{ t('common.loading') }}</p>
       <p v-else-if="data && data.tiers.length === 0" :class="playerUi.panel">
         {{ t('boosters.noTier') }}
@@ -108,6 +208,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
             :label="tierName(tier)"
             :cards="data!.cardsPerBooster"
             :art="tier.artToken"
+            :ribbon="themeName(selectedTheme)"
             idle
           />
         </div>
@@ -115,7 +216,10 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
         <div class="flex flex-1 flex-col gap-4">
           <div>
             <h2 class="font-display text-2xl font-bold">{{ tierName(tier) }}</h2>
-            <p v-if="tier.description" class="text-mist-300">
+            <p v-if="selectedTheme?.description" class="text-mist-300">
+              {{ resolveLocalizedText(selectedTheme.description, locale) }}
+            </p>
+            <p v-else-if="tier.description" class="text-mist-300">
               {{ resolveLocalizedText(tier.description, locale) }}
             </p>
           </div>
@@ -178,6 +282,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
                 :label="tierName(tier)"
                 :cards="data!.cardsPerBooster"
                 :art="tier.artToken"
+                :ribbon="themeName(selectedTheme)"
               />
             </div>
             <div class="text-center">
@@ -186,7 +291,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
                 {{ resolveLocalizedText(tier.description, locale) }}
               </p>
               <p class="mt-2 font-semibold text-gold-400 tabular-nums">
-                {{ t('boosters.pricePerPack', { price: n(tier.priceGems!, 'integer') }) }}
+                {{ t('boosters.pricePerPack', { price: n(unitPrice(tier), 'integer') }) }}
               </p>
             </div>
             <div class="mt-auto flex flex-col gap-2">
@@ -201,7 +306,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
               >
                 <span>{{ t('boosters.open', { count: quantity }) }}</span>
                 <span class="text-gold-400 tabular-nums">
-                  {{ t('nav.gems', { count: n(tier.priceGems! * quantity, 'integer') }) }}
+                  {{ t('nav.gems', { count: n(unitPrice(tier) * quantity, 'integer') }) }}
                 </span>
               </button>
             </div>
@@ -218,6 +323,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
         :result="opening.result"
         :pack-label="opening.label"
         :pack-art="opening.art"
+        :pack-ribbon="opening.ribbon"
         @close="opening = null"
       />
     </RequireSignIn>

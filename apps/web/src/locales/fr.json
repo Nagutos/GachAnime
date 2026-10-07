@@ -59,7 +59,8 @@
       "settings": "Réglages",
       "missions": "Missions",
       "achievements": "Succès",
-      "feedback": "Avis"
+      "feedback": "Avis",
+      "themes": "Packs"
     },
     "openAdmin": "Administration",
     "forbidden": "Cet espace est réservé aux administrateurs.",
@@ -392,6 +393,46 @@
     "feedback": {
       "title": "Avis des joueurs",
       "average": "Note moyenne"
+    },
+    "themes": {
+      "title": "Packs",
+      "help": "Un pack ne tire que les personnages qui respectent ses règles. Son contenu est mis à jour à l'enregistrement et après chaque changement du catalogue.",
+      "new": "Nouveau pack",
+      "edit": "Modifier le pack",
+      "back": "← Tous les packs",
+      "characters": "Personnages",
+      "availability": "Boosters",
+      "surcharge": "Surcoût premium (%)",
+      "free": "Gratuit",
+      "paid": "Premium",
+      "category": "Catégorie",
+      "freeEnabled": "Disponible avec les boosters gratuits",
+      "paidEnabled": "Disponible avec les boosters premium",
+      "preview": "Aperçu",
+      "previewTotal": "{count} personnages",
+      "emptyRarities": "Aucun personnage pour : {rarities}. Ces tirages passent à la rareté inférieure, puis supérieure.",
+      "deleteTitle": "Supprimer ce pack ?",
+      "deleteBody": "Les ouvertures passées gardent leurs cartes. Pour masquer un pack un moment, désactive-le plutôt.",
+      "rules": {
+        "title": "Règles",
+        "help": "Les règles de série (tag, genre, format, type, séries) retiennent un personnage si l'une de ses séries correspond.",
+        "mode": "Combinaison",
+        "all": "Toutes ces conditions",
+        "any": "Au moins une condition",
+        "emptyAll": "Aucune condition : tous les personnages.",
+        "emptyAny": "Aucune condition : aucun personnage.",
+        "add": "Ajouter :",
+        "minRank": "Pertinence ≥",
+        "types": {
+          "group": "Groupe",
+          "tag": "Tag AniList",
+          "genre": "Genre",
+          "gender": "Genre du personnage",
+          "series_kind": "Type de série",
+          "media_format": "Format",
+          "series": "Séries"
+        }
+      }
     }
   },
   "nav": {
@@ -432,7 +473,22 @@
     "summary": "{cards} cartes · {new} nouvelles",
     "paidTitle": "Boosters premium",
     "paidSubtitle": "Dépense tes gemmes pour de meilleures chances. Les gemmes viennent du recyclage des doublons, des missions et des succès.",
-    "pricePerPack": "{price} gemmes le booster"
+    "pricePerPack": "{price} gemmes le booster",
+    "packs": {
+      "title": "Pack",
+      "help": "Choisis un pack pour ne tirer que ses personnages. Les boosters gratuits coûtent pareil ; les boosters premium un peu plus.",
+      "all": "Tout le catalogue",
+      "surcharge": "Les boosters premium de ce pack coûtent {percent} % de plus.",
+      "noFree": " Les boosters gratuits ne sont pas disponibles avec ce pack.",
+      "noPaid": " Les boosters premium ne sont pas disponibles avec ce pack.",
+      "categories": {
+        "demographic": "Public",
+        "genre": "Genre",
+        "characters": "Personnages",
+        "media_type": "Type de média",
+        "custom": "Spécial"
+      }
+    }
   },
   "collection": {
     "title": "Ma collection",
@@ -477,7 +533,9 @@
       "complete": "Complètes",
       "all": "Toutes"
     },
-    "noSeries": "Aucune série ici pour le moment."
+    "noSeries": "Aucune série ici pour le moment.",
+    "pack": "Pack",
+    "allPacks": "Tous les packs"
   },
   "wiki": {
     "title": "Wiki",
@@ -630,6 +688,7 @@
     "NOT_ENOUGH_GEMS": "Pas assez de gemmes.",
     "NOTHING_TO_RECYCLE": "Il n'y a rien à recycler.",
     "PREVIEW_OUTDATED": "Tes doublons ont changé entre-temps. Vérifie le nouvel aperçu et confirme à nouveau.",
-    "NOT_CLAIMABLE": "Cette récompense ne peut pas être récupérée."
+    "NOT_CLAIMABLE": "Cette récompense ne peut pas être récupérée.",
+    "THEME_UNAVAILABLE": "Ce pack n'est pas disponible avec ce booster."
   }
 }

@@ -72,7 +72,7 @@ export function useBoostersQuery() {
 export function useOpenBoostersMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: { tier: string; quantity: BoosterQuantity }) =>
+    mutationFn: (input: { tier: string; quantity: BoosterQuantity; theme?: string }) =>
       apiFetch('/boosters/open', {
         method: 'POST',
         body: input,

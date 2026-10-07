@@ -2,6 +2,7 @@
 import {
   COLLECTION_OWNERSHIP,
   formatCollectionSort,
+  resolveLocalizedText,
   type CollectionQueryInput,
   type CollectionSort,
 } from '@gachanime/shared'
@@ -9,7 +10,7 @@ import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { useCollectionQuery } from '@/api/player'
+import { useBoostersQuery, useCollectionQuery } from '@/api/player'
 import { usePlayerRarities } from '@/app/rarities'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import LockedCard from '@/components/cards/LockedCard.vue'
@@ -23,7 +24,7 @@ import { playerUi } from '@/components/ui'
 
 const PAGE_SIZE = 30
 
-const { t, n } = useI18n()
+const { t, n, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { rarities, nameOf } = usePlayerRarities()
@@ -32,6 +33,9 @@ const ownership = ref<(typeof COLLECTION_OWNERSHIP)[number]>('owned')
 const search = ref('')
 const debouncedSearch = refDebounced(search, 300)
 const rarity = ref('')
+const theme = ref('')
+const boosters = useBoostersQuery()
+const themes = computed(() => boosters.data.value?.themes ?? [])
 const sorts = ref<CollectionSort[]>([{ key: 'recent', direction: 'desc' }])
 const duplicates = ref(false)
 const wishlist = ref(false)
@@ -58,7 +62,7 @@ const filters = computed((): CollectionQueryInput => ({
   wishlist: wishlist.value ? 'true' : undefined,
   seriesId: seriesId.value,
 }))
-watch([ownership, debouncedSearch, rarity, sorts, duplicates, wishlist, seriesId], () => {
+watch([ownership, debouncedSearch, rarity, theme, sorts, duplicates, wishlist, seriesId], () => {
   page.value = 1
 })
 
@@ -66,7 +70,12 @@ const collection = useCollectionQuery(filters)
 const data = computed(() => collection.data.value)
 const hasFilters = computed(() =>
   Boolean(
-    debouncedSearch.value || rarity.value || duplicates.value || wishlist.value || seriesId.value,
+    debouncedSearch.value ||
+    rarity.value ||
+    theme.value ||
+    duplicates.value ||
+    wishlist.value ||
+    seriesId.value,
   ),
 )
 
@@ -142,6 +151,17 @@ function clearSeries(): void {
             <option value="">{{ t('collection.allRarities') }}</option>
             <option v-for="item in [...rarities].reverse()" :key="item.key" :value="item.key">
               {{ nameOf(item.key) }}
+            </option>
+          </select>
+          <select
+            v-if="themes.length"
+            v-model="theme"
+            :class="playerUi.select"
+            :aria-label="t('collection.pack')"
+          >
+            <option value="">{{ t('collection.allPacks') }}</option>
+            <option v-for="item in themes" :key="item.key" :value="item.key">
+              {{ resolveLocalizedText(item.name, locale) }}
             </option>
           </select>
         </div>

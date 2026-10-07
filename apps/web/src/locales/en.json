@@ -59,7 +59,8 @@
       "settings": "Settings",
       "missions": "Missions",
       "achievements": "Achievements",
-      "feedback": "Feedback"
+      "feedback": "Feedback",
+      "themes": "Packs"
     },
     "openAdmin": "Administration",
     "forbidden": "This area is reserved for administrators.",
@@ -392,6 +393,46 @@
     "feedback": {
       "title": "Player feedback",
       "average": "Average rating"
+    },
+    "themes": {
+      "title": "Packs",
+      "help": "A pack draws only the characters matching its rules. Its content is updated when you save it and after every catalog change.",
+      "new": "New pack",
+      "edit": "Edit pack",
+      "back": "← All packs",
+      "characters": "Characters",
+      "availability": "Boosters",
+      "surcharge": "Premium surcharge (%)",
+      "free": "Free",
+      "paid": "Premium",
+      "category": "Category",
+      "freeEnabled": "Available with free boosters",
+      "paidEnabled": "Available with premium boosters",
+      "preview": "Preview",
+      "previewTotal": "{count} characters",
+      "emptyRarities": "No character for: {rarities}. These draws fall back to the next lower rarity, then the next higher one.",
+      "deleteTitle": "Delete this pack?",
+      "deleteBody": "Past openings keep their cards. To hide a pack for a while, deactivate it instead.",
+      "rules": {
+        "title": "Rules",
+        "help": "Series rules (tag, genre, format, type, series) match a character when one of its series matches.",
+        "mode": "Combine",
+        "all": "All of these",
+        "any": "Any of these",
+        "emptyAll": "No condition: every character.",
+        "emptyAny": "No condition: no character.",
+        "add": "Add:",
+        "minRank": "Relevance ≥",
+        "types": {
+          "group": "Group",
+          "tag": "AniList tag",
+          "genre": "Genre",
+          "gender": "Gender",
+          "series_kind": "Series type",
+          "media_format": "Format",
+          "series": "Series"
+        }
+      }
     }
   },
   "nav": {
@@ -432,7 +473,22 @@
     "summary": "{cards} cards · {new} new",
     "paidTitle": "Premium boosters",
     "paidSubtitle": "Spend your gems for better odds. Gems come from recycling duplicates, missions and achievements.",
-    "pricePerPack": "{price} gems per booster"
+    "pricePerPack": "{price} gems per booster",
+    "packs": {
+      "title": "Pack",
+      "help": "Pick a pack to draw only its characters. Free boosters cost the same; premium boosters cost a little more.",
+      "all": "Whole catalog",
+      "surcharge": "Premium boosters of this pack cost {percent} % more.",
+      "noFree": " Free boosters are not available with this pack.",
+      "noPaid": " Premium boosters are not available with this pack.",
+      "categories": {
+        "demographic": "Demographic",
+        "genre": "Genre",
+        "characters": "Characters",
+        "media_type": "Media type",
+        "custom": "Special"
+      }
+    }
   },
   "collection": {
     "title": "My collection",
@@ -477,7 +533,9 @@
       "complete": "Complete",
       "all": "All"
     },
-    "noSeries": "No series here yet."
+    "noSeries": "No series here yet.",
+    "pack": "Pack",
+    "allPacks": "All packs"
   },
   "wiki": {
     "title": "Wiki",
@@ -630,6 +688,7 @@
     "NOT_ENOUGH_GEMS": "Not enough gems.",
     "NOTHING_TO_RECYCLE": "There is nothing to recycle.",
     "PREVIEW_OUTDATED": "Your duplicates changed in the meantime. Check the new preview and confirm again.",
-    "NOT_CLAIMABLE": "This reward cannot be claimed."
+    "NOT_CLAIMABLE": "This reward cannot be claimed.",
+    "THEME_UNAVAILABLE": "This pack is not available with this booster."
   }
 }

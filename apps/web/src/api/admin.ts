@@ -3,6 +3,9 @@ import {
   adminBoosterTiersResponseSchema,
   adminFeedbackListSchema,
   adminMissionsResponseSchema,
+  adminThemesResponseSchema,
+  themePreviewSchema,
+  themeRuleOptionsSchema,
   adminCharacterDetailSchema,
   adminRaritiesResponseSchema,
   adminSettingsSchema,
@@ -27,6 +30,9 @@ import {
   type AdminSettings,
   type CreateAchievementRequest,
   type CreateMissionRequest,
+  type CreateThemeRequest,
+  type ThemeRule,
+  type UpdateThemeRequest,
   type UpdateAchievementRequest,
   type UpdateMissionRequest,
   type UpdateBoosterTierRequest,
@@ -56,6 +62,7 @@ export const adminKeys = {
   missions: ['admin', 'missions'] as const,
   achievements: ['admin', 'achievements'] as const,
   feedback: ['admin', 'feedback'] as const,
+  themes: ['admin', 'themes'] as const,
 }
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
@@ -380,5 +387,78 @@ export function useAdminFeedbackQuery(page: MaybeRefOrGetter<number>) {
         schema: adminFeedbackListSchema,
       }),
     placeholderData: keepPreviousData,
+  })
+}
+
+// ─── Packs (themes) ──────────────────────────────────────────────────────────
+
+export function useAdminThemesQuery() {
+  return useQuery({
+    queryKey: adminKeys.themes,
+    queryFn: () => apiFetch('/admin/themes', { schema: adminThemesResponseSchema }),
+  })
+}
+
+export function useThemeRuleOptionsQuery() {
+  return useQuery({
+    queryKey: [...adminKeys.themes, 'options'],
+    queryFn: () => apiFetch('/admin/themes/options', { schema: themeRuleOptionsSchema }),
+    staleTime: 5 * 60_000,
+  })
+}
+
+/** Live preview of a pack's content; `rules` is debounced by the caller. */
+export function useThemePreviewQuery(rules: MaybeRefOrGetter<ThemeRule | null>) {
+  return useQuery({
+    queryKey: computed(() => [...adminKeys.themes, 'preview', JSON.stringify(toValue(rules))]),
+    queryFn: () =>
+      apiFetch('/admin/themes/preview', {
+        method: 'POST',
+        body: { rules: toValue(rules) },
+        schema: themePreviewSchema,
+      }),
+    enabled: computed(() => toValue(rules) !== null),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useSaveThemeMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (
+      input: { id: number; changes: UpdateThemeRequest } | { create: CreateThemeRequest },
+    ): Promise<number> => {
+      if ('create' in input) {
+        const { id } = await apiFetch('/admin/themes', {
+          method: 'POST',
+          body: input.create,
+          schema: idResponseSchema,
+        })
+        return id
+      }
+      await apiFetch(`/admin/themes/${input.id}`, {
+        method: 'PATCH',
+        body: input.changes,
+        schema: adminThemesResponseSchema,
+      })
+      return input.id
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.themes })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
+      void queryClient.invalidateQueries({ queryKey: ['boosters'] })
+    },
+  })
+}
+
+export function useDeleteThemeMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/admin/themes/${id}`, { method: 'DELETE', schema: z.null() }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.themes })
+      void queryClient.invalidateQueries({ queryKey: ['boosters'] })
+    },
   })
 }

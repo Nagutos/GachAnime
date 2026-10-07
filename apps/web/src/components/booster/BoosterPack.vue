@@ -16,8 +16,10 @@ const props = withDefaults(
     idle?: boolean
     /** Tier art token: pack color. */
     art?: string
+    /** Themed pack name, shown on a ribbon. */
+    ribbon?: string | null
   }>(),
-  { torn: false, glowRarity: null, idle: false, art: 'free' },
+  { torn: false, glowRarity: null, idle: false, art: 'free', ribbon: null },
 )
 
 const { t } = useI18n()
@@ -48,7 +50,13 @@ const duration = computed(() => (reduced.value ? 0 : 0.45))
     >
       <img src="/favicon.svg" alt="" class="size-16 drop-shadow-lg" />
       <p class="font-display text-xl font-extrabold text-white drop-shadow">{{ label }}</p>
-      <p class="rounded-full bg-night-950/50 px-3 py-0.5 text-xs text-mist-100">
+      <p
+        v-if="ribbon"
+        class="-mx-4 w-[calc(100%+2rem)] bg-night-950/70 py-1 text-sm font-bold tracking-wide text-gold-400 uppercase"
+      >
+        {{ ribbon }}
+      </p>
+      <p v-else class="rounded-full bg-night-950/50 px-3 py-0.5 text-xs text-mist-100">
         {{ t('boosters.cardsPerPack', { count: cards }) }}
       </p>
       <div class="pack-crimp absolute inset-x-0 bottom-0 h-3 opacity-60" />

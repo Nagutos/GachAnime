@@ -19,8 +19,13 @@ import BoosterPack from './BoosterPack.vue'
 import FlipCard from './FlipCard.vue'
 
 const props = withDefaults(
-  defineProps<{ result: OpenBoostersResponse; packLabel: string; packArt?: string }>(),
-  { packArt: 'free' },
+  defineProps<{
+    result: OpenBoostersResponse
+    packLabel: string
+    packArt?: string
+    packRibbon?: string | null
+  }>(),
+  { packArt: 'free', packRibbon: null },
 )
 const emit = defineEmits<{ close: [] }>()
 
@@ -163,6 +168,7 @@ onBeforeUnmount(() => timers.forEach(clearTimeout))
                 <BoosterPack
                   :label="packLabel"
                   :art="packArt"
+                  :ribbon="packRibbon"
                   :cards="result.cardsPerBooster"
                   :torn="torn"
                   :glow-rarity="packGlow"

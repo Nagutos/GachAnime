@@ -83,6 +83,22 @@ export const router = createRouter({
           component: () => import('@/admin/pages/AdminSettingsPage.vue'),
         },
         {
+          path: 'themes',
+          name: 'admin-themes',
+          component: () => import('@/admin/pages/AdminThemesPage.vue'),
+        },
+        {
+          path: 'themes/new',
+          name: 'admin-theme-new',
+          component: () => import('@/admin/pages/AdminThemeEditPage.vue'),
+        },
+        {
+          path: 'themes/:id(\\d+)',
+          name: 'admin-theme-edit',
+          component: () => import('@/admin/pages/AdminThemeEditPage.vue'),
+          props: (route) => ({ id: Number(route.params.id) }),
+        },
+        {
           path: 'missions',
           name: 'admin-missions',
           component: () => import('@/admin/pages/AdminMissionsPage.vue'),

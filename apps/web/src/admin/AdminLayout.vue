@@ -12,6 +12,7 @@ const links = [
   { name: 'admin-characters', label: 'admin.nav.characters' },
   { name: 'admin-imports', label: 'admin.nav.imports' },
   { name: 'admin-boosters', label: 'admin.nav.boosters' },
+  { name: 'admin-themes', label: 'admin.nav.themes' },
   { name: 'admin-rarities', label: 'admin.nav.rarities' },
   { name: 'admin-settings', label: 'admin.nav.settings' },
   { name: 'admin-missions', label: 'admin.nav.missions' },
