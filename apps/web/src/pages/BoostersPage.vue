@@ -7,28 +7,32 @@ import {
 } from '@gachanime/shared'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import { useBoostersQuery, useOpenBoostersMutation } from '@/api/player'
 import { useErrorMessage } from '@/app/errors'
 import { formatCountdown, useServerNow } from '@/app/now'
-import { usePlayerRarities } from '@/app/rarities'
 import BoosterOpening from '@/components/booster/BoosterOpening.vue'
 import BoosterPack from '@/components/booster/BoosterPack.vue'
-import { rarityStyle } from '@/components/cards/rarity-styles'
+import TierRates from '@/components/booster/TierRates.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
 import { playerUi } from '@/components/ui'
 
 const { t, n, locale } = useI18n()
-const { rarities, nameOf } = usePlayerRarities()
 const boosters = useBoostersQuery()
 const open = useOpenBoostersMutation()
 const errorMessage = useErrorMessage(open.error)
+/** Tier of the last opening attempt, to show its error next to it. */
+const lastTier = ref<string | null>(null)
 
 const QUANTITIES: BoosterQuantity[] = [1, 5, 10]
-const RATE_TOTAL = 1_000_000
 
-const free = computed(() => boosters.data.value?.free)
+const data = computed(() => boosters.data.value)
+const free = computed(() => data.value?.free)
 const freeTiers = computed(() =>
-  (boosters.data.value?.tiers ?? []).filter((tier) => tier.priceGems === null),
+  (data.value?.tiers ?? []).filter((tier) => tier.priceGems === null),
+)
+const paidTiers = computed(() =>
+  (data.value?.tiers ?? []).filter((tier) => tier.priceGems !== null),
 )
 
 /** Server clock offset, so the countdown matches the server's charges. */
@@ -50,32 +54,48 @@ watch(now, (value) => {
   }
 })
 
-const opening = ref<{ result: OpenBoostersResponse; label: string } | null>(null)
+const opening = ref<{ result: OpenBoostersResponse; label: string; art: string } | null>(null)
 
 function tierName(tier: BoosterTierDto): string {
   return resolveLocalizedText(tier.name, locale.value)
 }
 
-async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Promise<void> {
-  const result = await open.mutateAsync({ tier: tier.key, quantity }).catch(() => null)
-  if (result) opening.value = { result, label: tierName(tier) }
+/** Display only: the server checks charges and gems again. */
+function canOpen(tier: BoosterTierDto, quantity: BoosterQuantity): boolean {
+  if (open.isPending.value || !data.value) return false
+  if (tier.priceGems === null) return (free.value?.available ?? 0) >= quantity
+  return data.value.gemBalance >= tier.priceGems * quantity
 }
 
-function rateOf(tier: BoosterTierDto, key: string): number {
-  return (tier.weights[key] ?? 0) / RATE_TOTAL
+async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Promise<void> {
+  lastTier.value = tier.key
+  const result = await open.mutateAsync({ tier: tier.key, quantity }).catch(() => null)
+  if (result) opening.value = { result, label: tierName(tier), art: tier.artToken }
 }
 </script>
 
 <template>
   <main :class="playerUi.page">
     <RequireSignIn>
-      <header>
-        <h1 :class="playerUi.title">{{ t('boosters.title') }}</h1>
-        <p class="text-mist-300">{{ t('boosters.subtitle') }}</p>
+      <header class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 :class="playerUi.title">{{ t('boosters.title') }}</h1>
+          <p class="text-mist-300">{{ t('boosters.subtitle') }}</p>
+        </div>
+        <RouterLink
+          v-if="data"
+          :to="{ name: 'gems' }"
+          class="rounded-full bg-night-800 px-4 py-2 font-semibold text-gold-400 tabular-nums hover:bg-night-700"
+          data-testid="boosters-gems"
+        >
+          {{ t('nav.gems', { count: n(data.gemBalance, 'integer') }) }}
+        </RouterLink>
       </header>
 
       <p v-if="boosters.isPending.value" class="text-mist-300">{{ t('common.loading') }}</p>
-      <p v-else-if="freeTiers.length === 0" :class="playerUi.panel">{{ t('boosters.noTier') }}</p>
+      <p v-else-if="data && data.tiers.length === 0" :class="playerUi.panel">
+        {{ t('boosters.noTier') }}
+      </p>
 
       <section
         v-for="tier in freeTiers"
@@ -84,7 +104,12 @@ function rateOf(tier: BoosterTierDto, key: string): number {
         :data-testid="`tier-${tier.key}`"
       >
         <div class="mx-auto w-40 shrink-0 md:mx-0 md:w-48">
-          <BoosterPack :label="tierName(tier)" :cards="boosters.data.value!.cardsPerBooster" idle />
+          <BoosterPack
+            :label="tierName(tier)"
+            :cards="data!.cardsPerBooster"
+            :art="tier.artToken"
+            idle
+          />
         </div>
 
         <div class="flex flex-1 flex-col gap-4">
@@ -122,41 +147,77 @@ function rateOf(tier: BoosterTierDto, key: string): number {
               :key="quantity"
               type="button"
               class="min-w-28 rounded-xl bg-sakura-500 px-5 py-3 font-semibold text-white shadow-lg shadow-sakura-500/20 transition hover:bg-sakura-600 disabled:cursor-not-allowed disabled:bg-night-700 disabled:text-mist-300 disabled:shadow-none"
-              :disabled="open.isPending.value || !free || free.available < quantity"
+              :disabled="!canOpen(tier, quantity)"
               :data-testid="`open-${quantity}`"
               @click="openBoosters(tier, quantity)"
             >
-              {{
-                open.isPending.value
-                  ? t('boosters.opening')
-                  : t('boosters.open', { count: quantity })
-              }}
+              {{ t('boosters.open', { count: quantity }) }}
             </button>
           </div>
-          <p v-if="errorMessage" :class="playerUi.error" role="alert">{{ errorMessage }}</p>
-
-          <details class="text-sm">
-            <summary class="cursor-pointer text-mist-300 hover:text-mist-100">
-              {{ t('boosters.rates') }}
-            </summary>
-            <ul class="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3">
-              <li
-                v-for="rarity in [...rarities].reverse()"
-                :key="rarity.key"
-                class="flex justify-between gap-2"
-              >
-                <span :class="rarityStyle(rarity.key).text">{{ nameOf(rarity.key) }}</span>
-                <span class="tabular-nums">{{ n(rateOf(tier, rarity.key), 'rate') }}</span>
-              </li>
-            </ul>
-          </details>
+          <p v-if="errorMessage && lastTier === tier.key" :class="playerUi.error" role="alert">
+            {{ errorMessage }}
+          </p>
+          <TierRates :tier="tier" />
         </div>
+      </section>
+
+      <section v-if="paidTiers.length" class="flex flex-col gap-4">
+        <div>
+          <h2 class="font-display text-2xl font-bold">{{ t('boosters.paidTitle') }}</h2>
+          <p class="text-mist-300">{{ t('boosters.paidSubtitle') }}</p>
+        </div>
+        <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <li
+            v-for="tier in paidTiers"
+            :key="tier.key"
+            :class="[playerUi.panel, 'flex flex-col gap-4']"
+            :data-testid="`tier-${tier.key}`"
+          >
+            <div class="mx-auto w-32">
+              <BoosterPack
+                :label="tierName(tier)"
+                :cards="data!.cardsPerBooster"
+                :art="tier.artToken"
+              />
+            </div>
+            <div class="text-center">
+              <h3 class="font-display text-xl font-bold">{{ tierName(tier) }}</h3>
+              <p v-if="tier.description" class="text-sm text-mist-300">
+                {{ resolveLocalizedText(tier.description, locale) }}
+              </p>
+              <p class="mt-2 font-semibold text-gold-400 tabular-nums">
+                {{ t('boosters.pricePerPack', { price: n(tier.priceGems!, 'integer') }) }}
+              </p>
+            </div>
+            <div class="mt-auto flex flex-col gap-2">
+              <button
+                v-for="quantity in QUANTITIES"
+                :key="quantity"
+                type="button"
+                class="flex items-center justify-between gap-2 rounded-xl bg-night-800 px-3 py-2 text-sm font-semibold whitespace-nowrap transition hover:bg-night-700 disabled:cursor-not-allowed disabled:opacity-40"
+                :disabled="!canOpen(tier, quantity)"
+                :data-testid="`open-${tier.key}-${quantity}`"
+                @click="openBoosters(tier, quantity)"
+              >
+                <span>{{ t('boosters.open', { count: quantity }) }}</span>
+                <span class="text-gold-400 tabular-nums">
+                  {{ t('nav.gems', { count: n(tier.priceGems! * quantity, 'integer') }) }}
+                </span>
+              </button>
+            </div>
+            <p v-if="errorMessage && lastTier === tier.key" :class="playerUi.error" role="alert">
+              {{ errorMessage }}
+            </p>
+            <TierRates :tier="tier" />
+          </li>
+        </ul>
       </section>
 
       <BoosterOpening
         v-if="opening"
         :result="opening.result"
         :pack-label="opening.label"
+        :pack-art="opening.art"
         @close="opening = null"
       />
     </RequireSignIn>

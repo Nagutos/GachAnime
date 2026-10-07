@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ui } from '../ui'
-import AdminDialog from './AdminDialog.vue'
+import AdminDialog from '@/components/BaseDialog.vue'
 
 defineProps<{
   title: string

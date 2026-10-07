@@ -10,7 +10,7 @@ import {
 import { useErrorMessage } from '../use-admin-error'
 import { useRarities } from '../use-rarities'
 import { ui } from '../ui'
-import AdminDialog from './AdminDialog.vue'
+import AdminDialog from '@/components/BaseDialog.vue'
 
 /** Creates a manual character in `seriesId`, or edits `character` (manual) when given. */
 const props = defineProps<{ seriesId?: number; character?: AdminCharacter | null }>()

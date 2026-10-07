@@ -12,7 +12,9 @@
     "pagination": "Pagination",
     "previous": "Previous",
     "next": "Next",
-    "pageOf": "Page {page} of {pages}"
+    "pageOf": "Page {page} of {pages}",
+    "close": "Close",
+    "cancel": "Cancel"
   },
   "auth": {
     "signInWithDiscord": "Sign in with Discord",
@@ -51,7 +53,10 @@
       "series": "Series",
       "characters": "Characters",
       "imports": "AniList import",
-      "audit": "Audit log"
+      "audit": "Audit log",
+      "boosters": "Boosters",
+      "rarities": "Rarities",
+      "settings": "Settings"
     },
     "openAdmin": "Administration",
     "forbidden": "This area is reserved for administrators.",
@@ -286,6 +291,48 @@
       "details": "Details",
       "before": "Before",
       "after": "After"
+    },
+    "settings": {
+      "title": "Game settings",
+      "freeBoosters": "Free boosters",
+      "intervalMinutes": "Minutes per free booster",
+      "maxCharges": "Maximum stored free boosters",
+      "dailyReset": "Daily reset",
+      "dailyResetHelp": "When daily missions and market limits start over.",
+      "resetHour": "Hour (0–23)",
+      "timeZone": "Time zone (IANA, e.g. Europe/Paris)"
+    },
+    "rarities": {
+      "title": "Rarities",
+      "help": "Names, AniList favourites thresholds, recycling values and market price bounds.",
+      "columns": {
+        "rarity": "Rarity",
+        "nameEn": "Name (en)",
+        "nameFr": "Name (fr)",
+        "threshold": "Favourites ≥",
+        "recycle": "Recycle",
+        "marketMin": "Market min",
+        "marketMax": "Market max",
+        "characters": "Characters"
+      },
+      "recomputed": "Saved: {count} characters changed rarity.",
+      "thresholdHelp": "Thresholds must increase with the rarity. Changing one re-applies the default rarity of every AniList character, except those set by hand."
+    },
+    "boosters": {
+      "title": "Booster tiers",
+      "help": "Per-card rates in parts per million (they must sum to 1,000,000) and prices in gems.",
+      "openings": "{count} openings",
+      "nameEn": "Name (en)",
+      "nameFr": "Name (fr)",
+      "price": "Price (gems)",
+      "freeTier": "Free tier: uses free charges.",
+      "sortOrder": "Order",
+      "rarity": "Rarity",
+      "weight": "Weight (ppm)",
+      "perCard": "Per card",
+      "perBooster": "At least one per booster",
+      "weightOf": "Weight of {rarity}",
+      "sum": "Total {sum} / {total}"
     }
   },
   "nav": {
@@ -320,7 +367,10 @@
     "done": "Done",
     "skip": "Skip",
     "packProgress": "Booster {current} of {total}",
-    "summary": "{cards} cards · {new} new"
+    "summary": "{cards} cards · {new} new",
+    "paidTitle": "Premium boosters",
+    "paidSubtitle": "Spend your gems for better odds. Gems come from recycling duplicates, missions and achievements.",
+    "pricePerPack": "{price} gems per booster"
   },
   "collection": {
     "title": "My collection",
@@ -333,13 +383,39 @@
       "recent": "Recently obtained",
       "rarity": "Rarity",
       "name": "Name",
-      "count": "Most copies"
+      "count": "Most copies",
+      "series": "Series"
     },
     "duplicates": "Duplicates only",
     "series": "Series: {title} ✕",
     "empty": "No card yet. Open your first booster!",
     "emptyFiltered": "No card matches these filters.",
-    "openBoosters": "Open boosters"
+    "openBoosters": "Open boosters",
+    "sortKey": "Sort key {index}",
+    "directions": {
+      "asc": "Ascending",
+      "desc": "Descending"
+    },
+    "addSort": "+ Then by",
+    "removeSort": "Remove this sort key",
+    "ownership": {
+      "owned": "Owned",
+      "missing": "Missing",
+      "all": "All"
+    },
+    "wishlistOnly": "Wishlist only",
+    "tabs": {
+      "cards": "Cards",
+      "series": "Series progress"
+    },
+    "seriesSubtitle": "Complete a series by owning all of its characters.",
+    "seriesStatus": {
+      "started": "Started",
+      "incomplete": "Incomplete",
+      "complete": "Complete",
+      "all": "All"
+    },
+    "noSeries": "No series here yet."
   },
   "wiki": {
     "title": "Wiki",
@@ -386,6 +462,47 @@
     "source": "Source:",
     "sourceAniList": "AniList"
   },
+  "wishlist": {
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist",
+    "inWishlist": "In my wishlist"
+  },
+  "recycle": {
+    "open": "Recycle duplicates",
+    "title": "Recycle duplicates",
+    "description": "Turn the copies you do not need into gems. Your first copy of each character and copies locked in trades or on the market are always kept.",
+    "rarities": "Rarities to recycle",
+    "nothing": "No duplicate to recycle with these rarities.",
+    "row": "{cards} card → {gems} gems | {cards} cards → {gems} gems",
+    "total": "{cards} card from {characters} characters → {gems} gems | {cards} cards from {characters} characters → {gems} gems",
+    "keepsFirst": "One copy of each character is kept.",
+    "confirm": "Recycle for {gems} gems",
+    "done": "{cards} card recycled: +{gems} gems. | {cards} cards recycled: +{gems} gems.",
+    "single": "Recycle",
+    "singleHelp": "{count} duplicates can be recycled, {gems} gems each.",
+    "count": "Copies to recycle",
+    "singleConfirm": "Recycle (+{gems} gems)"
+  },
+  "gems": {
+    "title": "Gems",
+    "subtitle": "Every gem you earn or spend.",
+    "empty": "No gem movement yet.",
+    "columns": {
+      "date": "Date",
+      "reason": "Reason",
+      "amount": "Gems",
+      "balance": "Balance"
+    },
+    "reasons": {
+      "booster_purchase": "Booster purchase",
+      "recycle": "Recycling",
+      "market_sale": "Market sale",
+      "market_purchase": "Market purchase",
+      "mission_reward": "Mission reward",
+      "achievement_reward": "Achievement reward",
+      "admin_adjustment": "Adjustment by an admin"
+    }
+  },
   "errors": {
     "BAD_REQUEST": "The request is invalid.",
     "VALIDATION_FAILED": "Some fields are invalid.",
@@ -403,6 +520,9 @@
     "NETWORK": "Cannot reach the server.",
     "BOOSTER_UNAVAILABLE": "This booster is not available.",
     "NOT_ENOUGH_CHARGES": "Not enough free boosters. Wait for the next one!",
-    "EMPTY_POOL": "There is no character to draw yet. An admin must import the catalog first."
+    "EMPTY_POOL": "There is no character to draw yet. An admin must import the catalog first.",
+    "NOT_ENOUGH_GEMS": "Not enough gems.",
+    "NOTHING_TO_RECYCLE": "There is nothing to recycle.",
+    "PREVIEW_OUTDATED": "Your duplicates changed in the meantime. Check the new preview and confirm again."
   }
 }

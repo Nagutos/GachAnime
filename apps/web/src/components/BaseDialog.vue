@@ -27,7 +27,7 @@ const { t } = useI18n()
           <DialogTitle class="font-display text-xl font-bold">{{ title }}</DialogTitle>
           <DialogClose
             class="rounded-lg px-2 text-2xl leading-none text-mist-300 hover:text-mist-100"
-            :aria-label="t('admin.common.close')"
+            :aria-label="t('common.close')"
           >
             <svg
               aria-hidden="true"

@@ -53,7 +53,7 @@ export default tseslint.config(
       'vue-i18n': { localeDir: 'apps/web/src/locales/*.json', messageSyntaxVersion: '^11.0.0' },
     },
     rules: {
-      '@intlify/vue-i18n/no-raw-text': ['error', { ignorePattern: '^[-#:()&·/0-9]+$' }],
+      '@intlify/vue-i18n/no-raw-text': ['error', { ignorePattern: '^[-#:()&·/0-9↑↓✕]+$' }],
       '@intlify/vue-i18n/no-missing-keys': 'error',
       '@intlify/vue-i18n/no-dynamic-keys': 'off',
     },

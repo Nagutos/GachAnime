@@ -40,13 +40,15 @@ const links = [
       </RouterLink>
     </nav>
     <div class="flex items-center gap-3">
-      <span
+      <RouterLink
         v-if="me"
-        class="hidden rounded-full bg-night-800 px-3 py-1 text-sm text-gold-400 tabular-nums sm:inline"
+        :to="{ name: 'gems' }"
+        class="hidden rounded-full bg-night-800 px-3 py-1 text-sm text-gold-400 tabular-nums hover:bg-night-700 sm:inline"
         :title="t('home.gemBalance')"
+        data-testid="header-gems"
       >
         {{ t('nav.gems', { count: n(me.gemBalance, 'integer') }) }}
-      </span>
+      </RouterLink>
       <LocaleSwitcher @change="changeLocale" />
       <UserMenu v-if="me" :me="me" @sign-out="signOut" />
     </div>

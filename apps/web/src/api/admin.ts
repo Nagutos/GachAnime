@@ -1,5 +1,9 @@
 import {
+  adminBoosterTiersResponseSchema,
   adminCharacterDetailSchema,
+  adminRaritiesResponseSchema,
+  adminSettingsSchema,
+  updateRarityResultSchema,
   adminCharacterListSchema,
   adminRarityStatsSchema,
   adminSeriesDetailSchema,
@@ -17,7 +21,10 @@ import {
   type CreateManualCharacterRequest,
   type CreateManualSeriesRequest,
   type RosterImportInput,
+  type AdminSettings,
+  type UpdateBoosterTierRequest,
   type UpdateCharacterRequest,
+  type UpdateRarityRequest,
   type UpdateSeriesRequest,
 } from '@gachanime/shared'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
@@ -36,6 +43,9 @@ export const adminKeys = {
   characters: ['admin', 'characters'] as const,
   imports: ['admin', 'imports'] as const,
   audit: ['admin', 'audit'] as const,
+  settings: ['admin', 'settings'] as const,
+  rarities: ['admin', 'rarities'] as const,
+  tiers: ['admin', 'tiers'] as const,
 }
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
@@ -199,3 +209,82 @@ export const useImportActionMutation = () =>
   useAdminMutation(({ id, action }: { id: number; action: 'cancel' | 'resume' }) =>
     apiFetch(`/admin/imports/${id}/${action}`, { method: 'POST', schema: importJobDtoSchema }),
   )
+
+// ─── Economy ─────────────────────────────────────────────────────────────────
+
+export function useAdminSettingsQuery() {
+  return useQuery({
+    queryKey: adminKeys.settings,
+    queryFn: () => apiFetch('/admin/settings', { schema: adminSettingsSchema }),
+  })
+}
+
+export function useUpdateSettingMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: <K extends keyof AdminSettings>(input: { key: K; value: AdminSettings[K] }) =>
+      apiFetch(`/admin/settings/${input.key}`, {
+        method: 'PUT',
+        body: input.value,
+        schema: adminSettingsSchema,
+      }),
+    onSuccess: (settings) => {
+      queryClient.setQueryData(adminKeys.settings, settings)
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
+    },
+  })
+}
+
+export function useAdminRaritiesQuery() {
+  return useQuery({
+    queryKey: adminKeys.rarities,
+    queryFn: () => apiFetch('/admin/rarities', { schema: adminRaritiesResponseSchema }),
+  })
+}
+
+export function useUpdateRarityMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { key: string; changes: UpdateRarityRequest }) =>
+      apiFetch(`/admin/rarities/${input.key}`, {
+        method: 'PATCH',
+        body: input.changes,
+        schema: updateRarityResultSchema,
+      }),
+    onSuccess: () => {
+      for (const key of [
+        adminKeys.rarities,
+        adminKeys.stats,
+        adminKeys.characters,
+        adminKeys.audit,
+      ]) {
+        void queryClient.invalidateQueries({ queryKey: key })
+      }
+      void queryClient.invalidateQueries({ queryKey: ['rarities'] })
+    },
+  })
+}
+
+export function useAdminTiersQuery() {
+  return useQuery({
+    queryKey: adminKeys.tiers,
+    queryFn: () => apiFetch('/admin/booster-tiers', { schema: adminBoosterTiersResponseSchema }),
+  })
+}
+
+export function useUpdateTierMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { key: string; changes: UpdateBoosterTierRequest }) =>
+      apiFetch(`/admin/booster-tiers/${input.key}`, {
+        method: 'PATCH',
+        body: input.changes,
+        schema: adminBoosterTiersResponseSchema,
+      }),
+    onSuccess: (result) => {
+      queryClient.setQueryData(adminKeys.tiers, result)
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
+      void queryClient.invalidateQueries({ queryKey: ['boosters'] })
+    },
+  })
+}

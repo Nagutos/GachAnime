@@ -1,25 +1,50 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRouter } from 'vue-router'
-import { useWikiCharacterQuery } from '@/api/player'
+import { useRecycleCardsMutation, useWikiCharacterQuery } from '@/api/player'
 import { useErrorMessage } from '@/app/errors'
 import { usePlayerRarities } from '@/app/rarities'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import LockedCard from '@/components/cards/LockedCard.vue'
 import { rarityStyle } from '@/components/cards/rarity-styles'
+import WishlistButton from '@/components/collection/WishlistButton.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
 import { playerUi } from '@/components/ui'
 import DescriptionText from '@/components/wiki/DescriptionText.vue'
 
 const props = defineProps<{ id: number }>()
-const { t, d } = useI18n()
+const { t, d, n } = useI18n()
 const router = useRouter()
 const { nameOf } = usePlayerRarities()
 
 const query = useWikiCharacterQuery(() => props.id)
 const entry = computed(() => query.data.value)
 const errorMessage = useErrorMessage(query.error)
+
+const recycle = useRecycleCardsMutation()
+const recycleError = useErrorMessage(recycle.error)
+const recycleCount = ref(1)
+const recycled = ref<{ cards: number; gems: number } | null>(null)
+watch(
+  () => props.id,
+  () => {
+    recycleCount.value = 1
+    recycled.value = null
+    recycle.reset()
+  },
+)
+
+async function recycleCopies(): Promise<void> {
+  const current = entry.value
+  if (!current || current.locked) return
+  const count = Math.min(Math.max(1, Math.floor(recycleCount.value)), current.recyclable)
+  const result = await recycle.mutateAsync({ characterId: current.id, count }).catch(() => null)
+  if (result) {
+    recycled.value = { cards: result.cards, gems: result.gems }
+    recycleCount.value = 1
+  }
+}
 
 function back(): void {
   if (window.history.state?.back) router.back()
@@ -50,6 +75,12 @@ function back(): void {
             :image-url="entry.imageUrl"
             :rarity-key="entry.rarityKey"
             :quantity="entry.quantity"
+          />
+          <WishlistButton
+            class="mt-3 w-full"
+            :character-id="entry.id"
+            :wishlisted="entry.wishlisted"
+            large
           />
         </div>
 
@@ -91,6 +122,62 @@ function back(): void {
                 {{ t('wiki.firstObtained', { date: d(new Date(entry.firstObtainedAt), 'short') }) }}
               </dd>
             </dl>
+
+            <section
+              v-if="entry.recyclable > 0 || recycled"
+              :class="[playerUi.panel, 'flex flex-col gap-3']"
+              data-testid="recycle-section"
+            >
+              <h2 class="font-display text-lg font-bold">{{ t('recycle.single') }}</h2>
+              <p v-if="entry.recyclable > 0" class="text-sm text-mist-300">
+                {{
+                  t('recycle.singleHelp', {
+                    count: n(entry.recyclable, 'integer'),
+                    gems: n(entry.recycleValue, 'integer'),
+                  })
+                }}
+              </p>
+              <div v-if="entry.recyclable > 0" class="flex flex-wrap items-center gap-3">
+                <input
+                  v-model.number="recycleCount"
+                  type="number"
+                  min="1"
+                  :max="entry.recyclable"
+                  :class="[playerUi.input, 'w-24']"
+                  :aria-label="t('recycle.count')"
+                />
+                <button
+                  type="button"
+                  class="rounded-xl bg-sakura-500 px-4 py-2 font-semibold text-white hover:bg-sakura-600 disabled:opacity-50"
+                  :disabled="recycle.isPending.value"
+                  data-testid="recycle-single"
+                  @click="recycleCopies"
+                >
+                  {{
+                    t('recycle.singleConfirm', {
+                      gems: n(
+                        Math.min(Math.max(1, recycleCount || 1), entry.recyclable) *
+                          entry.recycleValue,
+                        'integer',
+                      ),
+                    })
+                  }}
+                </button>
+              </div>
+              <p v-if="recycled" class="text-sm text-emerald-400" role="status">
+                {{
+                  t(
+                    'recycle.done',
+                    {
+                      cards: n(recycled.cards, 'integer'),
+                      gems: n(recycled.gems, 'integer'),
+                    },
+                    recycled.cards,
+                  )
+                }}
+              </p>
+              <p v-if="recycleError" :class="playerUi.error" role="alert">{{ recycleError }}</p>
+            </section>
 
             <section class="flex flex-col gap-2">
               <h2 class="font-display text-lg font-bold">{{ t('wiki.about') }}</h2>

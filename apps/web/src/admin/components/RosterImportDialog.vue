@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router'
 import { useRosterImportMutation } from '@/api/admin'
 import { useErrorMessage } from '../use-admin-error'
 import { ui } from '../ui'
-import AdminDialog from './AdminDialog.vue'
+import AdminDialog from '@/components/BaseDialog.vue'
 
 const open = defineModel<boolean>('open', { required: true })
 const { t } = useI18n()

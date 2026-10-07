@@ -102,7 +102,7 @@
       radial-gradient(circle at 30% 20%, rgb(255 209 102 / 0.45), transparent 40%),
       linear-gradient(
         165deg,
-        var(--color-sakura-500),
+        var(--pack-color, var(--color-sakura-500)),
         var(--color-night-700) 55%,
         var(--color-night-950)
       );
@@ -111,6 +111,20 @@
       100% 100%,
       100% 100%;
     animation: card-shine 4s ease-in-out infinite;
+  }
+
+  /* Pack colors per booster tier (`artToken`). */
+  .pack-art-epic {
+    --pack-color: var(--color-rarity-epic);
+  }
+  .pack-art-legendary {
+    --pack-color: var(--color-rarity-legendary);
+  }
+  .pack-art-mythic {
+    --pack-color: var(--color-rarity-mythic);
+  }
+  .pack-art-divine {
+    --pack-color: var(--color-mist-100);
   }
 
   /* Crimped edge at the top and bottom of a pack. */

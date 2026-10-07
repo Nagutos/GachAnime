@@ -10,7 +10,7 @@ import {
   useSeriesListQuery,
   useUpdateSeriesMutation,
 } from '@/api/admin'
-import AdminDialog from '../components/AdminDialog.vue'
+import AdminDialog from '@/components/BaseDialog.vue'
 import AdminPagination from '../components/AdminPagination.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import RosterImportDialog from '../components/RosterImportDialog.vue'

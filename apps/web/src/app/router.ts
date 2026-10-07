@@ -10,6 +10,12 @@ export const router = createRouter({
       name: 'collection',
       component: () => import('@/pages/CollectionPage.vue'),
     },
+    {
+      path: '/collection/series',
+      name: 'collection-series',
+      component: () => import('@/pages/CollectionSeriesPage.vue'),
+    },
+    { path: '/gems', name: 'gems', component: () => import('@/pages/GemsPage.vue') },
     { path: '/wiki', name: 'wiki', component: () => import('@/pages/WikiPage.vue') },
     {
       path: '/wiki/series/:id(\\d+)',
@@ -53,6 +59,21 @@ export const router = createRouter({
           path: 'imports',
           name: 'admin-imports',
           component: () => import('@/admin/pages/AdminImportsPage.vue'),
+        },
+        {
+          path: 'boosters',
+          name: 'admin-boosters',
+          component: () => import('@/admin/pages/AdminBoostersPage.vue'),
+        },
+        {
+          path: 'rarities',
+          name: 'admin-rarities',
+          component: () => import('@/admin/pages/AdminRaritiesPage.vue'),
+        },
+        {
+          path: 'settings',
+          name: 'admin-settings',
+          component: () => import('@/admin/pages/AdminSettingsPage.vue'),
         },
         {
           path: 'audit',

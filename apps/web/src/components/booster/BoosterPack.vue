@@ -14,8 +14,10 @@ const props = withDefaults(
     glowRarity?: string | null
     /** Gentle floating while waiting to be opened. */
     idle?: boolean
+    /** Tier art token: pack color. */
+    art?: string
   }>(),
-  { torn: false, glowRarity: null, idle: false },
+  { torn: false, glowRarity: null, idle: false, art: 'free' },
 )
 
 const { t } = useI18n()
@@ -40,7 +42,7 @@ const duration = computed(() => (reduced.value ? 0 : 0.45))
     />
     <motion.div
       class="pack-foil absolute inset-x-0 top-[9%] bottom-0 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-b-2xl border border-mist-100/20 p-4 text-center shadow-2xl"
-      :class="glow ? ['shadow-[0_0_60px_-5px]', glow] : null"
+      :class="[`pack-art-${art}`, glow ? ['shadow-[0_0_60px_-5px]', glow] : null]"
       :animate="torn ? { y: 60, opacity: 0, scale: 0.92 } : { y: 0, opacity: 1, scale: 1 }"
       :transition="{ duration: duration, ease: 'easeIn', delay: reduced ? 0 : 0.12 }"
     >

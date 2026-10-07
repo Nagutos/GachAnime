@@ -1,6 +1,10 @@
 import {
   boostersResponseSchema,
   collectionResponseSchema,
+  gemHistoryResponseSchema,
+  recyclePreviewSchema,
+  recycleResultSchema,
+  wishlistResponseSchema,
   openBoostersResponseSchema,
   raritiesResponseSchema,
   wikiCharacterListSchema,
@@ -8,16 +12,19 @@ import {
   wikiSeriesDetailSchema,
   wikiSeriesListSchema,
   type BoosterQuantity,
-  type CollectionQuery,
+  type CollectionQueryInput,
   type OpenBoostersResponse,
+  type RecycleDuplicatesRequest,
   type WikiCharactersQuery,
   type WikiSeriesQuery,
 } from '@gachanime/shared'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
+import { meQueryKey } from './me'
 import { apiFetch, toQueryString } from './client'
 
-export type CollectionFilters = Partial<CollectionQuery>
+/** Query-string form of the collection filters (`sort` as `rarity:desc,name:asc`). */
+export type CollectionFilters = CollectionQueryInput
 export type WikiSeriesFilters = Partial<WikiSeriesQuery>
 export type WikiCharacterFilters = Partial<WikiCharactersQuery>
 
@@ -26,6 +33,22 @@ export const playerKeys = {
   boosters: ['boosters'] as const,
   collection: ['collection'] as const,
   wiki: ['wiki'] as const,
+  gems: ['gems'] as const,
+  recyclePreview: ['recycle-preview'] as const,
+}
+
+/** After anything that changes cards or gems. */
+function invalidateInventory(queryClient: ReturnType<typeof useQueryClient>): void {
+  for (const key of [
+    meQueryKey,
+    playerKeys.boosters,
+    playerKeys.collection,
+    playerKeys.wiki,
+    playerKeys.gems,
+    playerKeys.recyclePreview,
+  ]) {
+    void queryClient.invalidateQueries({ queryKey: key })
+  }
 }
 
 export function useRaritiesQuery() {
@@ -57,10 +80,11 @@ export function useOpenBoostersMutation() {
     onSuccess: (result: OpenBoostersResponse) => {
       queryClient.setQueryData(playerKeys.boosters, (previous: unknown) => {
         const parsed = boostersResponseSchema.safeParse(previous)
-        return parsed.success ? { ...parsed.data, free: result.free } : previous
+        return parsed.success
+          ? { ...parsed.data, free: result.free, gemBalance: result.gemBalance }
+          : previous
       })
-      void queryClient.invalidateQueries({ queryKey: playerKeys.collection })
-      void queryClient.invalidateQueries({ queryKey: playerKeys.wiki })
+      invalidateInventory(queryClient)
     },
   })
 }
@@ -118,5 +142,74 @@ export function useWikiCharacterQuery(id: MaybeRefOrGetter<number>) {
   return useQuery({
     queryKey: computed(() => [...playerKeys.wiki, 'character', toValue(id)]),
     queryFn: () => apiFetch(`/wiki/characters/${toValue(id)}`, { schema: wikiCharacterSchema }),
+  })
+}
+
+export function useGemHistoryQuery(page: MaybeRefOrGetter<number>) {
+  return useQuery({
+    queryKey: computed(() => [...playerKeys.gems, toValue(page)]),
+    queryFn: () =>
+      apiFetch(`/gems${toQueryString({ page: toValue(page), pageSize: 25 })}`, {
+        schema: gemHistoryResponseSchema,
+      }),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useRecycleCardsMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { characterId: number; count: number }) =>
+      apiFetch('/recycle', {
+        method: 'POST',
+        body: input,
+        schema: recycleResultSchema,
+        idempotencyKey: crypto.randomUUID(),
+      }),
+    onSuccess: () => invalidateInventory(queryClient),
+  })
+}
+
+export function useRecyclePreviewQuery(
+  rarities: MaybeRefOrGetter<string[]>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery({
+    queryKey: computed(() => [...playerKeys.recyclePreview, toValue(rarities)]),
+    queryFn: () =>
+      apiFetch(`/recycle/duplicates${toQueryString({ rarities: toValue(rarities).join(',') })}`, {
+        schema: recyclePreviewSchema,
+      }),
+    enabled: computed(() => toValue(enabled)),
+    staleTime: 0,
+  })
+}
+
+export function useRecycleDuplicatesMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: RecycleDuplicatesRequest) =>
+      apiFetch('/recycle/duplicates', {
+        method: 'POST',
+        body: input,
+        schema: recycleResultSchema,
+        idempotencyKey: crypto.randomUUID(),
+      }),
+    onSettled: () => invalidateInventory(queryClient),
+  })
+}
+
+export function useWishlistMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { characterId: number; wishlisted: boolean }) =>
+      apiFetch(`/wishlist/${input.characterId}`, {
+        method: input.wishlisted ? 'PUT' : 'DELETE',
+        schema: wishlistResponseSchema,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: playerKeys.collection })
+      void queryClient.invalidateQueries({ queryKey: playerKeys.wiki })
+    },
   })
 }

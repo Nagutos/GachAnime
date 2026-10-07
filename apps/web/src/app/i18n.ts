@@ -5,6 +5,7 @@ import { pickLocale } from './locale'
 
 const numberFormat = {
   integer: { maximumFractionDigits: 0 },
+  signed: { maximumFractionDigits: 0, signDisplay: 'exceptZero' },
   decimal: { maximumFractionDigits: 2 },
   percent: { style: 'percent', maximumFractionDigits: 2 },
   /** Drop rates: small values such as 0.066 %. */

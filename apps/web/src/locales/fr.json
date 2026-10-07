@@ -12,7 +12,9 @@
     "pagination": "Pagination",
     "previous": "Précédent",
     "next": "Suivant",
-    "pageOf": "Page {page} sur {pages}"
+    "pageOf": "Page {page} sur {pages}",
+    "close": "Fermer",
+    "cancel": "Annuler"
   },
   "auth": {
     "signInWithDiscord": "Se connecter avec Discord",
@@ -51,7 +53,10 @@
       "series": "Séries",
       "characters": "Personnages",
       "imports": "Import AniList",
-      "audit": "Journal d'audit"
+      "audit": "Journal d'audit",
+      "boosters": "Boosters",
+      "rarities": "Raretés",
+      "settings": "Réglages"
     },
     "openAdmin": "Administration",
     "forbidden": "Cet espace est réservé aux administrateurs.",
@@ -286,6 +291,48 @@
       "details": "Détails",
       "before": "Avant",
       "after": "Après"
+    },
+    "settings": {
+      "title": "Réglages du jeu",
+      "freeBoosters": "Boosters gratuits",
+      "intervalMinutes": "Minutes par booster gratuit",
+      "maxCharges": "Boosters gratuits stockables au maximum",
+      "dailyReset": "Remise à zéro quotidienne",
+      "dailyResetHelp": "Moment où les missions quotidiennes et les limites du marché repartent à zéro.",
+      "resetHour": "Heure (0–23)",
+      "timeZone": "Fuseau horaire (IANA, ex. Europe/Paris)"
+    },
+    "rarities": {
+      "title": "Raretés",
+      "help": "Noms, seuils de favoris AniList, valeurs de recyclage et bornes de prix du marché.",
+      "columns": {
+        "rarity": "Rareté",
+        "nameEn": "Nom (en)",
+        "nameFr": "Nom (fr)",
+        "threshold": "Favoris ≥",
+        "recycle": "Recyclage",
+        "marketMin": "Marché min",
+        "marketMax": "Marché max",
+        "characters": "Personnages"
+      },
+      "recomputed": "Enregistré : {count} personnages ont changé de rareté.",
+      "thresholdHelp": "Les seuils doivent croître avec la rareté. En modifier un réapplique la rareté par défaut de tous les personnages AniList, sauf ceux réglés à la main."
+    },
+    "boosters": {
+      "title": "Paliers de boosters",
+      "help": "Taux par carte en parties par million (leur somme doit faire 1 000 000) et prix en gemmes.",
+      "openings": "{count} ouvertures",
+      "nameEn": "Nom (en)",
+      "nameFr": "Nom (fr)",
+      "price": "Prix (gemmes)",
+      "freeTier": "Palier gratuit : utilise les charges gratuites.",
+      "sortOrder": "Ordre",
+      "rarity": "Rareté",
+      "weight": "Poids (ppm)",
+      "perCard": "Par carte",
+      "perBooster": "Au moins une par booster",
+      "weightOf": "Poids de {rarity}",
+      "sum": "Total {sum} / {total}"
     }
   },
   "nav": {
@@ -320,7 +367,10 @@
     "done": "Terminé",
     "skip": "Passer",
     "packProgress": "Booster {current} sur {total}",
-    "summary": "{cards} cartes · {new} nouvelles"
+    "summary": "{cards} cartes · {new} nouvelles",
+    "paidTitle": "Boosters premium",
+    "paidSubtitle": "Dépense tes gemmes pour de meilleures chances. Les gemmes viennent du recyclage des doublons, des missions et des succès.",
+    "pricePerPack": "{price} gemmes le booster"
   },
   "collection": {
     "title": "Ma collection",
@@ -333,13 +383,39 @@
       "recent": "Obtenues récemment",
       "rarity": "Rareté",
       "name": "Nom",
-      "count": "Plus d'exemplaires"
+      "count": "Plus d'exemplaires",
+      "series": "Série"
     },
     "duplicates": "Doublons uniquement",
     "series": "Série : {title} ✕",
     "empty": "Aucune carte pour l'instant. Ouvre ton premier booster !",
     "emptyFiltered": "Aucune carte ne correspond à ces filtres.",
-    "openBoosters": "Ouvrir des boosters"
+    "openBoosters": "Ouvrir des boosters",
+    "sortKey": "Critère de tri {index}",
+    "directions": {
+      "asc": "Croissant",
+      "desc": "Décroissant"
+    },
+    "addSort": "+ Puis par",
+    "removeSort": "Retirer ce critère",
+    "ownership": {
+      "owned": "Possédées",
+      "missing": "Manquantes",
+      "all": "Toutes"
+    },
+    "wishlistOnly": "Wishlist uniquement",
+    "tabs": {
+      "cards": "Cartes",
+      "series": "Progression par série"
+    },
+    "seriesSubtitle": "Complète une série en possédant tous ses personnages.",
+    "seriesStatus": {
+      "started": "Commencées",
+      "incomplete": "Incomplètes",
+      "complete": "Complètes",
+      "all": "Toutes"
+    },
+    "noSeries": "Aucune série ici pour le moment."
   },
   "wiki": {
     "title": "Wiki",
@@ -386,6 +462,47 @@
     "source": "Source :",
     "sourceAniList": "AniList"
   },
+  "wishlist": {
+    "add": "Ajouter à ma wishlist",
+    "remove": "Retirer de ma wishlist",
+    "inWishlist": "Dans ma wishlist"
+  },
+  "recycle": {
+    "open": "Recycler les doublons",
+    "title": "Recycler les doublons",
+    "description": "Transforme les exemplaires en trop en gemmes. Ton premier exemplaire de chaque personnage et les exemplaires bloqués dans un échange ou sur le marché sont toujours conservés.",
+    "rarities": "Raretés à recycler",
+    "nothing": "Aucun doublon à recycler pour ces raretés.",
+    "row": "{cards} carte → {gems} gemmes | {cards} cartes → {gems} gemmes",
+    "total": "{cards} carte de {characters} personnages → {gems} gemmes | {cards} cartes de {characters} personnages → {gems} gemmes",
+    "keepsFirst": "Un exemplaire de chaque personnage est conservé.",
+    "confirm": "Recycler pour {gems} gemmes",
+    "done": "{cards} carte recyclée : +{gems} gemmes. | {cards} cartes recyclées : +{gems} gemmes.",
+    "single": "Recycler",
+    "singleHelp": "{count} doublons recyclables, {gems} gemmes chacun.",
+    "count": "Exemplaires à recycler",
+    "singleConfirm": "Recycler (+{gems} gemmes)"
+  },
+  "gems": {
+    "title": "Gemmes",
+    "subtitle": "Toutes les gemmes gagnées ou dépensées.",
+    "empty": "Aucun mouvement de gemmes pour le moment.",
+    "columns": {
+      "date": "Date",
+      "reason": "Motif",
+      "amount": "Gemmes",
+      "balance": "Solde"
+    },
+    "reasons": {
+      "booster_purchase": "Achat de booster",
+      "recycle": "Recyclage",
+      "market_sale": "Vente au marché",
+      "market_purchase": "Achat au marché",
+      "mission_reward": "Récompense de mission",
+      "achievement_reward": "Récompense de succès",
+      "admin_adjustment": "Ajustement par un admin"
+    }
+  },
   "errors": {
     "BAD_REQUEST": "La requête est invalide.",
     "VALIDATION_FAILED": "Certains champs sont invalides.",
@@ -403,6 +520,9 @@
     "NETWORK": "Impossible de joindre le serveur.",
     "BOOSTER_UNAVAILABLE": "Ce booster n'est pas disponible.",
     "NOT_ENOUGH_CHARGES": "Pas assez de boosters gratuits. Attends le prochain !",
-    "EMPTY_POOL": "Il n'y a encore aucun personnage à tirer. Un admin doit d'abord importer le catalogue."
+    "EMPTY_POOL": "Il n'y a encore aucun personnage à tirer. Un admin doit d'abord importer le catalogue.",
+    "NOT_ENOUGH_GEMS": "Pas assez de gemmes.",
+    "NOTHING_TO_RECYCLE": "Il n'y a rien à recycler.",
+    "PREVIEW_OUTDATED": "Tes doublons ont changé entre-temps. Vérifie le nouvel aperçu et confirme à nouveau."
   }
 }

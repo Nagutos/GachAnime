@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router'
 import { useCreateManualSeriesMutation, useUpdateSeriesMutation } from '@/api/admin'
 import { useErrorMessage } from '../use-admin-error'
 import { ui } from '../ui'
-import AdminDialog from './AdminDialog.vue'
+import AdminDialog from '@/components/BaseDialog.vue'
 
 /** Creates a manual series, or edits `series` (manual) when given. */
 const props = defineProps<{ series?: AdminSeriesDetail | null }>()

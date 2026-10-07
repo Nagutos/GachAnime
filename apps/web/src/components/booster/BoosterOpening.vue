@@ -18,7 +18,10 @@ import { HIGHLIGHT_RARITIES } from '@/components/cards/rarity-styles'
 import BoosterPack from './BoosterPack.vue'
 import FlipCard from './FlipCard.vue'
 
-const props = defineProps<{ result: OpenBoostersResponse; packLabel: string }>()
+const props = withDefaults(
+  defineProps<{ result: OpenBoostersResponse; packLabel: string; packArt?: string }>(),
+  { packArt: 'free' },
+)
 const emit = defineEmits<{ close: [] }>()
 
 const { t } = useI18n()
@@ -159,6 +162,7 @@ onBeforeUnmount(() => timers.forEach(clearTimeout))
               >
                 <BoosterPack
                   :label="packLabel"
+                  :art="packArt"
                   :cards="result.cardsPerBooster"
                   :torn="torn"
                   :glow-rarity="packGlow"

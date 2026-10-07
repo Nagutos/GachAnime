@@ -11,6 +11,9 @@ const links = [
   { name: 'admin-series', label: 'admin.nav.series' },
   { name: 'admin-characters', label: 'admin.nav.characters' },
   { name: 'admin-imports', label: 'admin.nav.imports' },
+  { name: 'admin-boosters', label: 'admin.nav.boosters' },
+  { name: 'admin-rarities', label: 'admin.nav.rarities' },
+  { name: 'admin-settings', label: 'admin.nav.settings' },
   { name: 'admin-audit', label: 'admin.nav.audit' },
 ] as const
 </script>
