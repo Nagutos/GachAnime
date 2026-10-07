@@ -50,7 +50,7 @@
     "IMPORT_IN_PROGRESS": "Un import est déjà en cours.",
     "ANILIST_UNAVAILABLE": "AniList est injoignable pour le moment. Réessaie plus tard.",
     "INVALID_IMAGE": "Cette image est inutilisable (PNG, JPEG, WebP ou GIF, 8 Mo max).",
-    "NOT_MANUAL_SERIES": "Seules les séries créées à la main peuvent être modifiées ainsi.",
+    "NOT_MANUAL_ENTRY": "Seuls les séries et personnages créés à la main peuvent être modifiés ainsi.",
     "INTERNAL_ERROR": "Une erreur est survenue de notre côté.",
     "NETWORK": "Impossible de joindre le serveur."
   }

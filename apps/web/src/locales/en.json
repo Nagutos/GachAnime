@@ -50,7 +50,7 @@
     "IMPORT_IN_PROGRESS": "An import is already running.",
     "ANILIST_UNAVAILABLE": "AniList is not reachable right now. Please retry later.",
     "INVALID_IMAGE": "This image cannot be used (PNG, JPEG, WebP or GIF, 8 MB max).",
-    "NOT_MANUAL_SERIES": "Only manually created series can be edited this way.",
+    "NOT_MANUAL_ENTRY": "Only manually created series and characters can be edited this way.",
     "INTERNAL_ERROR": "Something went wrong on our side.",
     "NETWORK": "Cannot reach the server."
   }
