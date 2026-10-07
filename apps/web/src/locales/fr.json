@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "nativeName": "Français"
+  },
+  "app": {
+    "name": "GachAnime",
+    "tagline": "Ouvre des boosters, collectionne tes personnages d'anime préférés, échange avec tes amis."
+  },
+  "common": {
+    "loading": "Chargement…",
+    "language": "Langue"
+  },
+  "auth": {
+    "signInWithDiscord": "Se connecter avec Discord",
+    "signOut": "Se déconnecter",
+    "accountMenu": "Menu du compte"
+  },
+  "home": {
+    "welcome": "Bon retour, {name} !",
+    "gemBalance": "Gemmes",
+    "comingSoon": "Les boosters sont en préparation. Reviens bientôt !",
+    "features": {
+      "collect": {
+        "title": "Collectionne",
+        "body": "Un booster gratuit toutes les quelques minutes, cinq cartes chacun, de commune à mythique."
+      },
+      "trade": {
+        "title": "Échange",
+        "body": "Échange des cartes avec tes amis ou vends tes doublons sur le marché."
+      },
+      "wiki": {
+        "title": "Découvre",
+        "body": "Chaque nouvelle carte débloque la fiche de son personnage dans le wiki."
+      }
+    }
+  },
+  "notFound": {
+    "title": "Cette page n'existe pas.",
+    "back": "Retour à l'accueil"
+  },
+  "errors": {
+    "BAD_REQUEST": "La requête est invalide.",
+    "VALIDATION_FAILED": "Certains champs sont invalides.",
+    "UNAUTHENTICATED": "Connecte-toi pour continuer.",
+    "FORBIDDEN": "Tu n'as pas le droit de faire ça.",
+    "NOT_FOUND": "Introuvable.",
+    "CONFLICT": "Cette action est en conflit avec l'état actuel. Réessaie.",
+    "RATE_LIMITED": "Trop de requêtes. Patiente un instant.",
+    "IDEMPOTENCY_IN_PROGRESS": "Cette action est déjà en cours.",
+    "INTERNAL_ERROR": "Une erreur est survenue de notre côté.",
+    "NETWORK": "Impossible de joindre le serveur."
+  }
+}

@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+/* GachAnime design tokens: night sky background, sakura accent, gold highlights. */
+@theme {
+  --color-night-950: #0c0a1d;
+  --color-night-900: #14112b;
+  --color-night-800: #1e1a3d;
+  --color-night-700: #2b2655;
+  --color-night-500: #5b54a0;
+  --color-mist-100: #f4f1ff;
+  --color-mist-300: #c9c3ea;
+  --color-sakura-400: #ff7ea6;
+  --color-sakura-500: #ff5d8f;
+  --color-sakura-600: #e43f74;
+  --color-gold-400: #ffd166;
+  --color-discord: #5865f2;
+
+  --color-rarity-common: #9aa3b5;
+  --color-rarity-rare: #4fb3ff;
+  --color-rarity-epic: #b06bff;
+  --color-rarity-legendary: #ffb23f;
+  --color-rarity-mythic: #ff4d6d;
+
+  --font-display: ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-dvh bg-night-950 font-sans text-mist-100 antialiased;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgb(255 93 143 / 0.12), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgb(91 84 160 / 0.25), transparent 45%);
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-sakura-400;
+  }
+}

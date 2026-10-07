@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "nativeName": "English"
+  },
+  "app": {
+    "name": "GachAnime",
+    "tagline": "Open boosters, collect your favorite anime characters, trade with friends."
+  },
+  "common": {
+    "loading": "Loading…",
+    "language": "Language"
+  },
+  "auth": {
+    "signInWithDiscord": "Sign in with Discord",
+    "signOut": "Sign out",
+    "accountMenu": "Account menu"
+  },
+  "home": {
+    "welcome": "Welcome back, {name}!",
+    "gemBalance": "Gems",
+    "comingSoon": "Boosters are being prepared. Come back soon!",
+    "features": {
+      "collect": {
+        "title": "Collect",
+        "body": "A free booster every few minutes, five cards each, from common to mythic."
+      },
+      "trade": {
+        "title": "Trade",
+        "body": "Swap cards with your friends or sell your duplicates on the market."
+      },
+      "wiki": {
+        "title": "Discover",
+        "body": "Every new card unlocks its character page in the wiki."
+      }
+    }
+  },
+  "notFound": {
+    "title": "This page does not exist.",
+    "back": "Back to home"
+  },
+  "errors": {
+    "BAD_REQUEST": "The request is invalid.",
+    "VALIDATION_FAILED": "Some fields are invalid.",
+    "UNAUTHENTICATED": "Please sign in.",
+    "FORBIDDEN": "You are not allowed to do this.",
+    "NOT_FOUND": "Not found.",
+    "CONFLICT": "This action conflicts with the current state. Please retry.",
+    "RATE_LIMITED": "Too many requests. Please wait a moment.",
+    "IDEMPOTENCY_IN_PROGRESS": "This action is already in progress.",
+    "INTERNAL_ERROR": "Something went wrong on our side.",
+    "NETWORK": "Cannot reach the server."
+  }
+}
