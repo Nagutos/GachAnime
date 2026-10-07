@@ -218,6 +218,8 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   achievements from a code metric registry, sticky completion), claim flows, worker recompute after
   catalog changes, feedback, admin editors for missions/achievements and feedback list, missions /
   achievements / feedback pages with toasts and badges. Next: Phase 5 (themed boosters).
+- 2026-10-07 — Decision: the feedback feature is removed (table dropped, Critic achievement gone);
+  the seal on booster packs takes the pack color.
 - 2026-10-07 — Logo replaced by a 招 seal (outline from Noto Serif CJK JP Bold, OFL); the mythic
   threshold stays an admin setting (Admin → Rarities).
 - 2026-10-07 — **Phase 5 done**: packs with rules compiled to SQL and materialized pools, admin

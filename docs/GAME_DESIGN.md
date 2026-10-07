@@ -259,7 +259,7 @@ Starting packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos.
 
 `account_created`, `booster_opened {boosterType, rateTable, quantity}`, `card_obtained {rarity, isNew}`,
 `card_recycled {rarity, count}`, `wishlist_added`, `wiki_entry_viewed`, `card_listed`,
-`card_sold {rarity}`, `card_bought`, `trade_completed`, `feedback_submitted`.
+`card_sold {rarity}`, `card_bought`, `trade_completed`.
 
 ### Missions (daily or once)
 
@@ -295,7 +295,6 @@ Metric registry (initial):
 | `cards_recycled`            | counter | `minRarity?`                                     | card_recycled                           |
 | `cards_sold`                | counter | —                                                | card_sold                               |
 | `trades_completed`          | counter | —                                                | trade_completed                         |
-| `feedback_submitted`        | counter | —                                                | feedback_submitted                      |
 | `distinct_characters_owned` | state   | `rarity?`                                        | card_obtained, card ownership changes   |
 | `series_completed`          | state   | —                                                | card ownership changes, catalog changes |
 | `catalog_completion`        | state   | — (target = % of active characters owned, 0–100) | card ownership changes, catalog changes |
@@ -340,7 +339,6 @@ Counters are lifetime values in `user_counters` (keys like `cards_obtained:epic`
 | `sell_100`           | Wealth Manager      | Gestion de patrimoine | cards_sold                                 | 100    | 500    |
 | `trade_1`            | Handshake           | Poignée de main       | trades_completed                           | 1      | 30     |
 | `trade_25`           | Negotiator          | Négociateur           | trades_completed                           | 25     | 250    |
-| `feedback_1`         | Critic              | Critique              | feedback_submitted                         | 1      | 100    |
 
 Implementation notes (Phase 4):
 
@@ -355,8 +353,7 @@ progress bars and claim buttons.
 
 ## 9. Feedback
 
-Rating 1–5 + optional comment (max 2 000 chars). One feedback per player, editable (only the first
-submission emits `feedback_submitted`). Listed in the admin.
+Removed (maintainer decision, 2026-10-07): there is no feedback form.
 
 ## 10. Catalog sources
 

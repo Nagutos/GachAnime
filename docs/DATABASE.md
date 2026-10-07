@@ -18,7 +18,6 @@ user (Better Auth) 1─1 player_profiles ─┬─< gem_transactions
                                         ├─< user_counters
                                         ├─< user_missions >── missions
                                         ├─< user_achievements >── achievements
-                                        └─< feedback
 booster_tiers      themes ─< theme_characters >── characters      booster_openings >── booster_tiers, themes
 rarities, settings, admin_audit_log, import_jobs
 ```
@@ -191,7 +190,6 @@ bigint, reward_gems, icon_token, is_active, sort_order)`.
 
 ## Misc
 
-- `feedback(id, user_id UNIQUE, rating smallint CHECK 1..5, comment, created_at, updated_at)`.
 - `settings(key PK, value jsonb, updated_at, updated_by)` — validated with a Zod schema per key in
   `@app/shared` (free booster interval/cap, mission reset hour/timezone, market limits, rarity
   thresholds toggle, image cache enabled…).

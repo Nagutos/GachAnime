@@ -52,7 +52,7 @@ A one-shot `migrate` step runs `drizzle-kit migrate` + idempotent seed before `a
 @app/core     Application services. One function = one use case = one transaction:
               openBoosters, recycleCards, recycleAllDuplicates, proposeTrade, counterTrade,
               acceptTrade, createListing, buyListing, withdrawListing, claimMission,
-              claimAchievement, submitFeedback, admin.* …
+              claimAchievement, admin.* …
               Emits domain events to the progression engine inside the same transaction.
 @app/importer AniList client (queries validated with Zod, serialized requests spaced after the
               rate limit AniList announces, 429/Retry-After and 5xx handling), resumable
@@ -159,7 +159,7 @@ an affecting event happens, and in bulk by a worker job after catalog changes. S
 - Admin: role check on every `/api/v1/admin/*` handler (helper `requireAdmin`), audit log for
   every mutation. Banned users rejected at session resolution.
 - Rate limiting (rate-limiter-flexible + Redis): auth endpoints, booster opening, recycling,
-  trades, market, feedback, admin import. Per user and per IP.
+  trades, market, admin import. Per user and per IP.
 - Cryptographically secure randomness (`crypto.randomInt`).
 - Idempotency: mutating game endpoints accept an `Idempotency-Key` header (stored 24h in Redis)
   so a double click / retry never opens or buys twice.
@@ -176,7 +176,7 @@ src/
     boosters/   shop, timer, opening scene (Motion), reveal
     collection/ grid, filters, sort, series progress
     wiki/       character pages (masked when locked)
-    trades/  market/  missions/  achievements/  profile/  feedback/
+    trades/  market/  missions/  achievements/  profile/
   admin/        lazy-loaded admin routes (guarded, server enforces anyway)
   components/   shared UI built on Reka UI + Tailwind tokens
 ```

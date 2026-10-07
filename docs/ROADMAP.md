@@ -70,7 +70,7 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] Event emitter + progression engine (`emitEvents` in the caller's transaction), metric registry, user_counters (backfilled from past openings)
 - [x] Missions (daily periods from the reset hour/time zone, once, per-subject dedup), claim flow; achievements with sticky completion, claim flow
 - [x] Worker job `progression.recompute` (debounced) after admin catalog changes and completed imports
-- [x] Feedback form (one per player, editable, first submission counts); admin feedback list with average and distribution
+- [x] ~~Feedback form~~ (built, then removed by decision on 2026-10-07)
 - [x] Admin: missions & achievements editors with translations (metric params validated against the registry)
 - [x] UI: missions page (reset countdown), achievements page (filters, counter, progress bars), toasts, nav badges
 - [x] Tests: period keys across DST, each seeded mission/achievement, engine and claim flows, e2e
