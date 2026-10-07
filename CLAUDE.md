@@ -113,7 +113,7 @@ pnpm dev                 # turbo: web :5173 (proxies /api), api :3000, worker
 pnpm build
 pnpm format:check && pnpm lint && pnpm typecheck
 pnpm test                # vitest; core DB integration tests use TEST_DATABASE_URL (from .env)
-pnpm test:e2e            # playwright (builds web, runs vite preview)
+pnpm test:e2e            # playwright (builds web, vite preview); player flows also start an API on :3100
 pnpm i18n:check          # missing/extra translation keys between locales
 pnpm db:generate         # drizzle-kit generate (new migration from schema diff)
 pnpm admin:promote -- --discord-id 123456789012345678
@@ -134,6 +134,11 @@ Gotchas:
 - In correlated subqueries written with `sql`, name outer columns explicitly (`"series"."id"`):
   Drizzle renders `${series.id}` unqualified, which silently binds to the inner table.
 - vue-i18n messages are precompiled: read them with `t()`, never from the raw `messages` object.
+- E2E player specs (`*.full.spec.ts`) need the dev compose up and `TEST_DATABASE_URL`, `REDIS_URL`,
+  `BETTER_AUTH_SECRET`; they use the `<test db>_e2e` database. Playwright starts web servers
+  before `globalSetup`, so readiness probes must not need the database.
+- Game outcomes take a `GameClock` (`{ rng, now }`) in core services: tests inject `seededRng`
+  and a fixed date; production uses `cryptoRng` (`@gachanime/core`).
 - Uploaded images live in `UPLOADS_DIR` (default `<repo>/uploads` in dev, the `uploads` volume in
   Docker) and are served under `/media` (Caddy in production, a Vite middleware in dev).
 
@@ -159,6 +164,8 @@ Gotchas:
 - ADR-020 Node 24 LTS in Docker, pnpm 12.
 - ADR-021 AniList client: plain GraphQL strings + Zod, own throttling (no gql.tada / p-queue).
 - ADR-022 One integration test database per package (`@gachanime/db/testing`).
+- ADR-023 Full-stack e2e sign-in through Better Auth `testUtils` in a test-only instance (no API backdoor).
+- ADR-024 Booster pool loaded per opening from `drawable_characters` (caching deferred to Phase 7).
 
 ## Open questions (waiting for the maintainer)
 
@@ -183,3 +190,9 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   admin UI (overview, series, characters, imports, audit log, manual series, JSON rosters, image
   uploads). Verified against the real AniList (Attack on Titan: 15 media → 1 series, 192
   characters, 42 requests) and in a browser with a forged admin session. Next: Phase 2.
+- 2026-10-07 — **Phase 2 done**: `packages/game` (seeded Rng, rate math, weighted draw with
+  fallback, free timer) with a statistical test; schema for tiers, openings, user cards, gem
+  ledger; `openBoosters` (one transaction, profile lock, concurrency tests), collection and wiki
+  services + routes; web boosters page, Motion opening scene, collection and wiki pages; full-stack
+  e2e (ADR-023). New players start with every free charge (anchor at epoch). Local `.env` had an
+  empty `BETTER_AUTH_SECRET`: a random one was generated. Dev DB: top 200 AniList import. Next: Phase 3.

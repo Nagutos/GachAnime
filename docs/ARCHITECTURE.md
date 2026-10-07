@@ -67,7 +67,7 @@ A one-shot `migrate` step runs `drizzle-kit migrate` + idempotent seed before `a
 ### Opening boosters (x1 / x5 / x10)
 
 ```
-POST /api/v1/boosters/open { tierId, themeId?: id, quantity: 1|5|10 }
+POST /api/v1/boosters/open { tier: key, themeId?: id (Phase 5), quantity: 1|5|10 }  + Idempotency-Key
  1. rate limit (per user) → validate
  2. BEGIN
  3. SELECT player_profiles … FOR UPDATE

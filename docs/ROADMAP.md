@@ -45,15 +45,15 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] Admin audit log (generic helper used by all later phases) + audit log page
 - [x] Tests: mapping, rarity computation, franchise grouping, client throttling, idempotent re-import, resume, admin services
 
-## Phase 2 — Core loop: free boosters, collection, wiki
+## Phase 2 — Core loop: free boosters, collection, wiki ✅ (2026-10-07)
 
-- [ ] `packages/game`: rate math, weighted draw with Rng, timer arithmetic + **statistical test**
-- [ ] Schema: booster_tiers, booster_openings(+cards), user_cards, gem_transactions; seed
-- [ ] `openBoosters` service (x1/x5/x10, one transaction), free timer endpoint (cap 15)
-- [ ] Booster opening scene with Motion (pack tear, card flips, rarity effects, skip / reveal all)
-- [ ] Collection page (grid, basic filters), wiki pages (masked when locked, AniList credit)
-- [ ] Integration tests: concurrency (parallel openings never exceed charges)
-- [ ] E2E: sign up → open free booster → see card in collection and wiki
+- [x] `packages/game`: rate math, weighted draw with Rng (+ empty-rarity fallback), timer arithmetic + **statistical test** (200 000 boosters, 5σ)
+- [x] Schema: booster_tiers, booster_openings(+cards), user_cards, gem_transactions, free timer anchor; seed (free tier)
+- [x] `openBoosters` service (x1/x5/x10, one transaction, profile row locked), boosters endpoint with free timer (cap 15), Idempotency-Key on openings
+- [x] Booster opening scene with Motion (pack tear, card flips, rarity glow and burst, skip / reveal all, summary, reduced motion)
+- [x] Collection page (grid, search, rarity, duplicates, sort), wiki pages (series progress, masked locked entries, spoilers, AniList credit)
+- [x] Integration tests: concurrency (parallel openings never exceed charges), collection and wiki rules
+- [x] E2E: sign up → open free booster → see card in collection and wiki (full stack, ADR-023)
 
 ## Phase 3 — Economy
 

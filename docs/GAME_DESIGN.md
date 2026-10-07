@@ -76,6 +76,7 @@ checks the per-card frequencies and that weights always sum to 1 000 000.
 ### Free booster timer
 
 - One free charge every **10 minutes** (`free_booster_interval_seconds = 600`).
+- A new player starts with every charge available (anchor at epoch).
 - Charges accumulate up to a cap of **15** (2h30), which makes x5/x10 useful for free boosters
   without rewarding 24/7 presence too much. Future: upgrades that raise the cap per player
   (not in v1 scope; the cap is read through one function so a per-player bonus can be added).

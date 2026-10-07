@@ -39,7 +39,7 @@ only**: `account.account_id` holds the Discord user id (used by `ADMIN_DISCORD_I
 | username               | citext UNIQUE | Public handle for profile URL `/u/:username`.                                    |
 | locale                 | text          | `en`, `fr`…                                                                      |
 | gem_balance            | bigint        | `CHECK (gem_balance >= 0)`                                                       |
-| free_booster_anchor_at | timestamptz   | Timer anchor (see GAME_DESIGN §2).                                               |
+| free_booster_anchor_at | timestamptz   | Timer anchor (see GAME_DESIGN §2). Default epoch: a new player starts full.      |
 | created_at             | timestamptz   |                                                                                  |
 
 Why a separate table: keeps Better Auth tables untouched (upgrades) and gives one row per player to
@@ -137,7 +137,7 @@ A booster = tier × pool (`theme_id` NULL = whole catalog). No combinatorial tab
 
 ### Openings (audit + reveal history)
 
-- `booster_openings(id, user_id, tier_id, theme_id NULL, quantity, gems_spent, created_at)` index `(user_id, created_at desc)`.
+- `booster_openings(id, user_id, tier_id, theme_id NULL, quantity, gems_spent, created_at)` index `(user_id, created_at desc)`. `theme_id` is added with themed packs (Phase 5).
 - `booster_opening_cards(opening_id, position smallint, character_id, rarity_id, is_new bool)` PK `(opening_id, position)`.
 
 Volume estimate: an active player ≈ 70 boosters/day → 350 card rows/day. Acceptable; a retention

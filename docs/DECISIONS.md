@@ -134,6 +134,29 @@ Format: context → decision → consequences. Status: Accepted / Proposed (wait
 - **Consequences**: the test role must be allowed to create databases (true for the dev compose
   and CI Postgres users).
 
+## ADR-023 — Full-stack e2e sign-in without Discord (Accepted)
+
+- **Context**: player flows need a signed-in user, but Discord OAuth cannot be automated, and a
+  sign-in shortcut inside the API would be a backdoor on every instance.
+- **Decision**: the e2e suite creates the user and its Discord account row itself, runs the same
+  profile creation as the API sign-in hook, and opens a real session with Better Auth's
+  `testUtils` plugin in a **test-only** auth instance (same secret, same Redis storage layout).
+  Player specs (`*.full.spec.ts`) run when `TEST_DATABASE_URL`, `REDIS_URL` and
+  `BETTER_AUTH_SECRET` are set: Playwright starts an API dev server on port 3100
+  (`NEXT_DIST_DIR=.next-e2e`, so it can run next to `pnpm dev`) on a dedicated `<test db>_e2e`
+  database seeded with a small manual series.
+- **Consequences**: no test code ships in the API; the e2e helper must follow the API's secondary
+  storage key layout (`auth:<key>`).
+
+## ADR-024 — Booster pool loaded per opening (Accepted)
+
+- **Context**: a draw picks a uniform character among the drawable characters of a rarity.
+- **Decision**: each opening loads the drawable ids grouped by rarity (`array_agg` over the
+  `drawable_characters` view) inside its transaction, then draws indexes with the injected `Rng`.
+- **Consequences**: always consistent with the catalog, no cache invalidation; tens of thousands
+  of ids per opening is acceptable for friend-sized instances. Pool caching is part of the
+  Phase 7 performance pass (themed packs will use materialized `theme_characters`).
+
 ## Main dependencies
 
 Checked on npm on 2026-10-07 (latest version, last publish ≤ 1 month unless noted). All licenses
