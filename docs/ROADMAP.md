@@ -84,14 +84,15 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] Shop: pack selection for free and paid tiers (paid: +surcharge, prices from the server)
 - [x] Collection filter by pack
 
-## Phase 6 — Social: profiles, trades, market
+## Phase 6 — Social: profiles, trades, market ✅ (2026-10-07)
 
-- [ ] Public profile (collection, achievements)
-- [ ] Trades: propose, counter, accept (atomic), decline, cancel, optional expiry, locks; last-copy warning
-- [ ] Market: list, browse (filters, wishlist highlight), buy (atomic), withdraw, expiry, limits
-- [ ] Admin: market limits settings, users (role, ban)
-- [ ] Integration tests: double-buy race, trade with vanished card, deadlock-free ordering
-- [ ] E2E: full trade between two users; market sale
+- [x] Public profile (stats, collection, achievements) and players directory
+- [x] Trades: propose, counter, accept (atomic, players locked in id order), decline, cancel, optional expiry, locks; last-copy warning
+- [x] Market: list, browse (filters, wishlist highlight, missing cards), buy (atomic claim), withdraw, expiry, limits, price bounds per rarity
+- [x] Admin: market limits and trade settings, users (role, ban through Better Auth)
+- [x] Integration tests: double-buy race, trade with vanished card, crossing trades accepted concurrently
+- [x] E2E: full trade between two users; market sale
+- [x] Worker sweep (every 5 minutes) for expired listings and offers; market/trade achievements activated
 
 ## Phase 7 — Hardening & release 1.0
 

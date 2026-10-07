@@ -149,6 +149,10 @@ Gotchas:
   (shared) and the `GameEvent` union (game); the compiler checks they match.
 - Pack membership is materialized in `theme_characters`: anything that changes the catalog must
   end with a pool rebuild (API: `enqueueCatalogRefresh()`, worker job `catalog.refresh`).
+- Operations on two players (trades, purchases) lock both profiles with `lockPlayers` (id order)
+  and move cards with `moveCopies` (core `social/inventory`); listed/offered copies are counted in
+  `locked_quantity`.
+- Role and ban changes go through Better Auth's admin API (it revokes sessions), then the audit log.
 - Game outcomes take a `GameClock` (`{ rng, now }`) in core services: tests inject `seededRng`
   and a fixed date; production uses `cryptoRng` (`@gachanime/core`).
 - Uploaded images live in `UPLOADS_DIR` (default `<repo>/uploads` in dev, the `uploads` volume in
@@ -227,3 +231,7 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   filter. Dev pools: Shōnen 7 529, Shōjo 188, Seinen 1 544, Sports 1 818, Ecchi 1 107,
   Waifus 2 640, Husbandos 4 447 (≈ 4 300 characters still have an unclassified gender).
   Next: Phase 6 (profiles, trades, market).
+- 2026-10-07 — **Phase 6 done**: public profiles and players directory, trades (propose, counter,
+  atomic accept, decline, cancel, expiry), player market (listings, atomic purchase, limits,
+  price bounds, expiry), worker sweep, admin users (role, ban) and market/trade settings.
+  Next: Phase 7 (hardening & release).
