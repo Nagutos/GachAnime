@@ -1,0 +1,35 @@
+{
+  "name": "@gachanime/api",
+  "version": "0.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@gachanime/core": "workspace:*",
+    "@gachanime/db": "workspace:*",
+    "@gachanime/shared": "workspace:*",
+    "better-auth": "^1.7.7",
+    "drizzle-orm": "^0.45.3",
+    "ioredis": "^6.0.0",
+    "next": "~16.3.8",
+    "pino": "^10.4.0",
+    "rate-limiter-flexible": "^11.2.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@gachanime/config": "workspace:*",
+    "@types/node": "^24",
+    "@types/react": "^19.3.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  }
+}
