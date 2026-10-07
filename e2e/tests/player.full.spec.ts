@@ -1,0 +1,54 @@
+import { expect, test } from '@playwright/test'
+import { E2E_SERIES_TITLE } from '../support/catalog'
+import { signInNewPlayer } from '../support/session'
+
+test.use({ locale: 'en-US' })
+// The API dev server compiles each route on its first request.
+test.setTimeout(90_000)
+test.describe.configure({ timeout: 90_000 })
+
+test('a new player opens a free booster, then finds the cards in the collection and the wiki', async ({
+  page,
+  context,
+}) => {
+  await signInNewPlayer(context)
+  await page.goto('/')
+  await expect(page.getByTestId('welcome')).toBeVisible({ timeout: 30_000 })
+
+  await page.getByTestId('cta-boosters').click()
+  // New players start with every free charge.
+  await expect(page.getByTestId('charges')).toHaveText('15 / 15', { timeout: 30_000 })
+  await page.getByTestId('open-1').click()
+
+  const opening = page.getByTestId('booster-opening')
+  await opening.getByTestId('pack').click()
+  await opening.getByTestId('reveal-all').click()
+  const revealed = opening.locator('[data-testid="flip-card"][data-revealed="true"]')
+  await expect(revealed).toHaveCount(5)
+  const characterId = await revealed.first().getAttribute('data-character-id')
+  expect(characterId).toBeTruthy()
+  await opening.getByTestId('close-opening').click()
+  await expect(opening).toBeHidden()
+  await expect(page.getByTestId('charges')).toHaveText('14 / 15')
+
+  // Collection: the drawn cards are there.
+  await page.getByTestId('nav-collection').click()
+  const grid = page.getByTestId('collection-grid')
+  await expect(grid.getByTestId('character-card').first()).toBeVisible({ timeout: 30_000 })
+  const owned = await grid.getByTestId('character-card').count()
+  expect(owned).toBeGreaterThanOrEqual(1)
+  expect(owned).toBeLessThanOrEqual(5)
+
+  // Wiki entry of a drawn character is unlocked.
+  await page.goto(`/wiki/characters/${characterId}`)
+  await expect(page.getByTestId('wiki-name')).toHaveText(/^Student \d\d$/, { timeout: 30_000 })
+  await expect(page.getByRole('button', { name: 'Show spoiler' })).toBeVisible()
+
+  // The series page shows unlocked entries and masked locked ones.
+  await page.getByRole('link', { name: E2E_SERIES_TITLE }).click()
+  await expect(page.getByTestId('series-title')).toHaveText(E2E_SERIES_TITLE, { timeout: 30_000 })
+  const entries = page.getByTestId('wiki-entries')
+  await expect(entries.getByTestId('character-card')).toHaveCount(owned)
+  await expect(entries.getByTestId('locked-card')).toHaveCount(20 - owned)
+  await expect(entries.getByTestId('locked-card').first()).toContainText('???')
+})

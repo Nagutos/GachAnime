@@ -11,6 +11,8 @@ if (process.env.NODE_ENV !== 'production' && existsSync(rootEnvFile)) {
 }
 
 const config: NextConfig = {
+  // The e2e suite runs its own dev server next to `pnpm dev`: it needs a separate build folder.
+  distDir: process.env.NEXT_DIST_DIR ?? '.next',
   output: 'standalone',
   outputFileTracingRoot: repositoryRoot,
   transpilePackages: [
