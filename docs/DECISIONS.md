@@ -117,6 +117,23 @@ Format: context → decision → consequences. Status: Accepted / Proposed (wait
 
 - **Decision**: Node.js 24 LTS in Docker images (local dev works on newer Node), pnpm 12 pinned through `packageManager`.
 
+## ADR-021 — AniList client without a GraphQL toolkit (Accepted)
+
+- **Context**: the importer sends four queries. gql.tada needs the AniList schema introspection
+  file; p-queue does not know AniList's moving limit (90/min normally, 30/min currently).
+- **Decision**: plain query strings, responses validated with Zod (same rule as every other
+  external input); a small client serializes requests and spaces them after `X-RateLimit-Limit`,
+  waits for `Retry-After` on 429 and retries 5xx with backoff.
+- **Consequences**: no codegen step; a field renamed by AniList fails loudly at validation.
+
+## ADR-022 — One integration test database per package (Accepted)
+
+- **Context**: turbo runs package test suites in parallel; core and importer tests truncate tables.
+- **Decision**: `@gachanime/db/testing` creates `<TEST_DATABASE_URL db>_<package>` on demand,
+  migrates it and resets it (truncate + seed) before each test.
+- **Consequences**: the test role must be allowed to create databases (true for the dev compose
+  and CI Postgres users).
+
 ## Main dependencies
 
 Checked on npm on 2026-10-07 (latest version, last publish ≤ 1 month unless noted). All licenses
@@ -135,8 +152,7 @@ are MIT/Apache-2.0/ISC (compatible with MIT and AGPL-3.0).
 | rate-limiter-flexible                 | 11.2        | ISC              | Rate limiting with Redis backend.                                                                |
 | bullmq                                | 6.3         | MIT              | Job queue + repeatable jobs (import, sweeps, recompute).                                         |
 | pino                                  | 10.4        | MIT              | Structured logs.                                                                                 |
-| gql.tada                              | 1.11        | MIT              | Typed AniList GraphQL queries without codegen.                                                   |
-| p-queue                               | latest      | MIT              | AniList request throttling.                                                                      |
+| (none)                                | -           | -                | AniList queries are plain GraphQL strings validated with Zod (no codegen, no gql.tada).          |
 | vue                                   | 3.5         | MIT              | UI.                                                                                              |
 | vite                                  | 8.3         | MIT              | Build/dev server.                                                                                |
 | vue-router                            | 5.3         | MIT              | Routing.                                                                                         |
@@ -150,7 +166,7 @@ are MIT/Apache-2.0/ISC (compatible with MIT and AGPL-3.0).
 | vee-validate                          | 4.15        | MIT              | Forms (accepts Zod via Standard Schema). Last release 2026-03 — acceptable, re-check at Phase 0. |
 | vitest                                | 5.0         | MIT              | Unit/integration tests.                                                                          |
 | @playwright/test                      | 1.63        | Apache-2.0       | E2E tests.                                                                                       |
-| sharp                                 | 0.35        | Apache-2.0       | Optional image cache (resize/webp).                                                              |
+| sharp                                 | 0.35        | Apache-2.0       | Image uploads (resize, WebP) and the optional image cache.                                       |
 
 Rejected: `lucia` (deprecated), `gsap` (non-OSI license), `graphql-request` (no release since 2025-12),
 PrimeVue (custom license file, heavier styled kit vs headless Reka UI).

@@ -117,6 +117,7 @@ pnpm test:e2e            # playwright (builds web, runs vite preview)
 pnpm i18n:check          # missing/extra translation keys between locales
 pnpm db:generate         # drizzle-kit generate (new migration from schema diff)
 pnpm admin:promote -- --discord-id 123456789012345678
+pnpm import:anilist -- --top 500   # or --ids 16498,1535 / --resume <job id> (also from the admin UI)
 docker compose up -d     # full self-hosted stack on :8080 (needs .env)
 ```
 
@@ -129,6 +130,12 @@ Gotchas:
   (`-w /app/packages/core`, etc.).
 - Vitest tests reading files must use `// @vitest-environment node` in the web app (happy-dom default).
 - `turbo.json` sets `agentGuidance: false` (turbo otherwise writes an AGENTS.md).
+- pnpm forwards the `--` separator to scripts: CLIs parse `cliArgs()` (from `@gachanime/core`).
+- In correlated subqueries written with `sql`, name outer columns explicitly (`"series"."id"`):
+  Drizzle renders `${series.id}` unqualified, which silently binds to the inner table.
+- vue-i18n messages are precompiled: read them with `t()`, never from the raw `messages` object.
+- Uploaded images live in `UPLOADS_DIR` (default `<repo>/uploads` in dev, the `uploads` volume in
+  Docker) and are served under `/media` (Caddy in production, a Vite middleware in dev).
 
 ## Architecture decisions (summary — details in docs/DECISIONS.md)
 
@@ -150,6 +157,8 @@ Gotchas:
 - ADR-018 Booster = tier × pool (packs), +20 % surcharge for paid themed boosters.
 - ADR-019 Manual catalog source (games) with image uploads and JSON roster import.
 - ADR-020 Node 24 LTS in Docker, pnpm 12.
+- ADR-021 AniList client: plain GraphQL strings + Zod, own throttling (no gql.tada / p-queue).
+- ADR-022 One integration test database per package (`@gachanime/db/testing`).
 
 ## Open questions (waiting for the maintainer)
 
@@ -167,3 +176,10 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   Docker stack verified end-to-end (`docker compose up` → healthy api/worker, Caddy serving SPA + API),
   CI workflow. Tests: 32 unit/integration (Vitest) + 4 e2e (Playwright), lint/typecheck/i18n clean.
   Not verified: a real Discord sign-in (needs a Discord application). Next: Phase 1 (catalog & AniList import).
+- 2026-10-07 — Decisions: missions/achievements reward gems only; characters without an AniList
+  picture are not imported; catalog completion achievements use 10/25/50/75 % tiers.
+- 2026-10-07 — **Phase 1 done**: catalog schema, `packages/game` (rarity, gender), `packages/importer`
+  (AniList client + resumable franchise import, CLI + worker job), admin catalog services and API,
+  admin UI (overview, series, characters, imports, audit log, manual series, JSON rosters, image
+  uploads). Verified against the real AniList (Attack on Titan: 15 media → 1 series, 192
+  characters, 42 requests) and in a browser with a forged admin session. Next: Phase 2.

@@ -33,17 +33,17 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] CI (GitHub Actions): format, lint, typecheck, i18n, unit + DB integration tests, build, e2e, docker builds (not run yet: no remote)
 - [x] README (self-hosting, image rights notice), LICENSE (AGPL-3.0)
 
-## Phase 1 — Catalog & AniList import
+## Phase 1 — Catalog & AniList import ✅ (2026-10-07)
 
-- [ ] Schema: series, media, anilist_tags, media_tags, characters, character_media, series_characters, rarities
-- [ ] AniList client (typed queries, throttling, 429 handling), pagination
-- [ ] Import pipeline: top-N (default 500) by popularity or explicit ids, isAdult excluded, franchise expansion and grouping (seasons + movies), all character roles except characters without an image, upserts, resumable
-- [ ] Gender mapping, default rarity from favourites thresholds (respect overrides)
-- [ ] CLI `import:anilist` + worker job + `import_jobs` progress
-- [ ] Admin: series list (toggle active, delete, merge/split), AniList search & import, character rarity/gender edit, unclassified list
-- [ ] Manual series & characters (games): admin forms, image upload (sharp, `uploads` volume), JSON roster import
-- [ ] Admin audit log (generic helper used by all later phases)
-- [ ] Tests: mapping, rarity computation, idempotent re-import
+- [x] Schema: series, media, anilist_tags, media_tags, characters, character_media, series_characters, rarities, import_jobs (+ pg_trgm search, `drawable_characters` view)
+- [x] AniList client (Zod-validated queries, throttling from the announced rate limit, 429/5xx retries), pagination
+- [x] Import pipeline: top-N (default 500) by popularity or explicit ids, isAdult and music videos excluded, franchise expansion and grouping (seasons + movies), all character roles except characters without an image, upserts, resumable
+- [x] Gender mapping, default rarity from favourites thresholds (respect overrides)
+- [x] CLI `import:anilist` + worker job (requeued after a restart) + `import_jobs` progress, cancel/resume
+- [x] Admin: series list (toggle active, delete, merge/split), AniList search & import, character rarity/gender edit, unclassified list, rarity distribution
+- [x] Manual series & characters (games): admin forms, image upload (sharp → WebP, `uploads` volume), JSON roster import
+- [x] Admin audit log (generic helper used by all later phases) + audit log page
+- [x] Tests: mapping, rarity computation, franchise grouping, client throttling, idempotent re-import, resume, admin services
 
 ## Phase 2 — Core loop: free boosters, collection, wiki
 

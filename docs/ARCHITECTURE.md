@@ -54,7 +54,8 @@ A one-shot `migrate` step runs `drizzle-kit migrate` + idempotent seed before `a
               acceptTrade, createListing, buyListing, withdrawListing, claimMission,
               claimAchievement, submitFeedback, admin.* …
               Emits domain events to the progression engine inside the same transaction.
-@app/importer AniList client (typed queries, p-queue throttling, 429/Retry-After handling),
+@app/importer AniList client (queries validated with Zod, serialized requests spaced after the
+              rate limit AniList announces, 429/Retry-After and 5xx handling), resumable
               upsert pipeline, CLI entry point. Also invoked by the worker.
 ```
 
@@ -117,14 +118,21 @@ images go to the `uploads` volume (resized with sharp) and are served by Caddy u
 ### Catalog import
 
 ```
-Admin UI "Import" or CLI → BullMQ job (import_jobs row tracks progress, resumable)
-worker → importer: query AniList (top N by popularity or explicit ids, isAdult excluded)
-       → expand each entry to its franchise through relations (seasons, movies, OVAs)
-       → for each media: upsert media, tags (with rank), genres
-       → for each character page: upsert characters (gender raw + class), character_media
-       → group media into series, rebuild series_characters, default rarity (unless overridden)
-       → rebuild theme pools, invalidate pool cache, enqueue image cache (if enabled)
+Admin UI "Import" (POST /api/v1/admin/imports) or CLI → import_jobs row (one unfinished job max)
+  → BullMQ job "anilist.import" (jobId anilist-import-<id>; the worker requeues unfinished jobs at start)
+worker → importer.runImportJob, resumable phase by phase:
+  1. discover   top N ids (or explicit ids) → batches of 50 media (details, tags, relations and the
+                first 25 characters) → follow franchise relations breadth-first; media, tags and
+                first character page are upserted as they arrive
+  2. group      connected components of the relation graph; media keep an existing series, new media
+                join the series of the most popular assigned media of their group, else a new series
+  3. characters remaining character pages (25 per request) of every media not synced by this job;
+                characters without picture skipped, rarity from favourites unless overridden,
+                appearances no longer listed by AniList removed
+  4. finalize   rebuild series_characters, refresh series metadata from their most popular media
 ```
+
+The job row is checked between steps: an admin can cancel it, then resume it later.
 
 ### Progression engine
 

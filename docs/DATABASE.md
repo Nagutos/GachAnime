@@ -65,10 +65,17 @@ a manual series (e.g. a gacha game) has no media.
 
 ### `media`
 
-`id, anilist_id UNIQUE, series_id FK, type (ANIME), format, title_romaji, title_english,
-title_native, season_year, popularity, favourites, is_adult, genres text[], cover_url, site_url,
-updated_at`.
+`id, anilist_id UNIQUE, series_id FK NULL, format, title_romaji, title_english, title_native,
+description, season_year, popularity, favourites, is_adult, genres text[], cover_url, site_url,
+franchise_relations int[], fetched_at, characters_synced_at, updated_at`.
 Indexes: `series_id`; GIN on `genres`.
+
+- `series_id` is null only between the discovery and grouping steps of an import.
+- `franchise_relations`: AniList ids linked by a franchise relation (SEQUEL, PREQUEL, PARENT,
+  SIDE_STORY, ALTERNATIVE, SUMMARY); grouping re-reads them from the database, so a resumed
+  import does not fetch them again.
+- `fetched_at` / `characters_synced_at` compared with `import_jobs.started_at` tell a resumed job
+  what is already fresh.
 
 ### `anilist_tags` / `media_tags`
 
@@ -78,23 +85,24 @@ Rank (0–100 relevance) is required for "Shounen ≥ 60" rules.
 
 ### `characters`
 
-| Column                                             | Type                             | Notes                                                         |
-| -------------------------------------------------- | -------------------------------- | ------------------------------------------------------------- |
-| id                                                 | bigint                           |                                                               |
-| source                                             | enum(anilist, manual)            |                                                               |
-| anilist_id                                         | int NULL UNIQUE                  | Upsert key for re-imports (NULL for manual characters).       |
-| name_full, name_native, name_alternatives (text[]) |                                  | As provided by AniList.                                       |
-| description                                        | text                             | AniList markdown (rendered sanitized).                        |
-| image_url                                          | text                             | AniList CDN.                                                  |
-| image_cached_path                                  | text NULL                        | Local cache (optional) or uploaded image (manual characters). |
-| gender_raw                                         | text NULL                        | AniList value.                                                |
-| gender_class                                       | enum(female, male, unclassified) | Derived at import.                                            |
-| gender_override                                    | enum NULL                        | Admin decision, wins over `gender_class`.                     |
-| favourites                                         | int NULL                         | Drives default rarity (NULL for manual characters).           |
-| rarity_id                                          | FK rarities                      |                                                               |
-| rarity_overridden                                  | bool                             | Re-import never changes rarity when true.                     |
-| is_active                                          | bool                             | Admin can disable a single character.                         |
-| updated_at                                         | timestamptz                      |                                                               |
+| Column                                             | Type                             | Notes                                                       |
+| -------------------------------------------------- | -------------------------------- | ----------------------------------------------------------- |
+| id                                                 | bigint                           |                                                             |
+| source                                             | enum(anilist, manual)            | `CHECK (source = 'anilist') = (anilist_id IS NOT NULL)`.    |
+| anilist_id                                         | int NULL UNIQUE                  | Upsert key for re-imports (NULL for manual characters).     |
+| manual_key                                         | text NULL UNIQUE                 | `<series slug>/<roster key>`: upsert key of roster imports. |
+| name_full, name_native, name_alternatives (text[]) |                                  | As provided by AniList.                                     |
+| description                                        | text                             | AniList markdown (rendered sanitized).                      |
+| image_url                                          | text                             | AniList CDN.                                                |
+| image_path                                         | text NULL                        | Uploaded (or cached) image, relative to the uploads volume. |
+| gender_raw                                         | text NULL                        | AniList value.                                              |
+| gender_class                                       | enum(female, male, unclassified) | Derived at import.                                          |
+| gender_override                                    | enum NULL                        | Admin decision, wins over `gender_class`.                   |
+| favourites                                         | int NULL                         | Drives default rarity (NULL for manual characters).         |
+| rarity_id                                          | FK rarities                      |                                                             |
+| rarity_overridden                                  | bool                             | Re-import never changes rarity when true.                   |
+| is_active                                          | bool                             | Admin can disable a single character.                       |
+| updated_at                                         | timestamptz                      |                                                             |
 
 Indexes: `(rarity_id) WHERE is_active`, trigram GIN on `name_full` (pg_trgm) for search.
 
@@ -115,8 +123,8 @@ A character is **drawable** when `is_active` and linked to at least one active s
 
 ## Rarities, rates, boosters, themes
 
-- `rarities(id, key UNIQUE, sort_order UNIQUE, name jsonb, color_token, recycle_value,
-market_min_price, market_max_price, favourites_threshold)`.
+- `rarities(id, key UNIQUE, sort_order UNIQUE, name jsonb, color_token, favourites_threshold)`;
+  `recycle_value`, `market_min_price`, `market_max_price` are added with the economy (Phase 3).
 - `booster_tiers(id, key UNIQUE, name jsonb, description jsonb, weights jsonb -- { rarityKey: ppm },
 price_gems bigint NULL (NULL = free tier), is_active, sort_order, art_token)`.
   Weights sum = 1 000 000 enforced by Zod + test.
@@ -188,7 +196,10 @@ bigint, reward_gems, icon_token, is_active, sort_order)`.
   thresholds toggle, image cache enabled…).
 - `admin_audit_log(id, actor_id, action, target_type, target_id, before jsonb, after jsonb, ip, created_at)`
   index `(created_at desc)`, `(target_type, target_id)`.
-- `import_jobs(id, requested_by, params jsonb, status, progress jsonb, error, created_at, finished_at)`.
+- `import_jobs(id, requested_by, params jsonb, status enum(queued, running, completed, failed,
+cancelled), progress jsonb, error, created_at, started_at, finished_at, updated_at)`. `progress`
+  holds the current phase (discover → group → characters → finalize → done), counters and the
+  discovered AniList ids. Only one job may be queued or running at a time.
 
 ## Migrations
 
