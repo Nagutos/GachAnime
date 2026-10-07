@@ -23,17 +23,7 @@ import {
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { z } from 'zod'
-import { apiFetch } from './client'
-
-/** `{ a: 1, b: undefined }` → `?a=1` */
-function toQueryString(params: Record<string, unknown>): string {
-  const search = new URLSearchParams()
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== '') search.set(key, String(value))
-  }
-  const text = search.toString()
-  return text ? `?${text}` : ''
-}
+import { apiFetch, toQueryString } from './client'
 
 export type SeriesFilters = Partial<AdminSeriesQuery>
 export type CharacterFilters = Partial<AdminCharactersQuery>

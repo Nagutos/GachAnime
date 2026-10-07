@@ -7,6 +7,8 @@ const numberFormat = {
   integer: { maximumFractionDigits: 0 },
   decimal: { maximumFractionDigits: 2 },
   percent: { style: 'percent', maximumFractionDigits: 2 },
+  /** Drop rates: small values such as 0.066 %. */
+  rate: { style: 'percent', maximumFractionDigits: 3 },
 } as const
 
 const datetimeFormat = {

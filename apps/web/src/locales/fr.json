@@ -8,17 +8,21 @@
   },
   "common": {
     "loading": "Chargement…",
-    "language": "Langue"
+    "language": "Langue",
+    "pagination": "Pagination",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "pageOf": "Page {page} sur {pages}"
   },
   "auth": {
     "signInWithDiscord": "Se connecter avec Discord",
     "signOut": "Se déconnecter",
-    "accountMenu": "Menu du compte"
+    "accountMenu": "Menu du compte",
+    "required": "Connecte-toi avec Discord pour jouer."
   },
   "home": {
     "welcome": "Bon retour, {name} !",
     "gemBalance": "Gemmes",
-    "comingSoon": "Les boosters sont en préparation. Reviens bientôt !",
     "features": {
       "collect": {
         "title": "Collectionne",
@@ -32,7 +36,9 @@
         "title": "Découvre",
         "body": "Chaque nouvelle carte débloque la fiche de son personnage dans le wiki."
       }
-    }
+    },
+    "openBoosters": "Ouvrir des boosters",
+    "myCollection": "Ma collection"
   },
   "notFound": {
     "title": "Cette page n'existe pas.",
@@ -282,6 +288,104 @@
       "after": "Après"
     }
   },
+  "nav": {
+    "main": "Menu principal",
+    "boosters": "Boosters",
+    "collection": "Collection",
+    "wiki": "Wiki",
+    "gems": "{count} gemmes"
+  },
+  "cards": {
+    "new": "Nouveau",
+    "quantity": "×{count}"
+  },
+  "boosters": {
+    "title": "Boosters",
+    "subtitle": "Chaque booster contient cinq cartes. Les boosters gratuits se rechargent avec le temps.",
+    "noTier": "Aucun booster n'est disponible pour le moment.",
+    "chargesLabel": "Boosters gratuits disponibles",
+    "charges": "{available} / {max}",
+    "nextIn": "Prochain booster gratuit dans {time}",
+    "full": "Tes boosters gratuits sont au maximum : ouvre-les !",
+    "open": "Ouvrir ×{count}",
+    "opening": "Ouverture…",
+    "rates": "Taux de drop (par carte)",
+    "cardsPerPack": "{count} cartes",
+    "tapToOpen": "Touche le booster pour l'ouvrir",
+    "revealCard": "Révéler cette carte",
+    "revealedCard": "{name}, {rarity}",
+    "revealAll": "Tout révéler",
+    "nextPack": "Booster suivant",
+    "showSummary": "Voir toutes mes cartes",
+    "done": "Terminé",
+    "skip": "Passer",
+    "packProgress": "Booster {current} sur {total}",
+    "summary": "{cards} cartes · {new} nouvelles"
+  },
+  "collection": {
+    "title": "Ma collection",
+    "summary": "{owned} / {catalog} personnages · {cards} cartes",
+    "searchPlaceholder": "Chercher un personnage…",
+    "rarity": "Rareté",
+    "allRarities": "Toutes les raretés",
+    "sort": "Tri",
+    "sorts": {
+      "recent": "Obtenues récemment",
+      "rarity": "Rareté",
+      "name": "Nom",
+      "count": "Plus d'exemplaires"
+    },
+    "duplicates": "Doublons uniquement",
+    "series": "Série : {title} ✕",
+    "empty": "Aucune carte pour l'instant. Ouvre ton premier booster !",
+    "emptyFiltered": "Aucune carte ne correspond à ces filtres.",
+    "openBoosters": "Ouvrir des boosters"
+  },
+  "wiki": {
+    "title": "Wiki",
+    "subtitle": "Chaque carte obtenue débloque la fiche de son personnage.",
+    "searchPlaceholder": "Chercher une série…",
+    "sort": "Tri",
+    "sorts": {
+      "popularity": "Les plus populaires",
+      "title": "Titre",
+      "progress": "Ma progression"
+    },
+    "empty": "Aucune série trouvée.",
+    "progress": "{owned} / {total} possédés",
+    "progressLabel": "Progression de la série",
+    "unlocked": "{count} fiches débloquées",
+    "back": "← Toutes les séries",
+    "backShort": "← Retour",
+    "about": "À propos",
+    "myCards": "Mes cartes de cette série",
+    "credit": "Données issues d'AniList",
+    "filterLabel": "Afficher les fiches",
+    "filters": {
+      "all": "Toutes",
+      "unlocked": "Débloquées",
+      "locked": "Verrouillées"
+    },
+    "unknownName": "???",
+    "lockedTitle": "Fiche verrouillée",
+    "lockedBody": "Obtiens ce personnage dans un booster pour débloquer sa fiche.",
+    "alternativeNames": "Aussi appelé",
+    "collection": "Ma collection",
+    "owned": "Tu possèdes {count} exemplaire | Tu possèdes {count} exemplaires",
+    "notOwned": "Tu ne possèdes plus cette carte (la fiche reste débloquée)",
+    "firstObtained": "débloquée le {date}",
+    "appearances": "Apparitions",
+    "series": "Séries",
+    "roles": {
+      "MAIN": "Principal",
+      "SUPPORTING": "Secondaire",
+      "BACKGROUND": "Figurant"
+    },
+    "showSpoiler": "Afficher le spoiler",
+    "noDescription": "Pas de description.",
+    "source": "Source :",
+    "sourceAniList": "AniList"
+  },
   "errors": {
     "BAD_REQUEST": "La requête est invalide.",
     "VALIDATION_FAILED": "Certains champs sont invalides.",
@@ -296,6 +400,9 @@
     "INVALID_IMAGE": "Cette image est inutilisable (PNG, JPEG, WebP ou GIF, 8 Mo max).",
     "NOT_MANUAL_ENTRY": "Seuls les séries et personnages créés à la main peuvent être modifiés ainsi.",
     "INTERNAL_ERROR": "Une erreur est survenue de notre côté.",
-    "NETWORK": "Impossible de joindre le serveur."
+    "NETWORK": "Impossible de joindre le serveur.",
+    "BOOSTER_UNAVAILABLE": "Ce booster n'est pas disponible.",
+    "NOT_ENOUGH_CHARGES": "Pas assez de boosters gratuits. Attends le prochain !",
+    "EMPTY_POOL": "Il n'y a encore aucun personnage à tirer. Un admin doit d'abord importer le catalogue."
   }
 }

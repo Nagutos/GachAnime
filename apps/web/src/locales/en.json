@@ -8,17 +8,21 @@
   },
   "common": {
     "loading": "Loading…",
-    "language": "Language"
+    "language": "Language",
+    "pagination": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {pages}"
   },
   "auth": {
     "signInWithDiscord": "Sign in with Discord",
     "signOut": "Sign out",
-    "accountMenu": "Account menu"
+    "accountMenu": "Account menu",
+    "required": "Sign in with Discord to play."
   },
   "home": {
     "welcome": "Welcome back, {name}!",
     "gemBalance": "Gems",
-    "comingSoon": "Boosters are being prepared. Come back soon!",
     "features": {
       "collect": {
         "title": "Collect",
@@ -32,7 +36,9 @@
         "title": "Discover",
         "body": "Every new card unlocks its character page in the wiki."
       }
-    }
+    },
+    "openBoosters": "Open boosters",
+    "myCollection": "My collection"
   },
   "notFound": {
     "title": "This page does not exist.",
@@ -282,6 +288,104 @@
       "after": "After"
     }
   },
+  "nav": {
+    "main": "Main menu",
+    "boosters": "Boosters",
+    "collection": "Collection",
+    "wiki": "Wiki",
+    "gems": "{count} gems"
+  },
+  "cards": {
+    "new": "New",
+    "quantity": "×{count}"
+  },
+  "boosters": {
+    "title": "Boosters",
+    "subtitle": "Every booster holds five cards. Free boosters recharge over time.",
+    "noTier": "No booster is available right now.",
+    "chargesLabel": "Free boosters available",
+    "charges": "{available} / {max}",
+    "nextIn": "Next free booster in {time}",
+    "full": "Your free boosters are full: open some!",
+    "open": "Open ×{count}",
+    "opening": "Opening…",
+    "rates": "Drop rates (per card)",
+    "cardsPerPack": "{count} cards",
+    "tapToOpen": "Tap the booster to open it",
+    "revealCard": "Reveal this card",
+    "revealedCard": "{name}, {rarity}",
+    "revealAll": "Reveal all",
+    "nextPack": "Next booster",
+    "showSummary": "See all my cards",
+    "done": "Done",
+    "skip": "Skip",
+    "packProgress": "Booster {current} of {total}",
+    "summary": "{cards} cards · {new} new"
+  },
+  "collection": {
+    "title": "My collection",
+    "summary": "{owned} / {catalog} characters · {cards} cards",
+    "searchPlaceholder": "Search a character…",
+    "rarity": "Rarity",
+    "allRarities": "All rarities",
+    "sort": "Sort",
+    "sorts": {
+      "recent": "Recently obtained",
+      "rarity": "Rarity",
+      "name": "Name",
+      "count": "Most copies"
+    },
+    "duplicates": "Duplicates only",
+    "series": "Series: {title} ✕",
+    "empty": "No card yet. Open your first booster!",
+    "emptyFiltered": "No card matches these filters.",
+    "openBoosters": "Open boosters"
+  },
+  "wiki": {
+    "title": "Wiki",
+    "subtitle": "Every card you obtain unlocks its character entry.",
+    "searchPlaceholder": "Search a series…",
+    "sort": "Sort",
+    "sorts": {
+      "popularity": "Most popular",
+      "title": "Title",
+      "progress": "My progress"
+    },
+    "empty": "No series found.",
+    "progress": "{owned} / {total} owned",
+    "progressLabel": "Series progress",
+    "unlocked": "{count} entries unlocked",
+    "back": "← All series",
+    "backShort": "← Back",
+    "about": "About",
+    "myCards": "My cards from this series",
+    "credit": "Data from AniList",
+    "filterLabel": "Show entries",
+    "filters": {
+      "all": "All",
+      "unlocked": "Unlocked",
+      "locked": "Locked"
+    },
+    "unknownName": "???",
+    "lockedTitle": "Locked entry",
+    "lockedBody": "Obtain this character in a booster to unlock the entry.",
+    "alternativeNames": "Also known as",
+    "collection": "My collection",
+    "owned": "You own {count} copy | You own {count} copies",
+    "notOwned": "You no longer own this card (the entry stays unlocked)",
+    "firstObtained": "unlocked on {date}",
+    "appearances": "Appearances",
+    "series": "Series",
+    "roles": {
+      "MAIN": "Main",
+      "SUPPORTING": "Supporting",
+      "BACKGROUND": "Background"
+    },
+    "showSpoiler": "Show spoiler",
+    "noDescription": "No description.",
+    "source": "Source:",
+    "sourceAniList": "AniList"
+  },
   "errors": {
     "BAD_REQUEST": "The request is invalid.",
     "VALIDATION_FAILED": "Some fields are invalid.",
@@ -296,6 +400,9 @@
     "INVALID_IMAGE": "This image cannot be used (PNG, JPEG, WebP or GIF, 8 MB max).",
     "NOT_MANUAL_ENTRY": "Only manually created series and characters can be edited this way.",
     "INTERNAL_ERROR": "Something went wrong on our side.",
-    "NETWORK": "Cannot reach the server."
+    "NETWORK": "Cannot reach the server.",
+    "BOOSTER_UNAVAILABLE": "This booster is not available.",
+    "NOT_ENOUGH_CHARGES": "Not enough free boosters. Wait for the next one!",
+    "EMPTY_POOL": "There is no character to draw yet. An admin must import the catalog first."
   }
 }

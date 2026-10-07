@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import { useSession } from '@/app/session'
 import DiscordSignInButton from '@/components/DiscordSignInButton.vue'
 
@@ -26,7 +27,21 @@ const features = ['collect', 'trade', 'wiki'] as const
         <p class="rounded-full bg-night-800 px-4 py-1 text-gold-400">
           {{ t('home.gemBalance') }} · {{ n(me.gemBalance, 'integer') }}
         </p>
-        <p class="text-mist-300">{{ t('home.comingSoon') }}</p>
+        <div class="flex flex-wrap justify-center gap-3">
+          <RouterLink
+            :to="{ name: 'boosters' }"
+            class="rounded-xl bg-sakura-500 px-5 py-3 font-semibold text-white shadow-lg shadow-sakura-500/20 hover:bg-sakura-600"
+            data-testid="cta-boosters"
+          >
+            {{ t('home.openBoosters') }}
+          </RouterLink>
+          <RouterLink
+            :to="{ name: 'collection' }"
+            class="rounded-xl border border-night-700 bg-night-800 px-5 py-3 font-semibold hover:bg-night-700"
+          >
+            {{ t('home.myCollection') }}
+          </RouterLink>
+        </div>
       </div>
     </section>
 

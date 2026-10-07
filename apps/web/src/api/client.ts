@@ -56,3 +56,13 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions<T>): Pr
   }
   return options.schema.parse(payload)
 }
+
+/** `{ a: 1, b: undefined }` → `?a=1` */
+export function toQueryString(params: Record<string, unknown>): string {
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') search.set(key, String(value))
+  }
+  const text = search.toString()
+  return text ? `?${text}` : ''
+}

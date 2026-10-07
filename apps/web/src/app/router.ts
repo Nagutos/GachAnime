@@ -4,6 +4,25 @@ export const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: () => import('@/pages/HomePage.vue') },
+    { path: '/boosters', name: 'boosters', component: () => import('@/pages/BoostersPage.vue') },
+    {
+      path: '/collection',
+      name: 'collection',
+      component: () => import('@/pages/CollectionPage.vue'),
+    },
+    { path: '/wiki', name: 'wiki', component: () => import('@/pages/WikiPage.vue') },
+    {
+      path: '/wiki/series/:id(\\d+)',
+      name: 'wiki-series',
+      component: () => import('@/pages/WikiSeriesPage.vue'),
+      props: (route) => ({ id: Number(route.params.id) }),
+    },
+    {
+      path: '/wiki/characters/:id(\\d+)',
+      name: 'wiki-character',
+      component: () => import('@/pages/WikiCharacterPage.vue'),
+      props: (route) => ({ id: Number(route.params.id) }),
+    },
     {
       // Lazy-loaded admin area; the server checks the role on every admin request anyway.
       path: '/admin',

@@ -56,7 +56,7 @@ export default defineConfig({
   server: {
     port: 5173,
     // Same-origin in development too: the API is proxied like Caddy does in production.
-    proxy: { '/api': 'http://localhost:3000' },
+    proxy: { '/api': process.env.API_PROXY_TARGET ?? 'http://localhost:3000' },
   },
   test: {
     environment: 'happy-dom',
