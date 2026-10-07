@@ -3,6 +3,7 @@ import { updateCharacterSchema } from '@gachanime/shared'
 import { adminRoute, parseId } from '@/lib/admin'
 import { getDb } from '@/lib/db'
 import { parseJsonBody } from '@/lib/http'
+import { enqueueProgressionRecompute } from '@/lib/queue'
 
 type Params = { id: string }
 
@@ -13,5 +14,6 @@ export const GET = adminRoute<Params>(async ({ params }) =>
 export const PATCH = adminRoute<Params>(async ({ request, actor, params }) => {
   const id = parseId(params.id)
   await updateCharacter(getDb(), id, await parseJsonBody(request, updateCharacterSchema), actor)
+  await enqueueProgressionRecompute()
   return Response.json(await getCharacter(getDb(), id))
 })

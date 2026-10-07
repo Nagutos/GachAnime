@@ -21,3 +21,15 @@ export async function enqueueImportJob(importJobId: number): Promise<void> {
     { jobId: `anilist-import-${importJobId}`, removeOnComplete: true, removeOnFail: true },
   )
 }
+
+/**
+ * Asks the worker to recompute state achievements after a catalog change. Debounced: repeated
+ * changes within the delay share one job.
+ */
+export async function enqueueProgressionRecompute(): Promise<void> {
+  await getQueue().add(
+    'progression.recompute',
+    {},
+    { jobId: 'progression-recompute', delay: 15_000, removeOnComplete: true, removeOnFail: true },
+  )
+}

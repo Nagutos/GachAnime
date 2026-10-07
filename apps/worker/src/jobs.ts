@@ -1,4 +1,5 @@
 import type { Database } from '@gachanime/db'
+import { recomputeStateAchievementsForAll } from '@gachanime/core'
 import { runImportJob, type AniListClient } from '@gachanime/importer'
 import type { Logger } from 'pino'
 import { z } from 'zod'
@@ -19,7 +20,7 @@ const importJobDataSchema = z.object({ importJobId: z.number().int().positive() 
 /** BullMQ job id of an import: one queued job per import row. */
 export const importBullJobId = (importJobId: number) => `anilist-import-${importJobId}`
 
-/** Job registry. Later phases add: images.cache, achievements.recompute… */
+/** Job registry. Later phases add: images.cache, theme pools… */
 export const jobHandlers: Record<string, JobHandler> = {
   'system.ping': async (_data, { logger }) => {
     logger.info('pong')
@@ -27,7 +28,15 @@ export const jobHandlers: Record<string, JobHandler> = {
   },
   'anilist.import': async (data, { db, logger, anilist }) => {
     const { importJobId } = importJobDataSchema.parse(data)
-    return { outcome: await runImportJob({ db, client: anilist, logger }, importJobId) }
+    const outcome = await runImportJob({ db, client: anilist, logger }, importJobId)
+    // The catalog changed: series and catalog completion may have changed for every player.
+    if (outcome === 'completed') await recomputeStateAchievementsForAll(db)
+    return { outcome }
+  },
+  'progression.recompute': async (_data, { db, logger }) => {
+    const result = await recomputeStateAchievementsForAll(db)
+    logger.info(result, 'state achievements recomputed')
+    return result
   },
 }
 
