@@ -16,3 +16,8 @@ export function boosterPrice(tierPrice: number, quantity: number, surchargePerce
   const unit = Math.ceil((tierPrice * (100 + surchargePercent)) / 100)
   return unit * quantity
 }
+
+/** Whether a listing price respects a rarity's market bounds (a 0 maximum means no maximum). */
+export function priceInRange(price: number, min: number, max: number): boolean {
+  return Number.isInteger(price) && price >= Math.max(1, min) && (max === 0 || price <= max)
+}

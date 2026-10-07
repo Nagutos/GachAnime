@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nextResetAt, periodKey } from './period'
+import { nextResetAt, periodKey, periodStartAt } from './period'
 
 const PARIS = { hour: 0, timeZone: 'Europe/Paris' }
 
@@ -50,5 +50,17 @@ describe('nextResetAt', () => {
     const reset = nextResetAt(new Date('2026-03-28T12:00:00Z'), at2)
     expect(periodKey(reset, at2)).toBe('2026-03-29')
     expect(periodKey(new Date(reset.getTime() - 1000), at2)).toBe('2026-03-28')
+  })
+})
+
+describe('periodStartAt', () => {
+  it('returns the last local reset', () => {
+    expect(periodStartAt(new Date('2026-10-07T12:00:00Z'), PARIS)).toEqual(
+      new Date('2026-10-06T22:00:00Z'),
+    )
+    // Just after the winter time change, the period started at 00:00 UTC+2.
+    expect(periodStartAt(new Date('2026-10-25T12:00:00Z'), PARIS)).toEqual(
+      new Date('2026-10-24T22:00:00Z'),
+    )
   })
 })

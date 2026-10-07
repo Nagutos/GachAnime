@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { boosterPrice, recyclableCopies } from './economy'
+import { boosterPrice, priceInRange, recyclableCopies } from './economy'
 import { seededRng } from './rng'
 import { simulateEconomy } from './simulation'
 
@@ -60,5 +60,16 @@ describe('simulateEconomy', () => {
     expect(day!.distinctOwned).toBe(2)
     expect(day!.recycleGems).toBeGreaterThanOrEqual(48)
     expect(day!.recycleGems).toBeLessThanOrEqual(96)
+  })
+})
+
+describe('priceInRange', () => {
+  it('checks the rarity bounds, 0 meaning no maximum', () => {
+    expect(priceInRange(10, 10, 1000)).toBe(true)
+    expect(priceInRange(9, 10, 1000)).toBe(false)
+    expect(priceInRange(1001, 10, 1000)).toBe(false)
+    expect(priceInRange(999_999, 10, 0)).toBe(true)
+    expect(priceInRange(0, 0, 0)).toBe(false)
+    expect(priceInRange(1.5, 1, 10)).toBe(false)
   })
 })

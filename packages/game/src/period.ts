@@ -78,6 +78,16 @@ export function periodKey(now: Date, reset: DailyReset): string {
   return `${start.year}-${pad(start.month)}-${pad(start.day)}`
 }
 
+/** When the period containing `now` started (daily market limits count from there). */
+export function periodStartAt(now: Date, reset: DailyReset): Date {
+  const [year, month, day] = periodKey(now, reset).split('-').map(Number) as [
+    number,
+    number,
+    number,
+  ]
+  return zonedInstant(year, month, day, reset.hour, reset.timeZone)
+}
+
 /** When the period containing `now` ends (the next reset). */
 export function nextResetAt(now: Date, reset: DailyReset): Date {
   const [year, month, day] = periodKey(now, reset).split('-').map(Number) as [

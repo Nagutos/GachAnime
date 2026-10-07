@@ -13,6 +13,17 @@ export const settingsSchemas = {
     hour: z.number().int().min(0).max(23).default(0),
     timeZone: z.string().min(1).default('Europe/Paris'),
   }),
+  /** Market limits (GAME_DESIGN §4); 0 = unlimited. Days follow `missions.reset`. */
+  'market.limits': z.object({
+    maxActiveListings: z.number().int().min(0).max(10_000).default(20),
+    maxSalesPerDay: z.number().int().min(0).max(10_000).default(20),
+    maxPurchasesPerDay: z.number().int().min(0).max(10_000).default(20),
+    listingTtlDays: z.number().int().min(0).max(365).default(7),
+  }),
+  /** Trade offers expire after this many days; 0 = never. */
+  'trades.offers': z.object({
+    offerTtlDays: z.number().int().min(0).max(365).default(0),
+  }),
 } as const
 
 export type SettingKey = keyof typeof settingsSchemas
