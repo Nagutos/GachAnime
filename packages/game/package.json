@@ -12,7 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@gachanime/shared": "workspace:*"
+    "@gachanime/shared": "workspace:*",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@gachanime/config": "workspace:*",
