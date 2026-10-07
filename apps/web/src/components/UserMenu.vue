@@ -32,6 +32,19 @@ const router = useRouter()
         class="min-w-40 rounded-xl border border-night-700 bg-night-900 p-1 text-sm shadow-xl"
       >
         <DropdownMenuItem
+          class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
+          data-testid="profile-link"
+          @select="router.push({ name: 'profile', params: { username: me.username } })"
+        >
+          {{ t('nav.myProfile') }}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
+          @select="router.push({ name: 'players' })"
+        >
+          {{ t('nav.players') }}
+        </DropdownMenuItem>
+        <DropdownMenuItem
           v-if="me.role === 'admin'"
           class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
           data-testid="admin-link"

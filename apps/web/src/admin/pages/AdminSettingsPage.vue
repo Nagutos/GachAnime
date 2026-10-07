@@ -14,12 +14,27 @@ const saved = ref<string | null>(null)
 
 const free = ref<AdminSettings['boosters.free']>({ intervalSeconds: 600, maxCharges: 15 })
 const reset = ref<AdminSettings['missions.reset']>({ hour: 0, timeZone: 'Europe/Paris' })
+const market = ref<AdminSettings['market.limits']>({
+  maxActiveListings: 20,
+  maxSalesPerDay: 20,
+  maxPurchasesPerDay: 20,
+  listingTtlDays: 7,
+})
+const tradeOffers = ref<AdminSettings['trades.offers']>({ offerTtlDays: 0 })
+const marketFields = [
+  'maxActiveListings',
+  'maxSalesPerDay',
+  'maxPurchasesPerDay',
+  'listingTtlDays',
+] as const
 watch(
   () => settings.data.value,
   (value) => {
     if (!value) return
     free.value = { ...value['boosters.free'] }
     reset.value = { ...value['missions.reset'] }
+    market.value = { ...value['market.limits'] }
+    tradeOffers.value = { ...value['trades.offers'] }
   },
   { immediate: true },
 )
@@ -93,6 +108,51 @@ async function save<K extends keyof AdminSettings>(key: K, value: AdminSettings[
         </div>
         <div class="flex items-center justify-end gap-3">
           <span v-if="saved === 'missions.reset'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+      <form
+        :class="[ui.card, 'flex flex-col gap-4']"
+        @submit.prevent="save('market.limits', market)"
+      >
+        <h2 class="font-display text-xl font-bold">{{ t('admin.settings.market') }}</h2>
+        <p class="text-sm text-mist-300">{{ t('admin.settings.zeroUnlimited') }}</p>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label v-for="field in marketFields" :key="field" :class="ui.label">
+            {{ t(`admin.settings.marketFields.${field}`) }}
+            <input v-model.number="market[field]" type="number" min="0" :class="ui.input" />
+          </label>
+        </div>
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === 'market.limits'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+
+      <form
+        :class="[ui.card, 'flex flex-col gap-4']"
+        @submit.prevent="save('trades.offers', tradeOffers)"
+      >
+        <h2 class="font-display text-xl font-bold">{{ t('admin.settings.trades') }}</h2>
+        <label :class="ui.label">
+          {{ t('admin.settings.offerTtlDays') }}
+          <input
+            v-model.number="tradeOffers.offerTtlDays"
+            type="number"
+            min="0"
+            :class="ui.input"
+          />
+        </label>
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === 'trades.offers'" class="text-sm text-emerald-400">
             {{ t('admin.common.saved') }}
           </span>
           <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">

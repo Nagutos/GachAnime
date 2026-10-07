@@ -59,7 +59,8 @@
       "settings": "Réglages",
       "missions": "Missions",
       "achievements": "Succès",
-      "themes": "Packs"
+      "themes": "Packs",
+      "users": "Utilisateurs"
     },
     "openAdmin": "Administration",
     "forbidden": "Cet espace est réservé aux administrateurs.",
@@ -303,7 +304,17 @@
       "dailyReset": "Remise à zéro quotidienne",
       "dailyResetHelp": "Moment où les missions quotidiennes et les limites du marché repartent à zéro.",
       "resetHour": "Heure (0–23)",
-      "timeZone": "Fuseau horaire (IANA, ex. Europe/Paris)"
+      "timeZone": "Fuseau horaire (IANA, ex. Europe/Paris)",
+      "market": "Marché",
+      "zeroUnlimited": "0 = illimité. Les jours suivent la remise à zéro quotidienne.",
+      "marketFields": {
+        "maxActiveListings": "Annonces actives par joueur",
+        "maxSalesPerDay": "Ventes par joueur et par jour",
+        "maxPurchasesPerDay": "Achats par joueur et par jour",
+        "listingTtlDays": "Durée d'une annonce (jours)"
+      },
+      "trades": "Échanges",
+      "offerTtlDays": "Durée d'une offre en jours (0 = n'expire jamais)"
     },
     "rarities": {
       "title": "Raretés",
@@ -427,6 +438,27 @@
           "series": "Séries"
         }
       }
+    },
+    "users": {
+      "title": "Utilisateurs",
+      "bannedOnly": "Bannis uniquement",
+      "banned": "Banni",
+      "columns": {
+        "player": "Joueur",
+        "role": "Rôle",
+        "gems": "Gemmes",
+        "owned": "Personnages",
+        "joined": "Inscrit le"
+      },
+      "roles": {
+        "user": "Joueur",
+        "admin": "Admin"
+      },
+      "ban": "Bannir",
+      "unban": "Débannir",
+      "banTitle": "Bannir {name} ?",
+      "banBody": "Il est déconnecté et ne peut plus se connecter. Ses cartes et annonces sont conservées.",
+      "banReason": "Raison (facultatif)"
     }
   },
   "nav": {
@@ -437,7 +469,11 @@
     "gems": "{count} gemmes",
     "missions": "Missions",
     "achievements": "Succès",
-    "claimable": "{count} récompenses à récupérer"
+    "claimable": "{count} récompenses à récupérer",
+    "market": "Marché",
+    "trades": "Échanges",
+    "myProfile": "Mon profil",
+    "players": "Joueurs"
   },
   "cards": {
     "new": "Nouveau",
@@ -649,6 +685,125 @@
     "empty": "Rien ici.",
     "completedOn": "Obtenu le {date}"
   },
+  "players": {
+    "title": "Joueurs",
+    "subtitle": "Visite les profils et propose des échanges.",
+    "search": "Chercher un joueur…",
+    "owned": "{count} personnages"
+  },
+  "profile": {
+    "memberSince": "membre depuis le {date}",
+    "proposeTrade": "Proposer un échange",
+    "noAchievements": "Aucun succès pour le moment.",
+    "stats": {
+      "owned": "Personnages",
+      "cards": "Cartes",
+      "series": "Séries complètes",
+      "achievements": "Succès",
+      "achievementsValue": "{done} / {total}"
+    },
+    "tabs": {
+      "cards": "Cartes",
+      "achievements": "Succès"
+    }
+  },
+  "trades": {
+    "title": "Échanges",
+    "subtitle": "Échange des cartes avec les autres joueurs. Les cartes que tu proposes sont réservées jusqu'à la fin de l'échange.",
+    "new": "Nouvel échange",
+    "back": "← Échanges",
+    "newTitle": "Nouvel échange",
+    "counterTitle": "Contre-proposition",
+    "pickPlayer": "Choisis un joueur depuis son profil pour commencer un échange.",
+    "with": "Échange avec {name}",
+    "youGive": "Tu donnes",
+    "youReceive": "Tu reçois",
+    "pickOffer": "Choisis ci-dessous les cartes que tu donnes.",
+    "pickRequest": "Choisis ci-dessous les cartes que tu veux.",
+    "inMyWishlist": "Dans ma wishlist",
+    "inTheirWishlist": "Dans sa wishlist",
+    "noTradable": "Aucune carte disponible pour un échange.",
+    "less": "Un de moins",
+    "more": "Un de plus",
+    "message": "Message (facultatif)",
+    "lastCopyWarning": "Tu donnes ton dernier exemplaire de : {names}. La fiche du wiki reste débloquée.",
+    "send": "Envoyer l'offre",
+    "sendCounter": "Envoyer la contre-proposition",
+    "sentOn": "envoyé le",
+    "receivedOn": "reçu le",
+    "expiresOn": "Expire le {date}",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "counter": "Contre-proposer",
+    "cancel": "Annuler l'offre",
+    "boxes": {
+      "incoming": "Reçus",
+      "outgoing": "Envoyés",
+      "history": "Historique"
+    },
+    "empty": {
+      "incoming": "Aucune offre en attente de ta réponse.",
+      "outgoing": "Aucune offre envoyée en attente.",
+      "history": "Aucun échange passé."
+    },
+    "status": {
+      "pending": "En attente",
+      "accepted": "Accepté",
+      "declined": "Refusé",
+      "cancelled": "Annulé",
+      "countered": "Contre-proposé",
+      "expired": "Expiré",
+      "failed": "Échoué"
+    }
+  },
+  "market": {
+    "title": "Marché",
+    "subtitle": "Achète des cartes aux autres joueurs avec tes gemmes, ou vends les tiennes. Sans commission : le vendeur touche tout.",
+    "tabs": {
+      "browse": "Acheter",
+      "active": "Mes ventes",
+      "closed": "Historique"
+    },
+    "sorts": {
+      "recent": "Plus récentes",
+      "price_asc": "Moins chères",
+      "price_desc": "Plus chères",
+      "rarity": "Rareté"
+    },
+    "missingOnly": "Cartes qui me manquent",
+    "inWishlist": "Wishlist",
+    "youOwn": "Tu en as {count}",
+    "youMiss": "Tu ne l'as pas",
+    "buy": "Acheter",
+    "withdraw": "Retirer",
+    "status": {
+      "active": "En vente",
+      "sold": "Vendue",
+      "withdrawn": "Retirée",
+      "expired": "Expirée"
+    },
+    "boughtBy": "achetée par {name}",
+    "boughtByMe": "achetée par toi",
+    "empty": {
+      "browse": "Rien en vente ici.",
+      "active": "Tu n'as aucune carte en vente.",
+      "closed": "Aucune vente ni achat pour le moment."
+    },
+    "usage": "{active} / {maxActive} annonces en vente · {sales} / {maxSales} ventes aujourd'hui.",
+    "howToSell": "Vends une carte depuis sa fiche du wiki.",
+    "confirmTitle": "Confirmer l'achat",
+    "confirmBody": "Acheter {name} à {seller} pour {price} gemmes ?",
+    "buyFor": "Acheter pour {price} gemmes",
+    "sellTitle": "Vendre au marché",
+    "allLocked": "Tous tes exemplaires sont déjà en vente ou dans un échange.",
+    "bounds": "Prix entre {min} et {max} gemmes.",
+    "boundsMin": "Prix d'au moins {min} gemmes.",
+    "price": "Prix",
+    "sell": "Mettre en vente",
+    "lastCopyWarning": "C'est ton dernier exemplaire. La fiche du wiki reste débloquée s'il se vend.",
+    "listed": "En vente !",
+    "seeMarket": "Voir le marché"
+  },
   "errors": {
     "BAD_REQUEST": "La requête est invalide.",
     "VALIDATION_FAILED": "Certains champs sont invalides.",
@@ -671,6 +826,13 @@
     "NOTHING_TO_RECYCLE": "Il n'y a rien à recycler.",
     "PREVIEW_OUTDATED": "Tes doublons ont changé entre-temps. Vérifie le nouvel aperçu et confirme à nouveau.",
     "NOT_CLAIMABLE": "Cette récompense ne peut pas être récupérée.",
-    "THEME_UNAVAILABLE": "Ce pack n'est pas disponible avec ce booster."
+    "THEME_UNAVAILABLE": "Ce pack n'est pas disponible avec ce booster.",
+    "CARD_UNAVAILABLE": "Cette carte n'est plus disponible (réservée, échangée ou vendue).",
+    "LISTING_UNAVAILABLE": "Cette annonce n'est plus en vente.",
+    "MARKET_LIMIT_REACHED": "Une limite du marché est atteinte. Réessaie demain.",
+    "PRICE_OUT_OF_RANGE": "Ce prix sort des limites autorisées pour cette rareté.",
+    "TRADE_NOT_PENDING": "Cette offre n'est plus en attente.",
+    "INVALID_TRADE": "Cet échange n'est pas valide.",
+    "PLAYER_BANNED": "Ce joueur est banni."
   }
 }

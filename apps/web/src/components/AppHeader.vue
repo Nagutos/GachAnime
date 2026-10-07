@@ -14,12 +14,15 @@ const summary = useProgressionSummaryQuery(isSignedIn)
 const badges = computed<Record<string, number>>(() => ({
   missions: summary.data.value?.claimableMissions ?? 0,
   achievements: summary.data.value?.claimableAchievements ?? 0,
+  trades: summary.data.value?.pendingTrades ?? 0,
 }))
 
 const links = [
   { name: 'boosters', label: 'nav.boosters' },
   { name: 'collection', label: 'nav.collection' },
   { name: 'wiki', label: 'nav.wiki' },
+  { name: 'market', label: 'nav.market' },
+  { name: 'trades', label: 'nav.trades' },
   { name: 'missions', label: 'nav.missions' },
   { name: 'achievements', label: 'nav.achievements' },
 ] as const

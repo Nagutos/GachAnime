@@ -59,7 +59,8 @@
       "settings": "Settings",
       "missions": "Missions",
       "achievements": "Achievements",
-      "themes": "Packs"
+      "themes": "Packs",
+      "users": "Users"
     },
     "openAdmin": "Administration",
     "forbidden": "This area is reserved for administrators.",
@@ -303,7 +304,17 @@
       "dailyReset": "Daily reset",
       "dailyResetHelp": "When daily missions and market limits start over.",
       "resetHour": "Hour (0–23)",
-      "timeZone": "Time zone (IANA, e.g. Europe/Paris)"
+      "timeZone": "Time zone (IANA, e.g. Europe/Paris)",
+      "market": "Market",
+      "zeroUnlimited": "0 means unlimited. Days follow the daily reset.",
+      "marketFields": {
+        "maxActiveListings": "Active listings per player",
+        "maxSalesPerDay": "Sales per player per day",
+        "maxPurchasesPerDay": "Purchases per player per day",
+        "listingTtlDays": "Listing lifetime (days)"
+      },
+      "trades": "Trades",
+      "offerTtlDays": "Offer lifetime in days (0 = never expires)"
     },
     "rarities": {
       "title": "Rarities",
@@ -427,6 +438,27 @@
           "series": "Series"
         }
       }
+    },
+    "users": {
+      "title": "Users",
+      "bannedOnly": "Banned only",
+      "banned": "Banned",
+      "columns": {
+        "player": "Player",
+        "role": "Role",
+        "gems": "Gems",
+        "owned": "Characters",
+        "joined": "Joined"
+      },
+      "roles": {
+        "user": "Player",
+        "admin": "Admin"
+      },
+      "ban": "Ban",
+      "unban": "Unban",
+      "banTitle": "Ban {name}?",
+      "banBody": "They are signed out and can no longer sign in. Their cards and listings are kept.",
+      "banReason": "Reason (optional)"
     }
   },
   "nav": {
@@ -437,7 +469,11 @@
     "gems": "{count} gems",
     "missions": "Missions",
     "achievements": "Achievements",
-    "claimable": "{count} rewards to claim"
+    "claimable": "{count} rewards to claim",
+    "market": "Market",
+    "trades": "Trades",
+    "myProfile": "My profile",
+    "players": "Players"
   },
   "cards": {
     "new": "New",
@@ -649,6 +685,125 @@
     "empty": "Nothing here.",
     "completedOn": "Completed on {date}"
   },
+  "players": {
+    "title": "Players",
+    "subtitle": "Visit profiles and propose trades.",
+    "search": "Search a player…",
+    "owned": "{count} characters"
+  },
+  "profile": {
+    "memberSince": "member since {date}",
+    "proposeTrade": "Propose a trade",
+    "noAchievements": "No achievement yet.",
+    "stats": {
+      "owned": "Characters",
+      "cards": "Cards",
+      "series": "Series completed",
+      "achievements": "Achievements",
+      "achievementsValue": "{done} / {total}"
+    },
+    "tabs": {
+      "cards": "Cards",
+      "achievements": "Achievements"
+    }
+  },
+  "trades": {
+    "title": "Trades",
+    "subtitle": "Swap cards with other players. The cards you offer are reserved until the trade ends.",
+    "new": "New trade",
+    "back": "← Trades",
+    "newTitle": "New trade",
+    "counterTitle": "Counter offer",
+    "pickPlayer": "Choose a player from their profile to start a trade.",
+    "with": "Trade with {name}",
+    "youGive": "You give",
+    "youReceive": "You receive",
+    "pickOffer": "Pick the cards you give below.",
+    "pickRequest": "Pick the cards you want below.",
+    "inMyWishlist": "In my wishlist",
+    "inTheirWishlist": "In their wishlist",
+    "noTradable": "No card available to trade.",
+    "less": "One less",
+    "more": "One more",
+    "message": "Message (optional)",
+    "lastCopyWarning": "You are giving your last copy of: {names}. The wiki entry stays unlocked.",
+    "send": "Send the offer",
+    "sendCounter": "Send the counter offer",
+    "sentOn": "sent",
+    "receivedOn": "received",
+    "expiresOn": "Expires on {date}",
+    "accept": "Accept",
+    "decline": "Decline",
+    "counter": "Counter",
+    "cancel": "Cancel the offer",
+    "boxes": {
+      "incoming": "Received",
+      "outgoing": "Sent",
+      "history": "History"
+    },
+    "empty": {
+      "incoming": "No offer waiting for your answer.",
+      "outgoing": "No pending offer sent.",
+      "history": "No past trade."
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "cancelled": "Cancelled",
+      "countered": "Countered",
+      "expired": "Expired",
+      "failed": "Failed"
+    }
+  },
+  "market": {
+    "title": "Market",
+    "subtitle": "Buy cards from other players with gems, or sell yours. No fee: the seller gets the full price.",
+    "tabs": {
+      "browse": "Buy",
+      "active": "My listings",
+      "closed": "History"
+    },
+    "sorts": {
+      "recent": "Newest",
+      "price_asc": "Cheapest",
+      "price_desc": "Most expensive",
+      "rarity": "Rarity"
+    },
+    "missingOnly": "Cards I miss",
+    "inWishlist": "Wishlist",
+    "youOwn": "You own {count}",
+    "youMiss": "You do not own it",
+    "buy": "Buy",
+    "withdraw": "Withdraw",
+    "status": {
+      "active": "On sale",
+      "sold": "Sold",
+      "withdrawn": "Withdrawn",
+      "expired": "Expired"
+    },
+    "boughtBy": "bought by {name}",
+    "boughtByMe": "bought by you",
+    "empty": {
+      "browse": "Nothing for sale here.",
+      "active": "You have no card on sale.",
+      "closed": "No sale or purchase yet."
+    },
+    "usage": "{active} / {maxActive} listings on sale · {sales} / {maxSales} sales today.",
+    "howToSell": "Sell a card from its wiki entry.",
+    "confirmTitle": "Confirm the purchase",
+    "confirmBody": "Buy {name} from {seller} for {price} gems?",
+    "buyFor": "Buy for {price} gems",
+    "sellTitle": "Sell on the market",
+    "allLocked": "All your copies are already on sale or in a trade.",
+    "bounds": "Price between {min} and {max} gems.",
+    "boundsMin": "Price of at least {min} gems.",
+    "price": "Price",
+    "sell": "Put on sale",
+    "lastCopyWarning": "This is your last copy. The wiki entry stays unlocked if it sells.",
+    "listed": "On sale!",
+    "seeMarket": "See the market"
+  },
   "errors": {
     "BAD_REQUEST": "The request is invalid.",
     "VALIDATION_FAILED": "Some fields are invalid.",
@@ -671,6 +826,13 @@
     "NOTHING_TO_RECYCLE": "There is nothing to recycle.",
     "PREVIEW_OUTDATED": "Your duplicates changed in the meantime. Check the new preview and confirm again.",
     "NOT_CLAIMABLE": "This reward cannot be claimed.",
-    "THEME_UNAVAILABLE": "This pack is not available with this booster."
+    "THEME_UNAVAILABLE": "This pack is not available with this booster.",
+    "CARD_UNAVAILABLE": "This card is no longer available (locked, traded or sold).",
+    "LISTING_UNAVAILABLE": "This listing is no longer for sale.",
+    "MARKET_LIMIT_REACHED": "A market limit is reached. Try again tomorrow.",
+    "PRICE_OUT_OF_RANGE": "This price is outside the allowed range for this rarity.",
+    "TRADE_NOT_PENDING": "This offer is no longer pending.",
+    "INVALID_TRADE": "This trade is not valid.",
+    "PLAYER_BANNED": "This player is banned."
   }
 }

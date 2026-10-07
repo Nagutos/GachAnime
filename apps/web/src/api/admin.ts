@@ -3,6 +3,8 @@ import {
   adminBoosterTiersResponseSchema,
   adminMissionsResponseSchema,
   adminThemesResponseSchema,
+  adminUserSchema,
+  adminUsersListSchema,
   themePreviewSchema,
   themeRuleOptionsSchema,
   adminCharacterDetailSchema,
@@ -31,6 +33,7 @@ import {
   type CreateMissionRequest,
   type CreateThemeRequest,
   type ThemeRule,
+  type UpdateAdminUserRequest,
   type UpdateThemeRequest,
   type UpdateAchievementRequest,
   type UpdateMissionRequest,
@@ -61,6 +64,7 @@ export const adminKeys = {
   missions: ['admin', 'missions'] as const,
   achievements: ['admin', 'achievements'] as const,
   themes: ['admin', 'themes'] as const,
+  users: ['admin', 'users'] as const,
 }
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
@@ -446,6 +450,37 @@ export function useDeleteThemeMutation() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.themes })
       void queryClient.invalidateQueries({ queryKey: ['boosters'] })
+    },
+  })
+}
+
+// ─── Users ───────────────────────────────────────────────────────────────────
+
+export function useAdminUsersQuery(
+  filters: MaybeRefOrGetter<{ page: number; search?: string; banned?: 'true' }>,
+) {
+  return useQuery({
+    queryKey: computed(() => [...adminKeys.users, toValue(filters)]),
+    queryFn: () =>
+      apiFetch(`/admin/users${toQueryString({ ...toValue(filters), pageSize: 30 })}`, {
+        schema: adminUsersListSchema,
+      }),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useUpdateUserMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { id: string; changes: UpdateAdminUserRequest }) =>
+      apiFetch(`/admin/users/${input.id}`, {
+        method: 'PATCH',
+        body: input.changes,
+        schema: adminUserSchema,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.users })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
     },
   })
 }

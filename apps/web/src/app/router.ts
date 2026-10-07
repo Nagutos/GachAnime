@@ -15,6 +15,20 @@ export const router = createRouter({
       name: 'collection-series',
       component: () => import('@/pages/CollectionSeriesPage.vue'),
     },
+    { path: '/market', name: 'market', component: () => import('@/pages/MarketPage.vue') },
+    { path: '/trades', name: 'trades', component: () => import('@/pages/TradesPage.vue') },
+    {
+      path: '/trades/new',
+      name: 'trade-new',
+      component: () => import('@/pages/TradeComposerPage.vue'),
+    },
+    { path: '/players', name: 'players', component: () => import('@/pages/PlayersPage.vue') },
+    {
+      path: '/u/:username',
+      name: 'profile',
+      component: () => import('@/pages/ProfilePage.vue'),
+      props: true,
+    },
     { path: '/missions', name: 'missions', component: () => import('@/pages/MissionsPage.vue') },
     {
       path: '/achievements',
@@ -106,6 +120,11 @@ export const router = createRouter({
           path: 'achievements',
           name: 'admin-achievements',
           component: () => import('@/admin/pages/AdminAchievementsPage.vue'),
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('@/admin/pages/AdminUsersPage.vue'),
         },
         {
           path: 'audit',

@@ -9,6 +9,7 @@ import CharacterCard from '@/components/cards/CharacterCard.vue'
 import LockedCard from '@/components/cards/LockedCard.vue'
 import { rarityStyle } from '@/components/cards/rarity-styles'
 import WishlistButton from '@/components/collection/WishlistButton.vue'
+import SellPanel from '@/components/social/SellPanel.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
 import { playerUi } from '@/components/ui'
 import DescriptionText from '@/components/wiki/DescriptionText.vue'
@@ -178,6 +179,14 @@ function back(): void {
               </p>
               <p v-if="recycleError" :class="playerUi.error" role="alert">{{ recycleError }}</p>
             </section>
+
+            <SellPanel
+              v-if="entry.quantity > 0"
+              :character-id="entry.id"
+              :rarity-key="entry.rarityKey"
+              :quantity="entry.quantity"
+              :locked-quantity="entry.lockedQuantity"
+            />
 
             <section class="flex flex-col gap-2">
               <h2 class="font-display text-lg font-bold">{{ t('wiki.about') }}</h2>
