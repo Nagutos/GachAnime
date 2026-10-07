@@ -19,12 +19,13 @@ export async function signInNewPlayer(
   context: BrowserContext,
   name = 'E2E Player',
   databaseUrl = e2eDatabaseUrl(),
+  role: 'user' | 'admin' = 'user',
 ): Promise<{ userId: string }> {
   const { db, pool } = createDatabase(databaseUrl, { max: 2 })
   const redis = new Redis(process.env.REDIS_URL as string)
   try {
     const userId = `e2e-${randomUUID()}`
-    await db.insert(users).values({ id: userId, name, email: `${userId}@example.test` })
+    await db.insert(users).values({ id: userId, name, email: `${userId}@example.test`, role })
     await db.insert(accounts).values({
       id: `acc-${userId}`,
       userId,
