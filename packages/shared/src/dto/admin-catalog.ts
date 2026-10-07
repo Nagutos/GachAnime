@@ -41,8 +41,8 @@ export interface Paginated<T> {
 /** `?active=true|false` → boolean; anything else → undefined (no filter). */
 const booleanQuery = z
   .enum(['true', 'false'])
+  .transform((value) => value === 'true')
   .optional()
-  .transform((value) => (value === undefined ? undefined : value === 'true'))
 
 const idSchema = z.number().int().positive()
 
