@@ -1,5 +1,6 @@
 import { rarities, type Executor } from '@gachanime/db'
 import { rarityFromFavourites } from '@gachanime/game'
+import { localizedTextSchema, type PublicRarity } from '@gachanime/shared'
 import { asc } from 'drizzle-orm'
 import { AppError } from '../errors'
 
@@ -61,4 +62,18 @@ export class RarityTable {
   keyForId(id: number): string {
     return this.byId.get(id)?.key ?? 'unknown'
   }
+}
+
+/** Rarities as shown to players (names, colors), lowest first. */
+export async function listPublicRarities(db: Executor): Promise<PublicRarity[]> {
+  const rows = await db
+    .select({
+      key: rarities.key,
+      sortOrder: rarities.sortOrder,
+      name: rarities.name,
+      colorToken: rarities.colorToken,
+    })
+    .from(rarities)
+    .orderBy(asc(rarities.sortOrder))
+  return rows.map((row) => ({ ...row, name: localizedTextSchema.parse(row.name) }))
 }
