@@ -14,6 +14,8 @@ COPY apps/worker/package.json apps/worker/
 COPY packages/config/package.json packages/config/
 COPY packages/core/package.json packages/core/
 COPY packages/db/package.json packages/db/
+COPY packages/game/package.json packages/game/
+COPY packages/importer/package.json packages/importer/
 COPY packages/shared/package.json packages/shared/
 COPY e2e/package.json e2e/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
