@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@gachanime/db": "workspace:*",
+    "@gachanime/game": "workspace:*",
     "@gachanime/shared": "workspace:*",
     "drizzle-orm": "^0.45.3",
     "tsx": "^4.23.15"

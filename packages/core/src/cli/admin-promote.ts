@@ -1,9 +1,10 @@
 import { parseArgs } from 'node:util'
 import { createDatabase } from '@gachanime/db'
 import { promoteAdminByDiscordId } from '../admin/roles'
+import { cliArgs } from './args'
 import { AppError } from '../errors'
 
-const { values } = parseArgs({ options: { 'discord-id': { type: 'string' } } })
+const { values } = parseArgs({ args: cliArgs(), options: { 'discord-id': { type: 'string' } } })
 const discordId = values['discord-id']
 const databaseUrl = process.env.DATABASE_URL
 

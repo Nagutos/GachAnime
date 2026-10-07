@@ -20,7 +20,8 @@
     "db:generate": "pnpm --filter @gachanime/db generate",
     "db:migrate": "pnpm --filter @gachanime/db migrate",
     "db:seed": "pnpm --filter @gachanime/db seed",
-    "admin:promote": "pnpm --filter @gachanime/core admin:promote"
+    "admin:promote": "pnpm --filter @gachanime/core admin:promote",
+    "import:anilist": "pnpm --filter @gachanime/importer import:anilist"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
