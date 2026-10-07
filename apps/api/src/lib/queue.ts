@@ -23,13 +23,13 @@ export async function enqueueImportJob(importJobId: number): Promise<void> {
 }
 
 /**
- * Asks the worker to recompute state achievements after a catalog change. Debounced: repeated
- * changes within the delay share one job.
+ * After a catalog change, asks the worker to rebuild pack pools and recompute state achievements.
+ * Debounced: repeated changes within the delay share one job.
  */
-export async function enqueueProgressionRecompute(): Promise<void> {
+export async function enqueueCatalogRefresh(): Promise<void> {
   await getQueue().add(
-    'progression.recompute',
+    'catalog.refresh',
     {},
-    { jobId: 'progression-recompute', delay: 15_000, removeOnComplete: true, removeOnFail: true },
+    { jobId: 'catalog-refresh', delay: 15_000, removeOnComplete: true, removeOnFail: true },
   )
 }
