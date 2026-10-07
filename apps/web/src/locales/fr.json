@@ -38,6 +38,250 @@
     "title": "Cette page n'existe pas.",
     "back": "Retour à l'accueil"
   },
+  "admin": {
+    "title": "Admin",
+    "nav": {
+      "dashboard": "Vue d'ensemble",
+      "series": "Séries",
+      "characters": "Personnages",
+      "imports": "Import AniList",
+      "audit": "Journal d'audit"
+    },
+    "openAdmin": "Administration",
+    "forbidden": "Cet espace est réservé aux administrateurs.",
+    "common": {
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "confirm": "Confirmer",
+      "close": "Fermer",
+      "all": "Tous",
+      "active": "Active",
+      "inactive": "Inactive",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "pageOf": "Page {page} sur {pages}",
+      "results": "{count} résultat | {count} résultats",
+      "empty": "Rien à afficher.",
+      "edit": "Modifier",
+      "upload": "Envoyer une image",
+      "uploading": "Envoi…",
+      "saved": "Enregistré.",
+      "openOnAniList": "Voir sur AniList",
+      "search": "Rechercher",
+      "noImage": "Pas d'image"
+    },
+    "sources": {
+      "anilist": "AniList",
+      "manual": "Manuelle"
+    },
+    "kinds": {
+      "anime": "Anime",
+      "game": "Jeu",
+      "other": "Autre"
+    },
+    "genders": {
+      "female": "Féminin",
+      "male": "Masculin",
+      "unclassified": "Non classé"
+    },
+    "roles": {
+      "MAIN": "Principal",
+      "SUPPORTING": "Secondaire",
+      "BACKGROUND": "Figurant"
+    },
+    "dashboard": {
+      "title": "Vue d'ensemble du catalogue",
+      "characters": "Personnages",
+      "drawable": "Tirables",
+      "series": "Séries",
+      "activeSeries": "Séries actives",
+      "unclassified": "Genre non classé",
+      "unclassifiedLink": "Les classer",
+      "rarityDistribution": "Répartition des raretés",
+      "rarityHelp": "Les raretés par défaut viennent des favoris AniList. Les personnages réglés à la main gardent leur rareté lors des ré-imports.",
+      "threshold": "≥ {count} favoris",
+      "overridden": "{count} réglés à la main",
+      "emptyCatalog": "Le catalogue est vide. Commence par un import AniList.",
+      "startImport": "Importer depuis AniList"
+    },
+    "series": {
+      "title": "Séries",
+      "searchPlaceholder": "Rechercher un titre…",
+      "kind": "Type",
+      "source": "Source",
+      "status": "Statut",
+      "newManual": "Nouvelle série manuelle",
+      "importRoster": "Importer un roster JSON",
+      "selected": "{count} sélectionnée | {count} sélectionnées",
+      "merge": "Fusionner",
+      "mergeTitle": "Fusionner des séries",
+      "mergeHelp": "Les autres séries sélectionnées sont fusionnées dans celle que tu gardes, puis supprimées.",
+      "mergeTarget": "Série à garder",
+      "columns": {
+        "title": "Titre",
+        "kind": "Type",
+        "media": "Médias",
+        "characters": "Personnages",
+        "popularity": "Popularité",
+        "status": "Statut"
+      },
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "deleteTitle": "Supprimer « {title} » ?",
+      "deleteBody": "Ses médias et ses liens sont supprimés. Les personnages sont conservés. Une série AniList revient au prochain import qui l'atteint : désactive-la plutôt pour la masquer définitivement.",
+      "select": "Sélectionner {title}"
+    },
+    "seriesDetail": {
+      "back": "Toutes les séries",
+      "media": "Médias",
+      "characters": "Personnages",
+      "split": "Déplacer vers une nouvelle série",
+      "splitHelp": "Sélectionne les médias qui forment une autre série.",
+      "splitConfirm": "Déplacer {count} média(s) vers une nouvelle série ?",
+      "noDescription": "Pas de description.",
+      "cover": "Couverture",
+      "uploadCover": "Envoyer une couverture",
+      "addCharacter": "Ajouter un personnage",
+      "slug": "Slug",
+      "genres": "Genres",
+      "edit": "Modifier la série",
+      "year": "Année",
+      "format": "Format",
+      "syncedAt": "Personnages synchronisés",
+      "notSynced": "Non synchronisé"
+    },
+    "seriesForm": {
+      "title": "Nouvelle série manuelle",
+      "editTitle": "Modifier la série",
+      "slug": "Slug",
+      "slugHelp": "Lettres minuscules, chiffres et tirets. Sert dans les URL et les imports de roster.",
+      "titleField": "Titre",
+      "titleEnglish": "Titre anglais",
+      "kind": "Type",
+      "description": "Description",
+      "coverUrl": "URL de la couverture",
+      "genres": "Genres",
+      "genresHelp": "Séparés par des virgules.",
+      "create": "Créer"
+    },
+    "roster": {
+      "title": "Importer un roster JSON",
+      "help": "Crée ou met à jour une série manuelle et ses personnages. Les personnages sont reconnus par leur clé : réimporter le même fichier les met à jour.",
+      "file": "Fichier JSON",
+      "paste": "Contenu JSON",
+      "invalidJson": "Ce n'est pas du JSON valide.",
+      "invalidRoster": "Le roster ne respecte pas le format attendu.",
+      "submit": "Importer",
+      "result": "{created} créé(s), {updated} mis à jour.",
+      "example": "Exemple"
+    },
+    "characters": {
+      "title": "Personnages",
+      "searchPlaceholder": "Rechercher un nom…",
+      "rarity": "Rareté",
+      "gender": "Genre",
+      "source": "Source",
+      "status": "Statut",
+      "override": "Origine de la rareté",
+      "overrideOptions": {
+        "true": "Réglée à la main",
+        "false": "Selon les favoris"
+      },
+      "sort": "Tri",
+      "sorts": {
+        "favourites": "Plus de favoris",
+        "name": "Nom",
+        "recent": "Ajout récent"
+      },
+      "columns": {
+        "character": "Personnage",
+        "series": "Séries",
+        "rarity": "Rareté",
+        "gender": "Genre",
+        "favourites": "Favoris",
+        "status": "Actif"
+      },
+      "defaultRarity": "Par défaut : {rarity}",
+      "resetRarity": "Rétablir",
+      "overridden": "Réglée à la main",
+      "imported": "AniList : {gender}",
+      "clearOverride": "Valeur AniList",
+      "toggleActive": "Actif",
+      "more": "+{count}"
+    },
+    "characterForm": {
+      "titleNew": "Nouveau personnage",
+      "titleEdit": "Modifier {name}",
+      "name": "Nom",
+      "nameNative": "Nom natif",
+      "description": "Description",
+      "imageUrl": "URL de l'image",
+      "image": "Image",
+      "gender": "Genre",
+      "rarity": "Rareté",
+      "create": "Créer"
+    },
+    "imports": {
+      "title": "Import AniList",
+      "rateNote": "AniList autorise actuellement environ 30 requêtes par minute : importer le top 500 avec ses franchises prend quelques heures. Un import interrompu reprend là où il s'est arrêté.",
+      "topTitle": "Anime les plus populaires",
+      "topLabel": "Nombre d'anime",
+      "expandFranchise": "Inclure les franchises entières (saisons, films, OVA…)",
+      "start": "Lancer l'import",
+      "searchTitle": "Rechercher sur AniList",
+      "searchPlaceholder": "Titre de l'anime…",
+      "imported": "Importé",
+      "importSelected": "Importer la sélection ({count})",
+      "noResults": "Aucun résultat.",
+      "jobs": "Imports",
+      "noJobs": "Aucun import pour l'instant.",
+      "status": {
+        "queued": "En attente",
+        "running": "En cours",
+        "completed": "Terminé",
+        "failed": "Échec",
+        "cancelled": "Annulé"
+      },
+      "phase": {
+        "discover": "Découverte des franchises",
+        "group": "Regroupement des séries",
+        "characters": "Import des personnages",
+        "finalize": "Finalisation",
+        "done": "Terminé"
+      },
+      "mode": {
+        "top": "Top {count}",
+        "ids": "{count} anime | {count} anime"
+      },
+      "progress": {
+        "media": "{done} / {total} médias",
+        "characters": "{count} entrées de personnages",
+        "skipped": "{count} sans image ignoré | {count} sans image ignorés",
+        "series": "{count} nouvelle série | {count} nouvelles séries",
+        "requests": "{count} requêtes AniList"
+      },
+      "cancel": "Annuler",
+      "resume": "Reprendre",
+      "startedAt": "Démarré le {date}",
+      "finishedAt": "Terminé le {date}",
+      "requestedByCli": "Depuis la ligne de commande"
+    },
+    "audit": {
+      "title": "Journal d'audit",
+      "targetType": "Cible",
+      "columns": {
+        "date": "Date",
+        "actor": "Admin",
+        "action": "Action",
+        "target": "Cible"
+      },
+      "system": "Système",
+      "details": "Détails",
+      "before": "Avant",
+      "after": "Après"
+    }
+  },
   "errors": {
     "BAD_REQUEST": "La requête est invalide.",
     "VALIDATION_FAILED": "Certains champs sont invalides.",

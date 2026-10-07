@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { availableLocales, messages } from '@/locales'
+import { availableLocales } from '@/locales'
 
 const emit = defineEmits<{ change: [locale: string] }>()
 const { t, locale } = useI18n()
 
+/** Messages are precompiled by Vite: read them through `t`, never as raw objects. */
 function nativeName(code: string): string {
-  const meta = messages[code]?.meta as unknown as { nativeName?: string } | undefined
-  return meta?.nativeName ?? code
+  return t('meta.nativeName', {}, { locale: code })
 }
 
 function onChange(event: Event): void {

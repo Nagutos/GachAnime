@@ -8,10 +8,12 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 defineProps<{ me: MeResponse }>()
 const emit = defineEmits<{ signOut: [] }>()
 const { t } = useI18n()
+const router = useRouter()
 </script>
 
 <template>
@@ -29,6 +31,14 @@ const { t } = useI18n()
         :side-offset="8"
         class="min-w-40 rounded-xl border border-night-700 bg-night-900 p-1 text-sm shadow-xl"
       >
+        <DropdownMenuItem
+          v-if="me.role === 'admin'"
+          class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
+          data-testid="admin-link"
+          @select="router.push({ name: 'admin' })"
+        >
+          {{ t('admin.openAdmin') }}
+        </DropdownMenuItem>
         <DropdownMenuItem
           class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
           @select="emit('signOut')"

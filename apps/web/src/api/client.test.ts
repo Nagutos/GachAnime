@@ -34,3 +34,26 @@ describe('apiFetch', () => {
     await expect(apiFetch('/x', { schema: z.unknown() })).rejects.toMatchObject({ code: 'NETWORK' })
   })
 })
+
+describe('apiFetch bodies', () => {
+  it('sends FormData as multipart without forcing a JSON content type', async () => {
+    const fetchMock = vi.fn<(url: string, init: RequestInit) => Promise<Response>>(
+      async () => new Response('{"ok":true}'),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const form = new FormData()
+    form.set('file', new Blob(['x']), 'x.png')
+    await apiFetch('/upload', { method: 'POST', body: form, schema: z.object({ ok: z.boolean() }) })
+    const init = fetchMock.mock.calls[0]![1]
+    expect(init.body).toBe(form)
+    expect((init.headers as Record<string, string>)['content-type']).toBeUndefined()
+  })
+
+  it('accepts empty 204 responses', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, { status: 204 })),
+    )
+    await expect(apiFetch('/x', { method: 'DELETE', schema: z.null() })).resolves.toBeNull()
+  })
+})

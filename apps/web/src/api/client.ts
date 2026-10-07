@@ -23,7 +23,8 @@ export interface ApiFetchOptions<T> {
 
 export async function apiFetch<T>(path: string, options: ApiFetchOptions<T>): Promise<T> {
   const headers: Record<string, string> = { accept: 'application/json' }
-  if (options.body !== undefined) headers['content-type'] = 'application/json'
+  const isForm = options.body instanceof FormData
+  if (options.body !== undefined && !isForm) headers['content-type'] = 'application/json'
   if (options.idempotencyKey) headers['idempotency-key'] = options.idempotencyKey
 
   let response: Response
@@ -32,12 +33,18 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions<T>): Pr
       method: options.method ?? 'GET',
       headers,
       credentials: 'same-origin',
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body:
+        options.body === undefined
+          ? undefined
+          : isForm
+            ? (options.body as FormData)
+            : JSON.stringify(options.body),
     })
   } catch {
     throw new ApiError('NETWORK', 0, 'Network error')
   }
 
+  // 204 No Content (and other empty bodies) parse as null.
   const payload: unknown = await response.json().catch(() => null)
   if (!response.ok) {
     const parsed = apiErrorSchema.safeParse(payload)

@@ -38,6 +38,250 @@
     "title": "This page does not exist.",
     "back": "Back to home"
   },
+  "admin": {
+    "title": "Admin",
+    "nav": {
+      "dashboard": "Overview",
+      "series": "Series",
+      "characters": "Characters",
+      "imports": "AniList import",
+      "audit": "Audit log"
+    },
+    "openAdmin": "Administration",
+    "forbidden": "This area is reserved for administrators.",
+    "common": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "confirm": "Confirm",
+      "close": "Close",
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {pages}",
+      "results": "{count} result | {count} results",
+      "empty": "Nothing to show.",
+      "edit": "Edit",
+      "upload": "Upload an image",
+      "uploading": "Uploading…",
+      "saved": "Saved.",
+      "openOnAniList": "Open on AniList",
+      "search": "Search",
+      "noImage": "No picture"
+    },
+    "sources": {
+      "anilist": "AniList",
+      "manual": "Manual"
+    },
+    "kinds": {
+      "anime": "Anime",
+      "game": "Game",
+      "other": "Other"
+    },
+    "genders": {
+      "female": "Female",
+      "male": "Male",
+      "unclassified": "Unclassified"
+    },
+    "roles": {
+      "MAIN": "Main",
+      "SUPPORTING": "Supporting",
+      "BACKGROUND": "Background"
+    },
+    "dashboard": {
+      "title": "Catalog overview",
+      "characters": "Characters",
+      "drawable": "Drawable",
+      "series": "Series",
+      "activeSeries": "Active series",
+      "unclassified": "Unclassified gender",
+      "unclassifiedLink": "Classify them",
+      "rarityDistribution": "Rarity distribution",
+      "rarityHelp": "Default rarities come from AniList favourites. Characters set by hand keep their rarity on re-import.",
+      "threshold": "≥ {count} favourites",
+      "overridden": "{count} set by hand",
+      "emptyCatalog": "The catalog is empty. Start with an AniList import.",
+      "startImport": "Import from AniList"
+    },
+    "series": {
+      "title": "Series",
+      "searchPlaceholder": "Search a title…",
+      "kind": "Type",
+      "source": "Source",
+      "status": "Status",
+      "newManual": "New manual series",
+      "importRoster": "Import a JSON roster",
+      "selected": "{count} selected",
+      "merge": "Merge",
+      "mergeTitle": "Merge series",
+      "mergeHelp": "Every other selected series is merged into the one you keep, then deleted.",
+      "mergeTarget": "Series to keep",
+      "columns": {
+        "title": "Title",
+        "kind": "Type",
+        "media": "Media",
+        "characters": "Characters",
+        "popularity": "Popularity",
+        "status": "Status"
+      },
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "deleteTitle": "Delete “{title}”?",
+      "deleteBody": "Its media and memberships are deleted. Characters are kept. An AniList series comes back with the next import that reaches it: deactivate it instead to hide it for good.",
+      "select": "Select {title}"
+    },
+    "seriesDetail": {
+      "back": "All series",
+      "media": "Media",
+      "characters": "Characters",
+      "split": "Move to a new series",
+      "splitHelp": "Select the media that form another series.",
+      "splitConfirm": "Move {count} media to a new series?",
+      "noDescription": "No description.",
+      "cover": "Cover",
+      "uploadCover": "Upload a cover",
+      "addCharacter": "Add a character",
+      "slug": "Slug",
+      "genres": "Genres",
+      "edit": "Edit series",
+      "year": "Year",
+      "format": "Format",
+      "syncedAt": "Characters synced",
+      "notSynced": "Not synced"
+    },
+    "seriesForm": {
+      "title": "New manual series",
+      "editTitle": "Edit series",
+      "slug": "Slug",
+      "slugHelp": "Lowercase letters, digits and dashes. Used in URLs and roster imports.",
+      "titleField": "Title",
+      "titleEnglish": "English title",
+      "kind": "Type",
+      "description": "Description",
+      "coverUrl": "Cover URL",
+      "genres": "Genres",
+      "genresHelp": "Comma separated.",
+      "create": "Create"
+    },
+    "roster": {
+      "title": "Import a JSON roster",
+      "help": "Creates or updates a manual series and its characters. Characters are matched by their key: importing the same file again updates them.",
+      "file": "JSON file",
+      "paste": "JSON content",
+      "invalidJson": "This is not valid JSON.",
+      "invalidRoster": "The roster does not match the expected format.",
+      "submit": "Import",
+      "result": "{created} created, {updated} updated.",
+      "example": "Example"
+    },
+    "characters": {
+      "title": "Characters",
+      "searchPlaceholder": "Search a name…",
+      "rarity": "Rarity",
+      "gender": "Gender",
+      "source": "Source",
+      "status": "Status",
+      "override": "Rarity origin",
+      "overrideOptions": {
+        "true": "Set by hand",
+        "false": "From favourites"
+      },
+      "sort": "Sort",
+      "sorts": {
+        "favourites": "Most favourites",
+        "name": "Name",
+        "recent": "Recently added"
+      },
+      "columns": {
+        "character": "Character",
+        "series": "Series",
+        "rarity": "Rarity",
+        "gender": "Gender",
+        "favourites": "Favourites",
+        "status": "Active"
+      },
+      "defaultRarity": "Default: {rarity}",
+      "resetRarity": "Restore",
+      "overridden": "Set by hand",
+      "imported": "AniList: {gender}",
+      "clearOverride": "Use AniList value",
+      "toggleActive": "Active",
+      "more": "+{count}"
+    },
+    "characterForm": {
+      "titleNew": "New character",
+      "titleEdit": "Edit {name}",
+      "name": "Name",
+      "nameNative": "Native name",
+      "description": "Description",
+      "imageUrl": "Image URL",
+      "image": "Picture",
+      "gender": "Gender",
+      "rarity": "Rarity",
+      "create": "Create"
+    },
+    "imports": {
+      "title": "AniList import",
+      "rateNote": "AniList currently allows about 30 requests per minute: importing the top 500 with their franchises takes a few hours. An interrupted import resumes where it stopped.",
+      "topTitle": "Most popular anime",
+      "topLabel": "Number of anime",
+      "expandFranchise": "Include whole franchises (seasons, movies, OVAs…)",
+      "start": "Start import",
+      "searchTitle": "Search AniList",
+      "searchPlaceholder": "Anime title…",
+      "imported": "Imported",
+      "importSelected": "Import selected ({count})",
+      "noResults": "No result.",
+      "jobs": "Imports",
+      "noJobs": "No import yet.",
+      "status": {
+        "queued": "Queued",
+        "running": "Running",
+        "completed": "Completed",
+        "failed": "Failed",
+        "cancelled": "Cancelled"
+      },
+      "phase": {
+        "discover": "Discovering franchises",
+        "group": "Grouping series",
+        "characters": "Importing characters",
+        "finalize": "Finalizing",
+        "done": "Done"
+      },
+      "mode": {
+        "top": "Top {count}",
+        "ids": "{count} anime | {count} anime"
+      },
+      "progress": {
+        "media": "{done} / {total} media",
+        "characters": "{count} character entries",
+        "skipped": "{count} without picture skipped",
+        "series": "{count} new series",
+        "requests": "{count} AniList requests"
+      },
+      "cancel": "Cancel",
+      "resume": "Resume",
+      "startedAt": "Started {date}",
+      "finishedAt": "Finished {date}",
+      "requestedByCli": "From the command line"
+    },
+    "audit": {
+      "title": "Audit log",
+      "targetType": "Target",
+      "columns": {
+        "date": "Date",
+        "actor": "Admin",
+        "action": "Action",
+        "target": "Target"
+      },
+      "system": "System",
+      "details": "Details",
+      "before": "Before",
+      "after": "After"
+    }
+  },
   "errors": {
     "BAD_REQUEST": "The request is invalid.",
     "VALIDATION_FAILED": "Some fields are invalid.",
