@@ -9,6 +9,7 @@ out/
 coverage/
 *.tsbuildinfo
 .turbo/
+next-env.d.ts
 
 # Tests
 playwright-report/
