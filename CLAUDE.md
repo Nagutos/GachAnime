@@ -147,6 +147,8 @@ Gotchas:
   (core `progression/engine`) inside its transaction and returns its `ProgressionUpdate`; the
   web app shows toasts from it (`notifyProgression`). New event types go in `GAME_EVENT_TYPES`
   (shared) and the `GameEvent` union (game); the compiler checks they match.
+- Pack membership is materialized in `theme_characters`: anything that changes the catalog must
+  end with a pool rebuild (API: `enqueueCatalogRefresh()`, worker job `catalog.refresh`).
 - Game outcomes take a `GameClock` (`{ rng, now }`) in core services: tests inject `seededRng`
   and a fixed date; production uses `cryptoRng` (`@gachanime/core`).
 - Uploaded images live in `UPLOADS_DIR` (default `<repo>/uploads` in dev, the `uploads` volume in
@@ -216,3 +218,10 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   achievements from a code metric registry, sticky completion), claim flows, worker recompute after
   catalog changes, feedback, admin editors for missions/achievements and feedback list, missions /
   achievements / feedback pages with toasts and badges. Next: Phase 5 (themed boosters).
+- 2026-10-07 — Logo replaced by a 招 seal (outline from Noto Serif CJK JP Bold, OFL); the mythic
+  threshold stays an admin setting (Admin → Rarities).
+- 2026-10-07 — **Phase 5 done**: packs with rules compiled to SQL and materialized pools, admin
+  pack editor with live preview, seeded packs, shop pack selection with surcharge, collection
+  filter. Dev pools: Shōnen 7 529, Shōjo 188, Seinen 1 544, Sports 1 818, Ecchi 1 107,
+  Waifus 2 640, Husbandos 4 447 (≈ 4 300 characters still have an unclassified gender).
+  Next: Phase 6 (profiles, trades, market).

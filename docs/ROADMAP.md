@@ -75,14 +75,14 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] UI: missions page (reset countdown), achievements page (filters, counter, progress bars), toasts, nav badges
 - [x] Tests: period keys across DST, each seeded mission/achievement, engine and claim flows, e2e
 
-## Phase 5 — Themed boosters
+## Phase 5 — Themed boosters ✅ (2026-10-07)
 
-- [ ] Themes schema + rule evaluation + materialized pools (rebuild on save/import)
-- [ ] Empty-rarity fallback in draw
-- [ ] Admin **pack editor**: categories, rule builder, free/paid toggles, surcharge, live preview (count per rarity, warnings)
-- [ ] Seed packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos
-- [ ] Shop grid tier × pack (free: choose pack; paid: +surcharge)
-- [ ] Collection filter by theme
+- [x] Themes schema + rule evaluation (compiled to SQL) + materialized pools (rebuilt on save, after imports and catalog changes, built lazily when missing)
+- [x] Empty-rarity fallback in draw
+- [x] Admin **pack editor**: categories, recursive rule builder, free/paid toggles, surcharge, live preview (count per rarity, sample characters, empty-rarity warnings)
+- [x] Seed packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos
+- [x] Shop: pack selection for free and paid tiers (paid: +surcharge, prices from the server)
+- [x] Collection filter by pack
 
 ## Phase 6 — Social: profiles, trades, market
 
