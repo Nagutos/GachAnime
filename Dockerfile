@@ -31,6 +31,8 @@ FROM node:24-alpine AS api
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
 WORKDIR /app
 COPY --from=api-build --chown=node:node /app/apps/api/.next/standalone ./
+# Owned by node so that the named `uploads` volume mounted here is writable.
+RUN mkdir -p /app/uploads && chown node:node /app/uploads
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s \
@@ -40,6 +42,7 @@ CMD ["node", "apps/api/server.js"]
 # ---- Tools: worker, migrations, admin CLI (TypeScript run through tsx) ----
 FROM source AS tools
 ENV NODE_ENV=production
+RUN mkdir -p /app/uploads && chown node:node /app/uploads
 USER node
 # tsx is resolved from each package, so commands run from the package directory.
 WORKDIR /app/apps/worker

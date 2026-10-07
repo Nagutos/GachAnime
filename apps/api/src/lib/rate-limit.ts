@@ -7,6 +7,9 @@ import { singleton } from './singleton'
 export const RATE_LIMIT_POLICIES = {
   default: { points: 120, duration: 60 },
   profileUpdate: { points: 20, duration: 60 },
+  admin: { points: 300, duration: 60 },
+  /** Calls that reach AniList (search) or start long jobs. */
+  adminAniList: { points: 20, duration: 60 },
 } as const
 
 export type RateLimitPolicy = keyof typeof RATE_LIMIT_POLICIES

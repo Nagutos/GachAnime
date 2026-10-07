@@ -13,8 +13,14 @@ if (process.env.NODE_ENV !== 'production' && existsSync(rootEnvFile)) {
 const config: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: repositoryRoot,
-  transpilePackages: ['@gachanime/core', '@gachanime/db', '@gachanime/shared'],
-  serverExternalPackages: ['pg', 'pino'],
+  transpilePackages: [
+    '@gachanime/core',
+    '@gachanime/db',
+    '@gachanime/game',
+    '@gachanime/importer',
+    '@gachanime/shared',
+  ],
+  serverExternalPackages: ['pg', 'pino', 'sharp', 'bullmq'],
   poweredByHeader: false,
 }
 

@@ -10,6 +10,7 @@ x-app-env: &app-env
   DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?set DISCORD_CLIENT_SECRET}
   ADMIN_DISCORD_IDS: ${ADMIN_DISCORD_IDS:-}
   LOG_LEVEL: ${LOG_LEVEL:-info}
+  UPLOADS_DIR: /app/uploads
 
 services:
   postgres:
@@ -53,6 +54,8 @@ services:
     image: gachanime-api
     restart: unless-stopped
     environment: *app-env
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
