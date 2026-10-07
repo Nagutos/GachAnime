@@ -1,0 +1,26 @@
+# SITE_ADDRESS: ":80" (plain HTTP, behind your own proxy) or a domain such as
+# "gachanime.example.com" (Caddy then obtains a TLS certificate automatically).
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+	}
+
+	handle /api/* {
+		reverse_proxy api:3000
+	}
+
+	handle_path /media/* {
+		root * /data/uploads
+		file_server
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

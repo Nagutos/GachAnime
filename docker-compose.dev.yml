@@ -1,0 +1,23 @@
+# Local development dependencies only. Apps run on the host with `pnpm dev`.
+name: gachanime-dev
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: gachanime
+      POSTGRES_PASSWORD: gachanime
+      POSTGRES_DB: gachanime
+    ports:
+      - '5433:5432'
+    volumes:
+      - ./docker/dev-init.sql:/docker-entrypoint-initdb.d/dev-init.sql:ro
+      - postgres-dev-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6380:6379'
+
+volumes:
+  postgres-dev-data:
