@@ -1,0 +1,29 @@
+{
+  "name": "@gachanime/worker",
+  "version": "0.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=../../.env --import tsx --watch src/main.ts",
+    "start": "node --import tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@gachanime/core": "workspace:*",
+    "@gachanime/db": "workspace:*",
+    "@gachanime/shared": "workspace:*",
+    "bullmq": "^6.3.11",
+    "ioredis": "^6.0.0",
+    "pino": "^10.4.0",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@gachanime/config": "workspace:*",
+    "@types/node": "^24",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  }
+}
