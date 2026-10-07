@@ -55,14 +55,15 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] Integration tests: concurrency (parallel openings never exceed charges), collection and wiki rules
 - [x] E2E: sign up → open free booster → see card in collection and wiki (full stack, ADR-023)
 
-## Phase 3 — Economy
+## Phase 3 — Economy ✅ (2026-10-07)
 
-- [ ] Paid boosters (Epic / Legendary / Mythic / Divine), shop page, gem balance & history
-- [ ] Recycling (single, bulk with rarity filter + preview + confirmation)
-- [ ] Wishlist; collection: all filters, multi-sort, series progress page
-- [ ] Admin: settings (timer, recycle values), rarities, tiers editor (rates sum check, prices)
-- [ ] Economy simulation script (income vs prices with real catalog)
-- [ ] Tests: ledger invariant, recycle never touches first copy / locked copies
+- [x] Paid boosters (Epic / Legendary / Mythic / Divine), shop section, gem balance & history
+- [x] Recycling (single, bulk with rarity filter + preview + confirmation checked against the preview)
+- [x] Wishlist; collection: owned/missing/all, wishlist and duplicate filters, multi-key sort, series progress page
+- [x] Admin: settings (timer, daily reset), rarities (names, thresholds with recompute, recycle values, market bounds), tiers editor (rates sum check, odds preview, prices)
+- [x] Economy simulation script (`pnpm economy:simulate`, real catalog)
+- [x] Tests: ledger invariant, recycle never touches first copy / locked copies, concurrent purchases never overspend
+- [x] `pnpm admin:grant-gems` (audited admin adjustment, for testing and events)
 
 ## Phase 4 — Missions, achievements, feedback
 

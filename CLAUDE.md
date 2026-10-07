@@ -117,6 +117,8 @@ pnpm test:e2e            # playwright (builds web, vite preview); player flows a
 pnpm i18n:check          # missing/extra translation keys between locales
 pnpm db:generate         # drizzle-kit generate (new migration from schema diff)
 pnpm admin:promote -- --discord-id 123456789012345678
+pnpm admin:grant-gems -- --discord-id 123456789012345678 --amount 500   # audited, negative removes
+pnpm economy:simulate -- --days 90 --free-per-day 25 --other-per-day 80
 pnpm import:anilist -- --top 500   # or --ids 16498,1535 / --resume <job id> (also from the admin UI)
 docker compose up -d     # full self-hosted stack on :8080 (needs .env)
 ```
@@ -137,6 +139,10 @@ Gotchas:
 - E2E player specs (`*.full.spec.ts`) need the dev compose up and `TEST_DATABASE_URL`, `REDIS_URL`,
   `BETTER_AUTH_SECRET`; they use the `<test db>_e2e` database. Playwright starts web servers
   before `globalSetup`, so readiness probes must not need the database.
+- Gem changes go through `changeGems` (core) inside a transaction that already called `lockPlayer`:
+  it writes the `gem_transactions` row; never update `gem_balance` directly.
+- `.env` `PUBLIC_URL` must match the URL in the browser (dev: `http://localhost:5173`), otherwise
+  Better Auth rejects sign-in with "Invalid origin".
 - Game outcomes take a `GameClock` (`{ rng, now }`) in core services: tests inject `seededRng`
   and a fixed date; production uses `cryptoRng` (`@gachanime/core`).
 - Uploaded images live in `UPLOADS_DIR` (default `<repo>/uploads` in dev, the `uploads` volume in
@@ -196,3 +202,9 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   services + routes; web boosters page, Motion opening scene, collection and wiki pages; full-stack
   e2e (ADR-023). New players start with every free charge (anchor at epoch). Local `.env` had an
   empty `BETTER_AUTH_SECRET`: a random one was generated. Dev DB: top 200 AniList import. Next: Phase 3.
+- 2026-10-07 — **Phase 3 done**: paid tiers (Epic/Legendary/Mythic/Divine) with gem debit and
+  ledger, recycling (single + bulk checked against the confirmed preview), wishlist, collection
+  ownership/wishlist filters and multi-key sort, series progress page, gem history, admin
+  settings/rarities/tiers editors, `admin:grant-gems` and `economy:simulate` CLIs. Top 200 import
+  done (140 series, 11 429 characters, **no Mythic**: highest favourites 39 217 < 50 000 threshold;
+  maintainer to decide the threshold). Next: Phase 4.

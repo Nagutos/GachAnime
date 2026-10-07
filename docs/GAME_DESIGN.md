@@ -147,6 +147,22 @@ about 1.5 times a day, or a Mythic booster about weekly, or a Divine booster rou
 an active player about 2.3× faster. An economy simulation
 script (Phase 3) will validate this with the real catalog size.
 
+### Simulation with the real catalog (2026-10-07)
+
+`pnpm economy:simulate` on the top 200 import (10 088 Common, 886 Rare, 401 Epic, 54 Legendary,
+0 Mythic drawable characters), 25 free boosters/day + 80 gems/day from missions, every duplicate
+recycled, nothing spent:
+
+| Day | Recycle gems that day | Total gems | Distinct owned |
+| --- | --------------------- | ---------- | -------------- |
+| 7   | 99                    | 780        | 787            |
+| 30  | 177                   | 4 781      | 2 651          |
+| 90  | 164                   | 19 243     | 5 663          |
+
+Income after 3 months ≈ 266 gems/day: an Epic booster every 0.6 day, Legendary every 1.9 days,
+Mythic every 5.6 days, Divine every 19 days, consistent with the income model above. The large
+Common pool keeps duplicates (and recycling income) low for months.
+
 ### Recycling rules
 
 - A duplicate = any copy **beyond the first** of a character. The first copy can never be recycled.

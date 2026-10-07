@@ -123,8 +123,9 @@ A character is **drawable** when `is_active` and linked to at least one active s
 
 ## Rarities, rates, boosters, themes
 
-- `rarities(id, key UNIQUE, sort_order UNIQUE, name jsonb, color_token, favourites_threshold)`;
-  `recycle_value`, `market_min_price`, `market_max_price` are added with the economy (Phase 3).
+- `rarities(id, key UNIQUE, sort_order UNIQUE, name jsonb, color_token, favourites_threshold,
+recycle_value, market_min_price, market_max_price)`. Changing a threshold re-applies the default
+  rarity of AniList characters whose rarity was not set by hand.
 - `booster_tiers(id, key UNIQUE, name jsonb, description jsonb, weights jsonb -- { rarityKey: ppm },
 price_gems bigint NULL (NULL = free tier), is_active, sort_order, art_token)`.
   Weights sum = 1 000 000 enforced by Zod + test.
