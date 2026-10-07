@@ -14,7 +14,7 @@ describe.skipIf(!testDatabaseUrl)('player profiles (integration)', () => {
   let close: () => Promise<void>
 
   beforeAll(async () => {
-    ;({ db, close } = await setupTestDatabase(testDatabaseUrl as string))
+    ;({ db, close } = await setupTestDatabase(testDatabaseUrl as string, 'core'))
   })
   afterAll(async () => close())
   beforeEach(async () => resetTestDatabase(db))

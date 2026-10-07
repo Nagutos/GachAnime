@@ -1,21 +1,7 @@
-import { createDatabase, type Database } from '@gachanime/db'
-import { runMigrations } from '@gachanime/db/migrate'
+import type { Database } from '@gachanime/db'
 import { sql } from 'drizzle-orm'
 
-/** Integration tests run only when TEST_DATABASE_URL points to a disposable database. */
-export const testDatabaseUrl = process.env.TEST_DATABASE_URL
-
-export async function setupTestDatabase(url: string) {
-  const { db, pool } = createDatabase(url, { max: 4 })
-  await runMigrations(db)
-  return { db, close: () => pool.end() }
-}
-
-export async function resetTestDatabase(db: Database): Promise<void> {
-  await db.execute(
-    sql`TRUNCATE users, sessions, accounts, verifications, player_profiles, settings, admin_audit_log RESTART IDENTITY CASCADE`,
-  )
-}
+export { resetTestDatabase, setupTestDatabase, testDatabaseUrl } from '@gachanime/db/testing'
 
 export async function insertDiscordUser(
   db: Database,
