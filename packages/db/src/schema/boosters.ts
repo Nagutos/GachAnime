@@ -13,7 +13,7 @@ import {
   text,
   timestamp,
 } from 'drizzle-orm/pg-core'
-import type { LocalizedText } from '@gachanime/shared'
+import type { LocalizedText, ThemeRule } from '@gachanime/shared'
 import { characters, rarities } from './catalog'
 import { playerProfiles } from './players'
 
@@ -48,6 +48,58 @@ export const boosterTiers = pgTable(
   ],
 )
 
+export const themeCategory = pgEnum('theme_category', [
+  'demographic',
+  'genre',
+  'characters',
+  'media_type',
+  'custom',
+])
+
+/** A pack: rules selecting characters (GAME_DESIGN §5), offered with every enabled tier. */
+export const themes = pgTable(
+  'themes',
+  {
+    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    key: text().notNull().unique(),
+    category: themeCategory().notNull(),
+    name: jsonb().$type<LocalizedText>().notNull(),
+    description: jsonb().$type<LocalizedText>(),
+    rules: jsonb().$type<ThemeRule>().notNull(),
+    freeEnabled: boolean().notNull().default(true),
+    paidEnabled: boolean().notNull().default(true),
+    /** Price increase of paid tiers opened with this pack, in percent. */
+    surchargePercent: smallint().notNull().default(20),
+    artToken: text().notNull().default('default'),
+    isActive: boolean().notNull().default(true),
+    sortOrder: smallint().notNull().default(0),
+    /** Last rebuild of `theme_characters`; null = never built. */
+    poolBuiltAt: timestamp({ withTimezone: true }),
+    updatedAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [check('themes_surcharge_range', sql`${table.surchargePercent} BETWEEN 0 AND 1000`)],
+)
+
+/** Materialized pack membership, rebuilt on pack save and after catalog changes. */
+export const themeCharacters = pgTable(
+  'theme_characters',
+  {
+    themeId: bigint({ mode: 'number' })
+      .notNull()
+      .references(() => themes.id, { onDelete: 'cascade' }),
+    characterId: bigint({ mode: 'number' })
+      .notNull()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.themeId, table.characterId] }),
+    index().on(table.characterId),
+  ],
+)
+
 /** One opening request (x1/x5/x10): reveal history and audit. */
 export const boosterOpenings = pgTable(
   'booster_openings',
@@ -59,6 +111,8 @@ export const boosterOpenings = pgTable(
     tierId: bigint({ mode: 'number' })
       .notNull()
       .references(() => boosterTiers.id),
+    /** Pack the boosters were drawn from; null = whole catalog. */
+    themeId: bigint({ mode: 'number' }).references(() => themes.id, { onDelete: 'set null' }),
     /** Number of boosters opened by the request. */
     quantity: smallint().notNull(),
     gemsSpent: bigint({ mode: 'number' }).notNull().default(0),

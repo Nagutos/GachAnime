@@ -1,6 +1,7 @@
 import { defaultSettingValue, settingsSchemas, type SettingKey } from '@gachanime/shared'
+import type { ThemeRule } from '@gachanime/shared'
 import type { Executor } from './client'
-import { achievements, boosterTiers, missions, rarities, settings } from './schema'
+import { achievements, boosterTiers, missions, rarities, settings, themes } from './schema'
 
 /** Default rarities (GAME_DESIGN §1). Thresholds are absolute AniList favourites (ADR-015). */
 export const DEFAULT_RARITIES = [
@@ -327,6 +328,75 @@ export const DEFAULT_ACHIEVEMENTS: AchievementSeed[] = [
   },
 ]
 
+const group = (...rules: ThemeRule[]): ThemeRule => ({ type: 'group', mode: 'all', rules })
+
+/** Starting packs (GAME_DESIGN §5). Pools are built by core on first use. */
+export const DEFAULT_THEMES = [
+  {
+    key: 'shonen',
+    category: 'demographic',
+    name: { en: 'Shōnen', fr: 'Shōnen' },
+    description: { en: 'Heroes of shōnen series.', fr: 'Les héros des séries shōnen.' },
+    rules: group({ type: 'tag', tag: 'Shounen', minRank: 60 }),
+    artToken: 'shonen',
+    sortOrder: 1,
+  },
+  {
+    key: 'shojo',
+    category: 'demographic',
+    name: { en: 'Shōjo', fr: 'Shōjo' },
+    description: { en: 'Characters of shōjo series.', fr: 'Les personnages des séries shōjo.' },
+    rules: group({ type: 'tag', tag: 'Shoujo', minRank: 60 }),
+    artToken: 'shojo',
+    sortOrder: 2,
+  },
+  {
+    key: 'seinen',
+    category: 'demographic',
+    name: { en: 'Seinen', fr: 'Seinen' },
+    description: { en: 'Characters of seinen series.', fr: 'Les personnages des séries seinen.' },
+    rules: group({ type: 'tag', tag: 'Seinen', minRank: 60 }),
+    artToken: 'seinen',
+    sortOrder: 3,
+  },
+  {
+    key: 'sports',
+    category: 'genre',
+    name: { en: 'Sports', fr: 'Sport' },
+    description: { en: 'Athletes and their teams.', fr: 'Les sportifs et leurs équipes.' },
+    rules: group({ type: 'genre', genre: 'Sports' }),
+    artToken: 'sports',
+    sortOrder: 4,
+  },
+  {
+    key: 'ecchi',
+    category: 'genre',
+    name: { en: 'Ecchi', fr: 'Ecchi' },
+    description: { en: 'Characters of ecchi series.', fr: 'Les personnages des séries ecchi.' },
+    rules: group({ type: 'genre', genre: 'Ecchi' }),
+    artToken: 'ecchi',
+    sortOrder: 5,
+  },
+  {
+    key: 'waifus',
+    category: 'characters',
+    name: { en: 'Waifus', fr: 'Waifus' },
+    description: { en: 'Female characters only.', fr: 'Uniquement des personnages féminins.' },
+    rules: group({ type: 'gender', gender: 'female' }),
+    artToken: 'waifus',
+    sortOrder: 6,
+  },
+  {
+    key: 'husbandos',
+    category: 'characters',
+    name: { en: 'Husbandos', fr: 'Husbandos' },
+    description: { en: 'Male characters only.', fr: 'Uniquement des personnages masculins.' },
+    rules: group({ type: 'gender', gender: 'male' }),
+    artToken: 'husbandos',
+    sortOrder: 7,
+  },
+] as const
+
 /** Idempotent seed: inserts missing default rows, never overwrites admin changes. */
 export async function seed(db: Executor): Promise<void> {
   const keys = Object.keys(settingsSchemas) as SettingKey[]
@@ -360,6 +430,16 @@ export async function seed(db: Executor): Promise<void> {
         ...achievement,
         params: achievement.params ?? {},
         sortOrder: index,
+      })),
+    )
+    .onConflictDoNothing()
+  await db
+    .insert(themes)
+    .values(
+      DEFAULT_THEMES.map((theme) => ({
+        ...theme,
+        name: { ...theme.name },
+        description: { ...theme.description },
       })),
     )
     .onConflictDoNothing()
