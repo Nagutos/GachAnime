@@ -1,0 +1,30 @@
+import { sql } from 'drizzle-orm'
+import { bigint, check, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { users } from './auth'
+
+/**
+ * Game-side profile, one per user. This row is the lock target (`SELECT … FOR UPDATE`) of every
+ * operation touching the player's inventory or gems.
+ */
+export const playerProfiles = pgTable(
+  'player_profiles',
+  {
+    userId: text()
+      .primaryKey()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** Public handle, lowercase, used in profile URLs. */
+    username: text().notNull().unique(),
+    /** Preferred UI locale; null until the client reports the detected one. */
+    locale: text(),
+    gemBalance: bigint({ mode: 'number' }).notNull().default(0),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    check('player_profiles_gem_balance_non_negative', sql`${table.gemBalance} >= 0`),
+    check('player_profiles_username_format', sql`${table.username} ~ '^[a-z0-9_]{3,32}$'`),
+  ],
+)

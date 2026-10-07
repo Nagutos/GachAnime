@@ -1,0 +1,32 @@
+{
+  "name": "@gachanime/db",
+  "version": "0.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts",
+    "./migrate": "./src/migrate.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "generate": "drizzle-kit generate",
+    "migrate": "node --env-file-if-exists=../../.env --import tsx src/cli/migrate.ts",
+    "seed": "node --env-file-if-exists=../../.env --import tsx src/cli/seed.ts",
+    "studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@gachanime/shared": "workspace:*",
+    "drizzle-orm": "^0.45.3",
+    "pg": "^8.23.1",
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "@gachanime/config": "workspace:*",
+    "@types/node": "^24",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "~6.0.3"
+  }
+}
