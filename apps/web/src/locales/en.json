@@ -56,7 +56,10 @@
       "audit": "Audit log",
       "boosters": "Boosters",
       "rarities": "Rarities",
-      "settings": "Settings"
+      "settings": "Settings",
+      "missions": "Missions",
+      "achievements": "Achievements",
+      "feedback": "Feedback"
     },
     "openAdmin": "Administration",
     "forbidden": "This area is reserved for administrators.",
@@ -333,6 +336,62 @@
       "perBooster": "At least one per booster",
       "weightOf": "Weight of {rarity}",
       "sum": "Total {sum} / {total}"
+    },
+    "objectives": {
+      "name": "Name",
+      "key": "Key",
+      "nameEn": "Name (en)",
+      "nameFr": "Name (fr)",
+      "descriptionEn": "Description (en)",
+      "descriptionFr": "Description (fr)",
+      "target": "Target",
+      "reward": "Reward (gems)"
+    },
+    "missions": {
+      "title": "Missions",
+      "help": "A mission counts one game event per period. Deactivate a mission rather than deleting it.",
+      "new": "New mission",
+      "edit": "Edit mission",
+      "kind": "Type",
+      "event": "Event",
+      "filter": "Filter (optional)",
+      "filterHelp": "One field=value per line, e.g. tier=divine.",
+      "filterInvalid": "Each filter line must look like field=value.",
+      "kinds": {
+        "daily": "Daily",
+        "once": "One-time"
+      }
+    },
+    "achievements": {
+      "title": "Achievements",
+      "help": "An achievement measures a metric against a target.",
+      "new": "New achievement",
+      "edit": "Edit achievement",
+      "metric": "Metric",
+      "completions": "Completed by",
+      "params": {
+        "tier": "Booster tier",
+        "minRarity": "Minimum rarity",
+        "rarity": "Rarity"
+      },
+      "anyParam": "Any",
+      "targetPercent": "Target (% of the catalog)",
+      "stickyHelp": "Players who already completed the achievement keep it, even if you raise the target.",
+      "metrics": {
+        "boosters_opened": "Boosters opened",
+        "cards_obtained": "Cards obtained",
+        "cards_recycled": "Cards recycled",
+        "cards_sold": "Cards sold",
+        "trades_completed": "Trades completed",
+        "feedback_submitted": "Feedback sent",
+        "distinct_characters_owned": "Different characters owned",
+        "series_completed": "Series completed",
+        "catalog_completion": "Catalog completion (%)"
+      }
+    },
+    "feedback": {
+      "title": "Player feedback",
+      "average": "Average rating"
     }
   },
   "nav": {
@@ -340,7 +399,10 @@
     "boosters": "Boosters",
     "collection": "Collection",
     "wiki": "Wiki",
-    "gems": "{count} gems"
+    "gems": "{count} gems",
+    "missions": "Missions",
+    "achievements": "Achievements",
+    "claimable": "{count} rewards to claim"
   },
   "cards": {
     "new": "New",
@@ -503,6 +565,50 @@
       "admin_adjustment": "Adjustment by an admin"
     }
   },
+  "progression": {
+    "missionCompleted": "Mission complete",
+    "achievementCompleted": "Achievement unlocked",
+    "claimReward": "Claim {gems} gems",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "progress": "{progress} / {target}",
+    "percentProgress": "{progress} % / {target} %"
+  },
+  "missions": {
+    "title": "Missions",
+    "subtitle": "Daily missions reset every day. Claim your rewards before they pile up!",
+    "toAchievements": "See achievements",
+    "kinds": {
+      "daily": "Daily missions",
+      "once": "One-time missions"
+    },
+    "resetsIn": "New missions in {time}",
+    "reward": "+{gems} gems"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "subtitle": "Long-term goals with gem rewards. Once completed, an achievement stays completed.",
+    "counter": "{completed} / {total}",
+    "filters": {
+      "all": "All",
+      "todo": "To do",
+      "completed": "Completed"
+    },
+    "empty": "Nothing here.",
+    "completedOn": "Completed on {date}"
+  },
+  "feedback": {
+    "menu": "Give feedback",
+    "title": "Your feedback",
+    "subtitle": "Tell us what you think of the game. You can change your feedback at any time.",
+    "rating": "Your rating",
+    "stars": "{count} star | {count} stars",
+    "comment": "Comment (optional)",
+    "placeholder": "What do you like? What would you change?",
+    "send": "Send",
+    "update": "Update",
+    "thanks": "Thank you!"
+  },
   "errors": {
     "BAD_REQUEST": "The request is invalid.",
     "VALIDATION_FAILED": "Some fields are invalid.",
@@ -523,6 +629,7 @@
     "EMPTY_POOL": "There is no character to draw yet. An admin must import the catalog first.",
     "NOT_ENOUGH_GEMS": "Not enough gems.",
     "NOTHING_TO_RECYCLE": "There is nothing to recycle.",
-    "PREVIEW_OUTDATED": "Your duplicates changed in the meantime. Check the new preview and confirm again."
+    "PREVIEW_OUTDATED": "Your duplicates changed in the meantime. Check the new preview and confirm again.",
+    "NOT_CLAIMABLE": "This reward cannot be claimed."
   }
 }

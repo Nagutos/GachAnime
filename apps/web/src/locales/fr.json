@@ -56,7 +56,10 @@
       "audit": "Journal d'audit",
       "boosters": "Boosters",
       "rarities": "Raretés",
-      "settings": "Réglages"
+      "settings": "Réglages",
+      "missions": "Missions",
+      "achievements": "Succès",
+      "feedback": "Avis"
     },
     "openAdmin": "Administration",
     "forbidden": "Cet espace est réservé aux administrateurs.",
@@ -333,6 +336,62 @@
       "perBooster": "Au moins une par booster",
       "weightOf": "Poids de {rarity}",
       "sum": "Total {sum} / {total}"
+    },
+    "objectives": {
+      "name": "Nom",
+      "key": "Clé",
+      "nameEn": "Nom (en)",
+      "nameFr": "Nom (fr)",
+      "descriptionEn": "Description (en)",
+      "descriptionFr": "Description (fr)",
+      "target": "Objectif",
+      "reward": "Récompense (gemmes)"
+    },
+    "missions": {
+      "title": "Missions",
+      "help": "Une mission compte un événement du jeu par période. Désactive une mission plutôt que de la supprimer.",
+      "new": "Nouvelle mission",
+      "edit": "Modifier la mission",
+      "kind": "Type",
+      "event": "Événement",
+      "filter": "Filtre (facultatif)",
+      "filterHelp": "Un champ=valeur par ligne, ex. tier=divine.",
+      "filterInvalid": "Chaque ligne du filtre doit être de la forme champ=valeur.",
+      "kinds": {
+        "daily": "Quotidienne",
+        "once": "Unique"
+      }
+    },
+    "achievements": {
+      "title": "Succès",
+      "help": "Un succès compare une métrique à un objectif.",
+      "new": "Nouveau succès",
+      "edit": "Modifier le succès",
+      "metric": "Métrique",
+      "completions": "Obtenu par",
+      "params": {
+        "tier": "Palier de booster",
+        "minRarity": "Rareté minimale",
+        "rarity": "Rareté"
+      },
+      "anyParam": "Toutes",
+      "targetPercent": "Objectif (% du catalogue)",
+      "stickyHelp": "Les joueurs qui ont déjà obtenu le succès le gardent, même si tu relèves l'objectif.",
+      "metrics": {
+        "boosters_opened": "Boosters ouverts",
+        "cards_obtained": "Cartes obtenues",
+        "cards_recycled": "Cartes recyclées",
+        "cards_sold": "Cartes vendues",
+        "trades_completed": "Échanges terminés",
+        "feedback_submitted": "Avis envoyé",
+        "distinct_characters_owned": "Personnages différents possédés",
+        "series_completed": "Séries complètes",
+        "catalog_completion": "Complétion du catalogue (%)"
+      }
+    },
+    "feedback": {
+      "title": "Avis des joueurs",
+      "average": "Note moyenne"
     }
   },
   "nav": {
@@ -340,7 +399,10 @@
     "boosters": "Boosters",
     "collection": "Collection",
     "wiki": "Wiki",
-    "gems": "{count} gemmes"
+    "gems": "{count} gemmes",
+    "missions": "Missions",
+    "achievements": "Succès",
+    "claimable": "{count} récompenses à récupérer"
   },
   "cards": {
     "new": "Nouveau",
@@ -503,6 +565,50 @@
       "admin_adjustment": "Ajustement par un admin"
     }
   },
+  "progression": {
+    "missionCompleted": "Mission accomplie",
+    "achievementCompleted": "Succès débloqué",
+    "claimReward": "Récupérer {gems} gemmes",
+    "claim": "Récupérer",
+    "claimed": "Récupéré",
+    "progress": "{progress} / {target}",
+    "percentProgress": "{progress} % / {target} %"
+  },
+  "missions": {
+    "title": "Missions",
+    "subtitle": "Les missions quotidiennes se renouvellent chaque jour. Récupère tes récompenses !",
+    "toAchievements": "Voir les succès",
+    "kinds": {
+      "daily": "Missions du jour",
+      "once": "Missions uniques"
+    },
+    "resetsIn": "Nouvelles missions dans {time}",
+    "reward": "+{gems} gemmes"
+  },
+  "achievements": {
+    "title": "Succès",
+    "subtitle": "Des objectifs à long terme récompensés en gemmes. Un succès obtenu reste acquis.",
+    "counter": "{completed} / {total}",
+    "filters": {
+      "all": "Tous",
+      "todo": "À faire",
+      "completed": "Obtenus"
+    },
+    "empty": "Rien ici.",
+    "completedOn": "Obtenu le {date}"
+  },
+  "feedback": {
+    "menu": "Donner mon avis",
+    "title": "Ton avis",
+    "subtitle": "Dis-nous ce que tu penses du jeu. Tu peux modifier ton avis à tout moment.",
+    "rating": "Ta note",
+    "stars": "{count} étoile | {count} étoiles",
+    "comment": "Commentaire (facultatif)",
+    "placeholder": "Qu'est-ce qui te plaît ? Que changerais-tu ?",
+    "send": "Envoyer",
+    "update": "Mettre à jour",
+    "thanks": "Merci !"
+  },
   "errors": {
     "BAD_REQUEST": "La requête est invalide.",
     "VALIDATION_FAILED": "Certains champs sont invalides.",
@@ -523,6 +629,7 @@
     "EMPTY_POOL": "Il n'y a encore aucun personnage à tirer. Un admin doit d'abord importer le catalogue.",
     "NOT_ENOUGH_GEMS": "Pas assez de gemmes.",
     "NOTHING_TO_RECYCLE": "Il n'y a rien à recycler.",
-    "PREVIEW_OUTDATED": "Tes doublons ont changé entre-temps. Vérifie le nouvel aperçu et confirme à nouveau."
+    "PREVIEW_OUTDATED": "Tes doublons ont changé entre-temps. Vérifie le nouvel aperçu et confirme à nouveau.",
+    "NOT_CLAIMABLE": "Cette récompense ne peut pas être récupérée."
   }
 }

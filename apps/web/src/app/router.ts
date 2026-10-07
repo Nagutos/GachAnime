@@ -15,6 +15,13 @@ export const router = createRouter({
       name: 'collection-series',
       component: () => import('@/pages/CollectionSeriesPage.vue'),
     },
+    { path: '/missions', name: 'missions', component: () => import('@/pages/MissionsPage.vue') },
+    {
+      path: '/achievements',
+      name: 'achievements',
+      component: () => import('@/pages/AchievementsPage.vue'),
+    },
+    { path: '/feedback', name: 'feedback', component: () => import('@/pages/FeedbackPage.vue') },
     { path: '/gems', name: 'gems', component: () => import('@/pages/GemsPage.vue') },
     { path: '/wiki', name: 'wiki', component: () => import('@/pages/WikiPage.vue') },
     {
@@ -74,6 +81,21 @@ export const router = createRouter({
           path: 'settings',
           name: 'admin-settings',
           component: () => import('@/admin/pages/AdminSettingsPage.vue'),
+        },
+        {
+          path: 'missions',
+          name: 'admin-missions',
+          component: () => import('@/admin/pages/AdminMissionsPage.vue'),
+        },
+        {
+          path: 'achievements',
+          name: 'admin-achievements',
+          component: () => import('@/admin/pages/AdminAchievementsPage.vue'),
+        },
+        {
+          path: 'feedback',
+          name: 'admin-feedback',
+          component: () => import('@/admin/pages/AdminFeedbackPage.vue'),
         },
         {
           path: 'audit',

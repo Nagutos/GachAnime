@@ -1,5 +1,8 @@
 import {
+  adminAchievementsResponseSchema,
   adminBoosterTiersResponseSchema,
+  adminFeedbackListSchema,
+  adminMissionsResponseSchema,
   adminCharacterDetailSchema,
   adminRaritiesResponseSchema,
   adminSettingsSchema,
@@ -22,6 +25,10 @@ import {
   type CreateManualSeriesRequest,
   type RosterImportInput,
   type AdminSettings,
+  type CreateAchievementRequest,
+  type CreateMissionRequest,
+  type UpdateAchievementRequest,
+  type UpdateMissionRequest,
   type UpdateBoosterTierRequest,
   type UpdateCharacterRequest,
   type UpdateRarityRequest,
@@ -46,6 +53,9 @@ export const adminKeys = {
   settings: ['admin', 'settings'] as const,
   rarities: ['admin', 'rarities'] as const,
   tiers: ['admin', 'tiers'] as const,
+  missions: ['admin', 'missions'] as const,
+  achievements: ['admin', 'achievements'] as const,
+  feedback: ['admin', 'feedback'] as const,
 }
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
@@ -286,5 +296,89 @@ export function useUpdateTierMutation() {
       void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
       void queryClient.invalidateQueries({ queryKey: ['boosters'] })
     },
+  })
+}
+
+// ─── Missions, achievements, feedback ────────────────────────────────────────
+
+export function useAdminMissionsQuery() {
+  return useQuery({
+    queryKey: adminKeys.missions,
+    queryFn: () => apiFetch('/admin/missions', { schema: adminMissionsResponseSchema }),
+  })
+}
+
+export function useSaveMissionMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (
+      input: { id: number; changes: UpdateMissionRequest } | { create: CreateMissionRequest },
+    ): Promise<void> => {
+      if ('create' in input) {
+        await apiFetch('/admin/missions', {
+          method: 'POST',
+          body: input.create,
+          schema: idResponseSchema,
+        })
+      } else {
+        await apiFetch(`/admin/missions/${input.id}`, {
+          method: 'PATCH',
+          body: input.changes,
+          schema: adminMissionsResponseSchema,
+        })
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.missions })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
+      void queryClient.invalidateQueries({ queryKey: ['missions'] })
+    },
+  })
+}
+
+export function useAdminAchievementsQuery() {
+  return useQuery({
+    queryKey: adminKeys.achievements,
+    queryFn: () => apiFetch('/admin/achievements', { schema: adminAchievementsResponseSchema }),
+  })
+}
+
+export function useSaveAchievementMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (
+      input:
+        { id: number; changes: UpdateAchievementRequest } | { create: CreateAchievementRequest },
+    ): Promise<void> => {
+      if ('create' in input) {
+        await apiFetch('/admin/achievements', {
+          method: 'POST',
+          body: input.create,
+          schema: idResponseSchema,
+        })
+      } else {
+        await apiFetch(`/admin/achievements/${input.id}`, {
+          method: 'PATCH',
+          body: input.changes,
+          schema: adminAchievementsResponseSchema,
+        })
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.achievements })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
+      void queryClient.invalidateQueries({ queryKey: ['achievements'] })
+    },
+  })
+}
+
+export function useAdminFeedbackQuery(page: MaybeRefOrGetter<number>) {
+  return useQuery({
+    queryKey: computed(() => [...adminKeys.feedback, toValue(page)]),
+    queryFn: () =>
+      apiFetch(`/admin/feedback${toQueryString({ page: toValue(page), pageSize: 20 })}`, {
+        schema: adminFeedbackListSchema,
+      }),
+    placeholderData: keepPreviousData,
   })
 }

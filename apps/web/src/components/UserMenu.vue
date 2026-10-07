@@ -41,6 +41,13 @@ const router = useRouter()
         </DropdownMenuItem>
         <DropdownMenuItem
           class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
+          data-testid="feedback-link"
+          @select="router.push({ name: 'feedback' })"
+        >
+          {{ t('feedback.menu') }}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
           @select="emit('signOut')"
         >
           {{ t('auth.signOut') }}

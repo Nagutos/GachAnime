@@ -20,7 +20,9 @@ import {
 } from '@gachanime/shared'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
+import { notifyProgression } from '@/app/toasts'
 import { meQueryKey } from './me'
+import { invalidateProgression } from './progression'
 import { apiFetch, toQueryString } from './client'
 
 /** Query-string form of the collection filters (`sort` as `rarity:desc,name:asc`). */
@@ -49,6 +51,7 @@ function invalidateInventory(queryClient: ReturnType<typeof useQueryClient>): vo
   ]) {
     void queryClient.invalidateQueries({ queryKey: key })
   }
+  invalidateProgression(queryClient)
 }
 
 export function useRaritiesQuery() {
@@ -84,6 +87,7 @@ export function useOpenBoostersMutation() {
           ? { ...parsed.data, free: result.free, gemBalance: result.gemBalance }
           : previous
       })
+      notifyProgression(result.progression)
       invalidateInventory(queryClient)
     },
   })
@@ -139,9 +143,17 @@ export function useWikiSeriesCharactersQuery(
 }
 
 export function useWikiCharacterQuery(id: MaybeRefOrGetter<number>) {
+  const queryClient = useQueryClient()
   return useQuery({
     queryKey: computed(() => [...playerKeys.wiki, 'character', toValue(id)]),
-    queryFn: () => apiFetch(`/wiki/characters/${toValue(id)}`, { schema: wikiCharacterSchema }),
+    queryFn: async () => {
+      const entry = await apiFetch(`/wiki/characters/${toValue(id)}`, {
+        schema: wikiCharacterSchema,
+      })
+      // Reading an unlocked entry advances the daily wiki mission.
+      if (!entry.locked) invalidateProgression(queryClient)
+      return entry
+    },
   })
 }
 
@@ -166,7 +178,10 @@ export function useRecycleCardsMutation() {
         schema: recycleResultSchema,
         idempotencyKey: crypto.randomUUID(),
       }),
-    onSuccess: () => invalidateInventory(queryClient),
+    onSuccess: (result) => {
+      notifyProgression(result.progression)
+      invalidateInventory(queryClient)
+    },
   })
 }
 
@@ -195,6 +210,7 @@ export function useRecycleDuplicatesMutation() {
         schema: recycleResultSchema,
         idempotencyKey: crypto.randomUUID(),
       }),
+    onSuccess: (result) => notifyProgression(result.progression),
     onSettled: () => invalidateInventory(queryClient),
   })
 }
@@ -207,9 +223,11 @@ export function useWishlistMutation() {
         method: input.wishlisted ? 'PUT' : 'DELETE',
         schema: wishlistResponseSchema,
       }),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      notifyProgression(result.progression)
       void queryClient.invalidateQueries({ queryKey: playerKeys.collection })
       void queryClient.invalidateQueries({ queryKey: playerKeys.wiki })
+      invalidateProgression(queryClient)
     },
   })
 }
