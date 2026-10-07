@@ -17,6 +17,13 @@ export const playerProfiles = pgTable(
     /** Preferred UI locale; null until the client reports the detected one. */
     locale: text(),
     gemBalance: bigint({ mode: 'number' }).notNull().default(0),
+    /**
+     * Free booster timer anchor (GAME_DESIGN §2). The epoch default means a new player starts
+     * with every free charge available.
+     */
+    freeBoosterAnchorAt: timestamp({ withTimezone: true })
+      .notNull()
+      .default(sql`'epoch'::timestamptz`),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true })
       .notNull()
