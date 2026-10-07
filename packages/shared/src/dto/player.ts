@@ -65,6 +65,7 @@ export const boostersResponseSchema = z.object({
   tiers: z.array(boosterTierDtoSchema),
   free: freeBoosterStatusSchema,
   cardsPerBooster: z.number().int().positive(),
+  gemBalance: z.number().int().nonnegative(),
 })
 export type BoostersResponse = z.infer<typeof boostersResponseSchema>
 
@@ -90,28 +91,79 @@ export const openBoostersResponseSchema = z.object({
   cardsPerBooster: z.number().int().positive(),
   cards: z.array(openedCardSchema),
   free: freeBoosterStatusSchema,
+  gemsSpent: z.number().int().nonnegative(),
+  gemBalance: z.number().int().nonnegative(),
 })
 export type OpenBoostersResponse = z.infer<typeof openBoostersResponseSchema>
 
 // ─── Collection ──────────────────────────────────────────────────────────────
 
-export const COLLECTION_SORTS = ['recent', 'rarity', 'name', 'count'] as const
+export const COLLECTION_SORT_KEYS = ['recent', 'rarity', 'name', 'count', 'series'] as const
+export type CollectionSortKey = (typeof COLLECTION_SORT_KEYS)[number]
+export const COLLECTION_OWNERSHIP = ['owned', 'missing', 'all'] as const
+
+export const collectionSortSchema = z.object({
+  key: z.enum(COLLECTION_SORT_KEYS),
+  direction: z.enum(['asc', 'desc']),
+})
+export type CollectionSort = z.infer<typeof collectionSortSchema>
+
+/** Multi-key sort in the query string: `rarity:desc,name:asc` (max 3 keys, no repeat). */
+export const collectionSortQuerySchema = z
+  .string()
+  .max(100)
+  .transform((value, context) => {
+    const sorts: CollectionSort[] = []
+    for (const part of value.split(',').filter(Boolean)) {
+      const [key, direction = 'asc'] = part.split(':')
+      const parsed = collectionSortSchema.safeParse({ key, direction })
+      if (!parsed.success || sorts.some((sort) => sort.key === parsed.data.key)) {
+        context.addIssue({ code: 'custom', message: `Invalid sort "${part}"` })
+        return z.NEVER
+      }
+      sorts.push(parsed.data)
+    }
+    return sorts.slice(0, 3)
+  })
+
+export function formatCollectionSort(sorts: CollectionSort[]): string {
+  return sorts.map((sort) => `${sort.key}:${sort.direction}`).join(',')
+}
 
 export const collectionQuerySchema = paginationQuerySchema.extend({
   search: z.string().trim().max(100).optional(),
   rarity: rarityKeySchema.optional(),
   seriesId: z.coerce.number().int().positive().optional(),
+  /** Owned now (default), missing (never obtained or no copy left), or the whole catalog. */
+  ownership: z.enum(COLLECTION_OWNERSHIP).default('owned'),
   /** Only characters owned more than once. */
   duplicates: booleanQuery,
-  sort: z.enum(COLLECTION_SORTS).default('recent'),
+  wishlist: booleanQuery,
+  sort: collectionSortQuerySchema.default([{ key: 'recent', direction: 'desc' }]),
 })
 export type CollectionQuery = z.infer<typeof collectionQuerySchema>
+export type CollectionQueryInput = z.input<typeof collectionQuerySchema>
 
-export const collectionItemSchema = characterCardSchema.extend({
-  quantity: z.number().int().positive(),
-  firstObtainedAt: z.iso.datetime(),
-  lastObtainedAt: z.iso.datetime(),
-})
+/** Never-obtained characters stay masked like locked wiki entries. */
+export const collectionItemSchema = z.discriminatedUnion('locked', [
+  z.object({
+    locked: z.literal(true),
+    id: idSchema,
+    rarityKey: rarityKeySchema,
+    wishlisted: z.boolean(),
+  }),
+  characterCardSchema.extend({
+    locked: z.literal(false),
+    /** Copies owned now (0 when the entry is unlocked but every copy is gone). */
+    quantity: z.number().int().nonnegative(),
+    lockedQuantity: z.number().int().nonnegative(),
+    /** Duplicates that can be recycled now. */
+    recyclable: z.number().int().nonnegative(),
+    wishlisted: z.boolean(),
+    firstObtainedAt: z.iso.datetime(),
+    lastObtainedAt: z.iso.datetime(),
+  }),
+])
 export type CollectionItem = z.infer<typeof collectionItemSchema>
 
 export const collectionResponseSchema = paginatedSchema(collectionItemSchema).extend({
@@ -126,11 +178,88 @@ export const collectionResponseSchema = paginatedSchema(collectionItemSchema).ex
 })
 export type CollectionResponse = z.infer<typeof collectionResponseSchema>
 
+// ─── Wishlist ────────────────────────────────────────────────────────────────
+
+export const wishlistResponseSchema = z.object({ wishlisted: z.boolean() })
+
+// ─── Gems and recycling ──────────────────────────────────────────────────────
+
+export const GEM_TRANSACTION_REASONS = [
+  'booster_purchase',
+  'recycle',
+  'market_sale',
+  'market_purchase',
+  'mission_reward',
+  'achievement_reward',
+  'admin_adjustment',
+] as const
+export type GemTransactionReason = (typeof GEM_TRANSACTION_REASONS)[number]
+
+export const gemTransactionSchema = z.object({
+  id: idSchema,
+  amount: z.number().int(),
+  balanceAfter: z.number().int().nonnegative(),
+  reason: z.enum(GEM_TRANSACTION_REASONS),
+  createdAt: z.iso.datetime(),
+})
+export type GemTransaction = z.infer<typeof gemTransactionSchema>
+
+export const gemHistoryResponseSchema = paginatedSchema(gemTransactionSchema).extend({
+  gemBalance: z.number().int().nonnegative(),
+})
+export type GemHistoryResponse = z.infer<typeof gemHistoryResponseSchema>
+
+export const RECYCLE_MAX_COUNT = 10_000
+
+export const recycleCardsRequestSchema = z.object({
+  characterId: idSchema,
+  count: z.number().int().min(1).max(RECYCLE_MAX_COUNT),
+})
+export type RecycleCardsRequest = z.infer<typeof recycleCardsRequestSchema>
+
+/** Rarities whose duplicates are recycled; none = every rarity. */
+export const recycleFilterSchema = z.object({
+  rarities: z.array(rarityKeySchema).max(20).optional(),
+})
+export type RecycleFilter = z.infer<typeof recycleFilterSchema>
+
+export const recyclePreviewSchema = z.object({
+  cards: z.number().int().nonnegative(),
+  characters: z.number().int().nonnegative(),
+  gems: z.number().int().nonnegative(),
+  byRarity: z.array(
+    z.object({
+      rarityKey: rarityKeySchema,
+      cards: z.number().int().nonnegative(),
+      gems: z.number().int().nonnegative(),
+    }),
+  ),
+})
+export type RecyclePreview = z.infer<typeof recyclePreviewSchema>
+
+/** `expected` is the preview the player confirmed: the recycle fails if it changed since. */
+export const recycleDuplicatesRequestSchema = recycleFilterSchema.extend({
+  expected: z.object({
+    cards: z.number().int().nonnegative(),
+    gems: z.number().int().nonnegative(),
+  }),
+})
+export type RecycleDuplicatesRequest = z.infer<typeof recycleDuplicatesRequestSchema>
+
+export const recycleResultSchema = z.object({
+  cards: z.number().int().nonnegative(),
+  gems: z.number().int().nonnegative(),
+  gemBalance: z.number().int().nonnegative(),
+})
+export type RecycleResult = z.infer<typeof recycleResultSchema>
+
 // ─── Wiki ────────────────────────────────────────────────────────────────────
 
 export const wikiSeriesQuerySchema = paginationQuerySchema.extend({
   search: z.string().trim().max(100).optional(),
   sort: z.enum(['popularity', 'title', 'progress']).default('popularity'),
+  /** Series progress filter: none = all series. */
+  status: z.enum(['complete', 'incomplete', 'started']).optional(),
 })
 export type WikiSeriesQuery = z.infer<typeof wikiSeriesQuerySchema>
 
@@ -197,6 +326,7 @@ export const wikiCharacterSchema = z.discriminatedUnion('locked', [
     id: idSchema,
     rarityKey: rarityKeySchema,
     series: z.array(seriesRefSchema),
+    wishlisted: z.boolean(),
   }),
   z.object({
     locked: z.literal(false),
@@ -214,6 +344,11 @@ export const wikiCharacterSchema = z.discriminatedUnion('locked', [
     anilistUrl: z.string().nullable(),
     appearances: z.array(wikiAppearanceSchema),
     quantity: z.number().int().nonnegative(),
+    lockedQuantity: z.number().int().nonnegative(),
+    recyclable: z.number().int().nonnegative(),
+    /** Gems earned per recycled copy of this rarity. */
+    recycleValue: z.number().int().nonnegative(),
+    wishlisted: z.boolean(),
     firstObtainedAt: z.iso.datetime(),
   }),
 ])
