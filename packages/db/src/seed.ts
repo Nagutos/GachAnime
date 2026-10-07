@@ -256,7 +256,6 @@ const sell = (key: string, target: number, rewardGems: number, en: string, fr: s
   target,
   rewardGems,
   iconToken: 'market',
-  isActive: false, // the market arrives in Phase 6
 })
 const trade = (key: string, target: number, rewardGems: number, en: string, fr: string) => ({
   key,
@@ -266,7 +265,6 @@ const trade = (key: string, target: number, rewardGems: number, en: string, fr: 
   target,
   rewardGems,
   iconToken: 'trade',
-  isActive: false, // trades arrive in Phase 6
 })
 
 /** Default achievements (GAME_DESIGN §8). */
