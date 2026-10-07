@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'motion-v'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { rarityStyle } from '@/components/cards/rarity-styles'
+import SealMark from '@/components/SealMark.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -48,7 +49,7 @@ const duration = computed(() => (reduced.value ? 0 : 0.45))
       :animate="torn ? { y: 60, opacity: 0, scale: 0.92 } : { y: 0, opacity: 1, scale: 1 }"
       :transition="{ duration: duration, ease: 'easeIn', delay: reduced ? 0 : 0.12 }"
     >
-      <img src="/favicon.svg" alt="" class="size-16 drop-shadow-lg" />
+      <SealMark class="size-16 text-(--pack-seal) drop-shadow-lg" />
       <p class="font-display text-xl font-extrabold text-white drop-shadow">{{ label }}</p>
       <p
         v-if="ribbon"
