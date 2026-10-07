@@ -1,9 +1,14 @@
 import type { Database } from '@gachanime/db'
+import { AniListClient } from '@gachanime/importer'
 import pino from 'pino'
 import { describe, expect, it } from 'vitest'
 import { runJob } from './jobs'
 
-const context = { db: {} as Database, logger: pino({ level: 'silent' }) }
+const context = {
+  db: {} as Database,
+  logger: pino({ level: 'silent' }),
+  anilist: new AniListClient(),
+}
 
 describe('runJob', () => {
   it('dispatches by job name', async () => {
@@ -12,5 +17,11 @@ describe('runJob', () => {
 
   it('rejects unknown jobs', async () => {
     await expect(runJob('nope', {}, context)).rejects.toThrow('Unknown job "nope"')
+  })
+})
+
+describe('anilist.import', () => {
+  it('validates its payload', async () => {
+    await expect(runJob('anilist.import', { importJobId: 'x' }, context)).rejects.toThrow()
   })
 })
