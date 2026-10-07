@@ -24,7 +24,13 @@ export async function listCollection(
   const where = and(...conditions)
 
   const order = {
-    recent: [desc(userCards.lastObtainedAt), desc(characters.id)],
+    // Cards of one opening share a timestamp: show the rarest first.
+    recent: [
+      desc(userCards.lastObtainedAt),
+      desc(rarities.sortOrder),
+      asc(characters.nameFull),
+      asc(characters.id),
+    ],
     rarity: [desc(rarities.sortOrder), asc(characters.nameFull), asc(characters.id)],
     name: [asc(characters.nameFull), asc(characters.id)],
     count: [desc(userCards.quantity), desc(rarities.sortOrder), asc(characters.id)],

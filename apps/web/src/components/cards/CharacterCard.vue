@@ -58,22 +58,27 @@ const effectClass = computed(() => {
         {{ seriesTitle }}
       </p>
     </div>
-    <span
-      class="absolute top-1.5 left-1.5 rounded-full bg-night-950/85 px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase"
-      :class="style.text"
+    <!-- Badges stack on the left so they never overlap, even on small cards -->
+    <div
+      class="absolute top-1.5 left-1.5 flex max-w-[calc(100%-0.75rem)] flex-col items-start gap-1"
     >
-      {{ nameOf(rarityKey) }}
-    </span>
-    <span
-      v-if="isNew"
-      class="absolute top-1.5 right-1.5 rounded-full bg-sakura-500 px-2 py-0.5 text-[10px] font-bold text-white uppercase shadow"
-      data-testid="new-badge"
-    >
-      {{ t('cards.new') }}
-    </span>
+      <span
+        class="max-w-full truncate rounded-full bg-night-950/85 px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase"
+        :class="style.text"
+      >
+        {{ nameOf(rarityKey) }}
+      </span>
+      <span
+        v-if="isNew"
+        class="rounded-full bg-sakura-500 px-2 py-0.5 text-[10px] font-bold text-white uppercase shadow"
+        data-testid="new-badge"
+      >
+        {{ t('cards.new') }}
+      </span>
+    </div>
     <span
       v-if="quantity > 1"
-      class="absolute top-8 right-1.5 rounded-full bg-gold-400 px-2 py-0.5 text-[11px] font-bold text-night-950 shadow"
+      class="absolute top-1.5 right-1.5 rounded-full bg-gold-400 px-2 py-0.5 text-[11px] font-bold text-night-950 shadow"
     >
       {{ t('cards.quantity', { count: quantity }) }}
     </span>
