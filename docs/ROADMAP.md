@@ -5,7 +5,7 @@ for the maintainer. Admin screens are built **in the phase of the feature they m
 
 ## Open questions
 
-- [ ] Divine booster as a reward (missions/achievements granting boosters instead of gems)? Currently purchase only.
+_None._
 
 ## Answered (2026-10-07)
 
@@ -14,7 +14,9 @@ divine content/price OK, no Divine card rarity · no guaranteed slot · packs: f
 paid = tier × pack with +20 % surcharge, admin pack editor by category · last copy tradable/sellable
 with warning, wiki stays unlocked · series = AniList franchise (seasons + movies merged), all
 characters imported, top 500 + manual AniList additions + manual series (games) · favourites
-thresholds OK · no anti-multi-account protection (friends) · Discord-only sign-in.
+thresholds OK · no anti-multi-account protection (friends) · Discord-only sign-in ·
+missions/achievements reward gems only (no booster rewards) · characters without an AniList image
+are not imported · catalog completion achievements use % tiers (10/25/50/75) instead of 100 %.
 
 ## Phase 0 — Foundations ✅ (2026-10-07)
 
@@ -35,7 +37,7 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 
 - [ ] Schema: series, media, anilist_tags, media_tags, characters, character_media, series_characters, rarities
 - [ ] AniList client (typed queries, throttling, 429 handling), pagination
-- [ ] Import pipeline: top-N (default 500) by popularity or explicit ids, isAdult excluded, franchise expansion and grouping (seasons + movies), all character roles, upserts, resumable
+- [ ] Import pipeline: top-N (default 500) by popularity or explicit ids, isAdult excluded, franchise expansion and grouping (seasons + movies), all character roles except characters without an image, upserts, resumable
 - [ ] Gender mapping, default rarity from favourites thresholds (respect overrides)
 - [ ] CLI `import:anilist` + worker job + `import_jobs` progress
 - [ ] Admin: series list (toggle active, delete, merge/split), AniList search & import, character rarity/gender edit, unclassified list
@@ -101,4 +103,3 @@ thresholds OK · no anti-multi-account protection (friends) · Discord-only sign
 ## Later (not scheduled)
 
 - [ ] Upgrades raising the free booster cap per player.
-- [ ] Booster rewards (missions/achievements granting boosters) — pending decision.

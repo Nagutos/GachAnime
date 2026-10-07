@@ -101,7 +101,7 @@ rarity. Per-card weights (%), and resulting "≥1 per booster" chances:
 | **Divine** | 5 000        | 0      | 0     | 55   | 30        | 15     | 100 %    | 95.0 %        | 55.6 %    |
 
 - Divine: Epic or better only; opening one unlocks "Touched by the Gods". There is no "Divine"
-  card rarity. Obtained by purchase (rewarding boosters instead of gems is a possible later feature).
+  card rarity. Obtained by purchase only: missions and achievements reward gems only (decision).
 - Every tier can be combined with a theme ("Shōnen Legendary booster"), see §5.
 
 ## 3. Economy (gems)
@@ -271,17 +271,17 @@ requires code.
 
 Metric registry (initial):
 
-| Metric                      | Kind    | Params         | Listens to                              |
-| --------------------------- | ------- | -------------- | --------------------------------------- |
-| `boosters_opened`           | counter | `rateTable?`   | booster_opened                          |
-| `cards_obtained`            | counter | `minRarity?`   | card_obtained                           |
-| `cards_recycled`            | counter | `minRarity?`   | card_recycled                           |
-| `cards_sold`                | counter | —              | card_sold                               |
-| `trades_completed`          | counter | —              | trade_completed                         |
-| `feedback_submitted`        | counter | —              | feedback_submitted                      |
-| `distinct_characters_owned` | state   | `rarity?`      | card_obtained, card ownership changes   |
-| `series_completed`          | state   | —              | card ownership changes, catalog changes |
-| `catalog_completion`        | state   | — (target = 1) | card ownership changes, catalog changes |
+| Metric                      | Kind    | Params                                           | Listens to                              |
+| --------------------------- | ------- | ------------------------------------------------ | --------------------------------------- |
+| `boosters_opened`           | counter | `rateTable?`                                     | booster_opened                          |
+| `cards_obtained`            | counter | `minRarity?`                                     | card_obtained                           |
+| `cards_recycled`            | counter | `minRarity?`                                     | card_recycled                           |
+| `cards_sold`                | counter | —                                                | card_sold                               |
+| `trades_completed`          | counter | —                                                | trade_completed                         |
+| `feedback_submitted`        | counter | —                                                | feedback_submitted                      |
+| `distinct_characters_owned` | state   | `rarity?`                                        | card_obtained, card ownership changes   |
+| `series_completed`          | state   | —                                                | card ownership changes, catalog changes |
+| `catalog_completion`        | state   | — (target = % of active characters owned, 0–100) | card ownership changes, catalog changes |
 
 Counters are lifetime values in `user_counters` (keys like `cards_obtained:epic`), so
 "first Epic or better" = sum of counters for rarities ≥ Epic.
@@ -306,7 +306,10 @@ Counters are lifetime values in `user_counters` (keys like `cards_obtained:epic`
 | `own_250`            | Archivist           | Archiviste            | distinct_characters_owned                  | 250    | 75     |
 | `own_1000`           | Encyclopedist       | Encyclopédiste        | distinct_characters_owned                  | 1 000  | 300    |
 | `own_2000`           | Librarian           | Bibliothécaire        | distinct_characters_owned                  | 2 000  | 800    |
-| `own_all`            | Completionist       | Collection complète   | catalog_completion                         | 1      | 2 000  |
+| `catalog_10`         | Explorer            | Explorateur           | catalog_completion                         | 10     | 300    |
+| `catalog_25`         | Globetrotter        | Grand voyageur        | catalog_completion                         | 25     | 1 000  |
+| `catalog_50`         | Half the World      | La moitié du monde    | catalog_completion                         | 50     | 3 000  |
+| `catalog_75`         | Almost Everything   | Presque tout          | catalog_completion                         | 75     | 6 000  |
 | `first_epic`         | Epic!               | Épique !              | cards_obtained {minRarity: epic}           | 1      | 20     |
 | `first_legendary`    | Legendary!          | Légendaire !          | cards_obtained {minRarity: legendary}      | 1      | 75     |
 | `first_mythic`       | Mythic!             | Mythique !            | cards_obtained {minRarity: mythic}         | 1      | 200    |
@@ -335,7 +338,8 @@ submission emits `feedback_submitted`). Listed in the admin.
 - **AniList** (default): import the top **500** anime by popularity (`isAdult` excluded), each
   completed with its franchise (seasons, movies, OVAs, side stories linked by AniList relations),
   merged into one **series**. **All characters** of each media are imported (main, supporting,
-  background).
+  background), **except characters without an image** (AniList placeholder `default.jpg`), which
+  are skipped (decision). They are picked up by a later re-import once AniList has an image.
 - **Manual AniList additions**: admin searches AniList by name or pastes ids → same pipeline.
 - **Manual series** (e.g. gacha games, which AniList does not cover): admin creates a series of kind
   `game`/`other`, then characters with name, description, image upload, gender and rarity
@@ -343,7 +347,8 @@ submission emits `feedback_submitted`). Listed in the admin.
   format) allows adding a whole game roster at once.
 
 Expected size: 500 popular entries + franchises with all roles ≈ tens of thousands of characters,
-mostly Commons (background characters with few favourites). "Completionist" is therefore a
-long-term goal; per-series progress is the main collection driver. Import duration is bounded by
+mostly Commons (background characters with few favourites). Full catalog completion is therefore
+unrealistic: catalog achievements use percentage tiers (10/25/50/75 %) and per-series progress is
+the main collection driver. Import duration is bounded by
 AniList's rate limit (≈30 req/min currently) → a full initial import takes a few hours in the worker,
 with resumable progress.

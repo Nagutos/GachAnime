@@ -83,7 +83,7 @@ Format: context → decision → consequences. Status: Accepted / Proposed (wait
 ## ADR-014 — "Series" = franchise of AniList media (Accepted)
 
 - **Context**: AniList splits a franchise into many media (seasons, movies). The same character appears in each.
-- **Decision**: import media and group them into one `series` through AniList relations (SEQUEL, PREQUEL, PARENT, SIDE_STORY, ALTERNATIVE, SUMMARY between anime media — seasons and movies merged), admin can merge/split. All characters of all roles are imported. `series_characters` is the canonical membership, derived from `character_media` for AniList series.
+- **Decision**: import media and group them into one `series` through AniList relations (SEQUEL, PREQUEL, PARENT, SIDE_STORY, ALTERNATIVE, SUMMARY between anime media — seasons and movies merged), admin can merge/split. All characters of all roles are imported, except those without an image (AniList placeholder). `series_characters` is the canonical membership, derived from `character_media` for AniList series.
 - **Consequences**: "complete a series" means the whole franchise, as players expect.
 
 ## ADR-015 — Default rarity from absolute favourites thresholds (Accepted)
