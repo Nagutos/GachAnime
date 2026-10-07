@@ -1,0 +1,154 @@
+# CLAUDE.md — GachAnime project memory
+
+> **GachAnime** — package scope `@gachanime/*`, license AGPL-3.0.
+> The original spec (French) is `InitialPrompt.md`, kept locally and **not committed** (the repo is
+> English-only); decisions taken since then are in `docs/` and override it.
+
+## Vision
+
+An open-source, self-hostable web game where players collect anime character cards:
+
+- free boosters on a timer, paid boosters bought with an in-game currency (**gems**, never real money);
+- a collection with rarities, duplicates, recycling, a wishlist and per-series progress;
+- a wiki where each character's entry unlocks once the player obtains the card;
+- player-to-player trades and a gem-based market;
+- daily missions and permanent achievements;
+- a full admin panel (catalog, pack editor, rates, economy, missions, achievements, users, audit log).
+
+Audience: groups of friends on self-hosted instances. Sign-in with **Discord only**. No anti
+multi-account restrictions. Catalog: AniList (top 500 franchises, all characters) + manual series
+such as gacha games.
+
+The **concept and mechanics** come from Kyara (kyara.games). The **identity does not**: name, logo,
+design, colors, copy and assets must be 100% original. Never copy any asset, text or code from it.
+
+## Language rules
+
+- Everything in the repository is **English**: code, identifiers, comments, commits, docs, API error
+  messages, logs.
+- Conversations with the maintainer are in **French** (questions, summaries, proposals).
+- The UI is multilingual (vue-i18n). **No hardcoded user-facing string** in components: translation
+  keys only. English is the reference and fallback locale. Starting locales: `en`, `fr`.
+- DB-managed content (missions, achievements, boosters, themes, rarities) stores translations as a
+  localized JSONB object `{ "en": "...", "fr": "..." }` with fallback to `en`.
+- AniList data (character/series names, descriptions) is displayed as provided. No machine translation.
+
+## Stack
+
+| Concern            | Choice                                                                  |
+| ------------------ | ----------------------------------------------------------------------- |
+| Monorepo           | pnpm workspaces + Turborepo                                             |
+| Language           | TypeScript (strict) everywhere                                          |
+| API                | Next.js (App Router) route handlers only, `apps/api`                    |
+| Background jobs    | Node worker with BullMQ, `apps/worker`                                  |
+| Frontend           | Vue 3 + Vite + Vue Router + Pinia + TanStack Vue Query, `apps/web`      |
+| Styling / UI       | Tailwind CSS v4 + Reka UI (headless components)                         |
+| Animations         | Motion for Vue (`motion-v`)                                             |
+| i18n               | vue-i18n (+ `@intlify/unplugin-vue-i18n`, `@intlify/eslint-plugin-vue-i18n`) |
+| Database           | PostgreSQL 17 + Drizzle ORM + drizzle-kit migrations                    |
+| Cache / RL / queue | Redis (rate limiting, auth secondary storage, BullMQ). Never game state |
+| Auth               | Better Auth (Discord OAuth only, admin plugin)                          |
+| Validation         | Zod v4, shared schemas in `packages/shared`                             |
+| Tests              | Vitest (unit/integration), Playwright (e2e)                             |
+| Logs               | pino                                                                    |
+| Deployment         | Docker + docker compose (caddy/web, api, worker, postgres, redis)       |
+| Runtime / PM       | Node 24 LTS (Docker), pnpm 12 (`packageManager`)                        |
+
+Rationale for each choice: `docs/DECISIONS.md`.
+
+## Repository layout (target)
+
+```
+apps/
+  api/        Next.js route handlers under /api/v1, Better Auth under /api/auth
+  worker/     BullMQ worker: AniList import, image cache, recomputations, sweeps
+  web/        Vue SPA (player area + lazy-loaded /admin area)
+packages/
+  shared/     Zod schemas, DTO types, enums, error codes, settings schema
+  db/         Drizzle schema, migrations, seed, db client
+  game/       PURE game logic (no I/O): draw, rate math, timers, economy, metrics
+  core/       Application services (transactions): boosters, recycling, trades, market,
+              progression, admin. Used by api + worker
+  importer/   AniList GraphQL client + import pipeline (CLI + worker job)
+  config/     Shared tsconfig / eslint / prettier presets
+e2e/          Playwright tests
+docker/       Dockerfiles, Caddyfile
+docs/         Architecture, game design, database, roadmap, decisions
+scripts/      Repo scripts (i18n key check, etc.)
+```
+
+Dependency direction: `apps/*` → `core` → (`game`, `db`, `shared`); `game` depends only on `shared`.
+`web` depends only on `shared`. Never import `db`/`core` from `web`. All packages are named
+`@gachanime/<dir>`.
+
+## Conventions
+
+- TypeScript `strict`, `noUncheckedIndexedAccess`. No `any` (use `unknown` + Zod parsing).
+- ESM everywhere. Named exports. File names `kebab-case.ts`, Vue components `PascalCase.vue`.
+- Every API input is parsed with a Zod schema from `@app/shared`; every response has a typed DTO.
+- API errors: `{ error: { code: "SNAKE_CASE_CODE", message: "English message" } }`. The web app
+  translates `code` via i18n (`errors.<code>`), never displays `message` directly.
+- **Any operation that touches inventory or gems runs inside one DB transaction** in `packages/core`,
+  locking the affected `player_profiles` rows with `SELECT … FOR UPDATE` (multiple users: ordered by
+  id to avoid deadlocks) and using conditional updates (`WHERE quantity - locked_quantity >= n`).
+- Every gem balance change writes a `gem_transactions` row in the same transaction.
+- Randomness for game outcomes: `node:crypto` (`randomInt`) only, through an injectable `Rng`
+  interface so tests can use a seeded generator.
+- No game rule is computed client-side. The client only displays server results.
+- Tunable values live in DB (`settings`, `rate_tables`, `rarities`, …), never as code constants
+  (code holds only defaults used by the seed).
+- Admin routes check the role server-side and write `admin_audit_log` for every mutation.
+- Commits: Conventional Commits, small and explicit (`feat(api): …`, `fix(web): …`, `docs: …`).
+- Tests: pure logic in `packages/game` is unit-tested; services in `packages/core` get
+  integration tests against a real Postgres (testcontainers or the compose db).
+
+## Commands (to be created in Phase 0)
+
+```bash
+pnpm install
+pnpm dev                 # turbo: api + worker + web in watch mode (needs postgres + redis)
+docker compose -f docker-compose.dev.yml up -d   # postgres (port 5433) + redis (6380) for local dev
+pnpm build
+pnpm lint && pnpm typecheck
+pnpm test                # vitest (all packages)
+pnpm test:e2e            # playwright
+pnpm i18n:check          # missing/extra translation keys between locales
+pnpm db:generate         # drizzle-kit generate (new migration from schema diff)
+pnpm db:migrate          # apply migrations
+pnpm db:seed             # rarities, rate tables, boosters, missions, achievements, settings
+pnpm import:anilist -- --top 200        # import catalog (see packages/importer)
+pnpm admin:promote -- --discord-id 123456789012345678
+docker compose up -d     # full self-hosted stack
+```
+
+## Architecture decisions (summary — details in docs/DECISIONS.md)
+
+- ADR-001 pnpm + Turborepo monorepo.
+- ADR-002 Next.js used as a pure API (kept as requested; Nuxt/Hono considered).
+- ADR-003 Drizzle ORM.
+- ADR-004 Postgres is the single source of truth; Redis only for ephemeral data and queues.
+- ADR-005 Better Auth (Lucia is deprecated).
+- ADR-006 vue-i18n; ADR-007 localized DB content as JSONB.
+- ADR-008 Inventory stored as stacks (`quantity`, `locked_quantity`), not card instances.
+- ADR-009 Concurrency: transactions + row locks + conditional updates + ordered locking.
+- ADR-010 Event-driven progression with a code-side metric registry and data-defined missions/achievements.
+- ADR-011 Motion for Vue instead of GSAP (license compatibility).
+- ADR-012 Same-origin deployment behind Caddy.
+- ADR-013 REST + shared Zod contracts.
+- ADR-014 A "series" is a franchise grouping several AniList media (seasons + movies).
+- ADR-015 Default rarity from absolute AniList favourites thresholds.
+- ADR-016 License AGPL-3.0.
+- ADR-018 Booster = tier × pool (packs), +20 % surcharge for paid themed boosters.
+- ADR-019 Manual catalog source (games) with image uploads and JSON roster import.
+- ADR-020 Node 24 LTS in Docker, pnpm 12.
+
+## Open questions (waiting for the maintainer)
+
+Tracked in `docs/ROADMAP.md` → "Open questions". Do not implement anything depending on them
+before an answer. Ask the maintainer (in French) before any architecture or gameplay change.
+
+## Progress
+
+- 2026-10-07 — Session 1: read spec, wrote `CLAUDE.md` and `docs/` (architecture, game design,
+  database, roadmap, decisions). Waiting for validation of open questions, monorepo layout and roadmap.
+  No code yet.
