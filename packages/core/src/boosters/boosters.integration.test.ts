@@ -70,11 +70,17 @@ describe.skipIf(!testDatabaseUrl)('booster openings (integration)', () => {
     ]))
   })
 
-  it('starts a new player with every free charge and lists the free tier', async () => {
+  it('starts a new player with every free charge and lists the tiers', async () => {
     const boosters = await listBoosters(db, 'p1', NOW)
     expect(boosters.free).toMatchObject({ available: 15, max: 15, nextChargeAt: null })
-    expect(boosters.tiers.map((tier) => tier.key)).toEqual(['free'])
-    expect(boosters.tiers[0]!.priceGems).toBeNull()
+    expect(boosters.gemBalance).toBe(0)
+    expect(boosters.tiers.map((tier) => [tier.key, tier.priceGems])).toEqual([
+      ['free', null],
+      ['epic', 150],
+      ['legendary', 500],
+      ['mythic', 1500],
+      ['divine', 5000],
+    ])
   })
 
   it('opens a booster: 5 cards, one charge consumed, inventory and history updated', async () => {

@@ -1,0 +1,138 @@
+import { characters, rarities, userCards, type Database, type Executor } from '@gachanime/db'
+import type {
+  RecycleCardsRequest,
+  RecycleDuplicatesRequest,
+  RecycleFilter,
+  RecyclePreview,
+  RecycleResult,
+} from '@gachanime/shared'
+import { and, eq, inArray, sql, type SQL } from 'drizzle-orm'
+import { AppError } from '../errors'
+import { changeGems, lockPlayer } from './gems'
+
+/** Copies beyond the first, minus locked copies (GAME_DESIGN §3), in SQL. */
+const recyclable = sql<number>`greatest(${userCards.quantity} - 1 - ${userCards.lockedQuantity}, 0)`
+
+/**
+ * Recycles `count` duplicates of one character. Never the first copy, never locked copies:
+ * the conditional update fails rather than going below.
+ */
+export async function recycleCards(
+  database: Database,
+  userId: string,
+  input: RecycleCardsRequest,
+): Promise<RecycleResult> {
+  return database.transaction(async (tx) => {
+    await lockPlayer(tx, userId)
+    const [card] = await tx
+      .select({ recyclable, recycleValue: rarities.recycleValue })
+      .from(userCards)
+      .innerJoin(characters, eq(characters.id, userCards.characterId))
+      .innerJoin(rarities, eq(rarities.id, characters.rarityId))
+      .where(and(eq(userCards.userId, userId), eq(userCards.characterId, input.characterId)))
+    const available = card?.recyclable ?? 0
+    if (!card || available < input.count) {
+      throw new AppError('NOTHING_TO_RECYCLE', 'Not enough duplicates to recycle', { available })
+    }
+
+    const updated = await tx
+      .update(userCards)
+      .set({ quantity: sql`${userCards.quantity} - ${input.count}` })
+      .where(
+        and(
+          eq(userCards.userId, userId),
+          eq(userCards.characterId, input.characterId),
+          sql`${userCards.quantity} - 1 - ${userCards.lockedQuantity} >= ${input.count}`,
+        ),
+      )
+      .returning({ quantity: userCards.quantity })
+    if (updated.length === 0) {
+      throw new AppError('NOTHING_TO_RECYCLE', 'Not enough duplicates to recycle', { available })
+    }
+
+    const gems = input.count * card.recycleValue
+    const gemBalance =
+      gems > 0
+        ? await changeGems(tx, {
+            userId,
+            amount: gems,
+            reason: 'recycle',
+            refType: 'character',
+            refId: input.characterId,
+          })
+        : (await lockPlayer(tx, userId)).gemBalance
+    return { cards: input.count, gems, gemBalance }
+  })
+}
+
+function duplicateConditions(userId: string, filter: RecycleFilter): SQL[] {
+  const conditions = [eq(userCards.userId, userId), sql`${recyclable} > 0`]
+  if (filter.rarities?.length) conditions.push(inArray(rarities.key, filter.rarities))
+  return conditions
+}
+
+/** What "recycle all duplicates" would do with this filter. */
+export async function previewRecycleDuplicates(
+  db: Executor,
+  userId: string,
+  filter: RecycleFilter,
+): Promise<RecyclePreview> {
+  const rows = await db
+    .select({
+      rarityKey: rarities.key,
+      characters: sql<number>`count(*)::int`,
+      cards: sql<number>`sum(${recyclable})::int`,
+      gems: sql<number>`sum(${recyclable} * ${rarities.recycleValue})::int`,
+    })
+    .from(userCards)
+    .innerJoin(characters, eq(characters.id, userCards.characterId))
+    .innerJoin(rarities, eq(rarities.id, characters.rarityId))
+    .where(and(...duplicateConditions(userId, filter)))
+    .groupBy(rarities.key, rarities.sortOrder)
+    .orderBy(rarities.sortOrder)
+  return {
+    cards: rows.reduce((sum, row) => sum + row.cards, 0),
+    characters: rows.reduce((sum, row) => sum + row.characters, 0),
+    gems: rows.reduce((sum, row) => sum + row.gems, 0),
+    byRarity: rows.map(({ rarityKey, cards, gems }) => ({ rarityKey, cards, gems })),
+  }
+}
+
+/**
+ * Recycles every duplicate matching the filter, in one transaction. The player confirmed a
+ * preview: if the result would differ (a booster opened in another tab…), nothing happens and
+ * PREVIEW_OUTDATED returns the fresh preview.
+ */
+export async function recycleAllDuplicates(
+  database: Database,
+  userId: string,
+  input: RecycleDuplicatesRequest,
+): Promise<RecycleResult> {
+  return database.transaction(async (tx) => {
+    await lockPlayer(tx, userId)
+    const preview = await previewRecycleDuplicates(tx, userId, input)
+    if (preview.cards === 0) throw new AppError('NOTHING_TO_RECYCLE', 'No duplicate to recycle')
+    if (preview.cards !== input.expected.cards || preview.gems !== input.expected.gems) {
+      throw new AppError('PREVIEW_OUTDATED', 'The duplicates changed since the preview', preview)
+    }
+
+    const rarityFilter = input.rarities?.length
+      ? sql`AND r.key IN (${sql.join(
+          input.rarities.map((key) => sql`${key}`),
+          sql`, `,
+        )})`
+      : sql``
+    await tx.execute(sql`
+      UPDATE user_cards uc
+      SET quantity = uc.quantity - (uc.quantity - 1 - uc.locked_quantity)
+      FROM characters c JOIN rarities r ON r.id = c.rarity_id
+      WHERE c.id = uc.character_id AND uc.user_id = ${userId}
+        AND uc.quantity - 1 - uc.locked_quantity > 0 ${rarityFilter}`)
+
+    const gemBalance =
+      preview.gems > 0
+        ? await changeGems(tx, { userId, amount: preview.gems, reason: 'recycle', refType: 'bulk' })
+        : (await lockPlayer(tx, userId)).gemBalance
+    return { cards: preview.cards, gems: preview.gems, gemBalance }
+  })
+}

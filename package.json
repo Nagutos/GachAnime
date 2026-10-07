@@ -21,6 +21,8 @@
     "db:migrate": "pnpm --filter @gachanime/db migrate",
     "db:seed": "pnpm --filter @gachanime/db seed",
     "admin:promote": "pnpm --filter @gachanime/core admin:promote",
+    "admin:grant-gems": "pnpm --filter @gachanime/core admin:grant-gems",
+    "economy:simulate": "pnpm --filter @gachanime/core economy:simulate",
     "import:anilist": "pnpm --filter @gachanime/importer import:anilist"
   },
   "devDependencies": {

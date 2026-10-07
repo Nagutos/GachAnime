@@ -6,8 +6,10 @@ import {
   series,
   seriesCharacters,
   userCards,
+  wishlistItems,
   type Executor,
 } from '@gachanime/db'
+import { recyclableCopies } from '@gachanime/game'
 import type {
   Paginated,
   WikiCharacter,
@@ -119,6 +121,9 @@ export async function listWikiSeries(
     const pattern = containsPattern(query.search)
     conditions.push(or(ilike(ws.title, pattern), ilike(ws.titleEnglish, pattern))!)
   }
+  if (query.status === 'complete') conditions.push(sql`${ws.ownedCount} = ${ws.characterCount}`)
+  if (query.status === 'incomplete') conditions.push(sql`${ws.ownedCount} < ${ws.characterCount}`)
+  if (query.status === 'started') conditions.push(gt(ws.ownedCount, 0))
   const where = and(...conditions)
   const order = {
     popularity: [desc(ws.popularity), asc(ws.id)],
@@ -272,15 +277,22 @@ export async function getWikiCharacter(
       isActive: characters.isActive,
       rarityKey: rarities.key,
       series: activeSeriesList,
+      recycleValue: rarities.recycleValue,
       ownerId: userCards.userId,
       quantity: userCards.quantity,
+      lockedQuantity: userCards.lockedQuantity,
       firstObtainedAt: userCards.firstObtainedAt,
+      wishlisted: sql<boolean>`${wishlistItems.userId} IS NOT NULL`,
     })
     .from(characters)
     .innerJoin(rarities, eq(rarities.id, characters.rarityId))
     .leftJoin(
       userCards,
       and(eq(userCards.characterId, characters.id), eq(userCards.userId, userId)),
+    )
+    .leftJoin(
+      wishlistItems,
+      and(eq(wishlistItems.characterId, characters.id), eq(wishlistItems.userId, userId)),
     )
     .where(eq(characters.id, id))
 
@@ -290,7 +302,13 @@ export async function getWikiCharacter(
     throw new AppError('NOT_FOUND', `Character #${id} not found`)
   }
   if (!unlocked || !row.firstObtainedAt) {
-    return { locked: true, id: row.id, rarityKey: row.rarityKey, series: row.series }
+    return {
+      locked: true,
+      id: row.id,
+      rarityKey: row.rarityKey,
+      series: row.series,
+      wishlisted: row.wishlisted,
+    }
   }
 
   const appearances = await db
@@ -319,6 +337,10 @@ export async function getWikiCharacter(
     anilistUrl: row.anilistId ? `https://anilist.co/character/${row.anilistId}` : null,
     appearances,
     quantity: row.quantity ?? 0,
+    lockedQuantity: row.lockedQuantity ?? 0,
+    recyclable: recyclableCopies(row.quantity ?? 0, row.lockedQuantity ?? 0),
+    recycleValue: row.recycleValue,
+    wishlisted: row.wishlisted,
     firstObtainedAt: row.firstObtainedAt.toISOString(),
   }
 }

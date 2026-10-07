@@ -1,4 +1,9 @@
 import { userCards, type Database } from '@gachanime/db'
+import {
+  collectionQuerySchema,
+  type CollectionItem,
+  type CollectionQueryInput,
+} from '@gachanime/shared'
 import { and, eq, sql } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { insertSeriesWithCharacters } from '../test/catalog-fixture'
@@ -9,6 +14,7 @@ import {
   testDatabaseUrl,
 } from '../test/database'
 import { listCollection } from './collection'
+import { setWishlisted } from './wishlist'
 import { ensurePlayerProfile } from './profile'
 import { getWikiCharacter, getWikiSeries, listWikiSeries, listWikiSeriesCharacters } from './wiki'
 
@@ -71,11 +77,18 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
       await give('Dana', 2, new Date('2026-10-02T00:00:00Z'))
     })
 
+    const query = (input: CollectionQueryInput = {}) => collectionQuerySchema.parse(input)
+    const names = (items: CollectionItem[]) =>
+      items.map((item) => (item.locked ? `?${item.rarityKey}` : item.name))
+
     it('lists owned cards with a summary, most recent first', async () => {
-      const result = await listCollection(db, 'p1', { ...page, sort: 'recent' })
-      expect(result.items.map((item) => item.name)).toEqual(['Ben', 'Dana', 'Aiko'])
+      const result = await listCollection(db, 'p1', query())
+      expect(names(result.items)).toEqual(['Ben', 'Dana', 'Aiko'])
       expect(result.items[0]).toMatchObject({
+        locked: false,
         quantity: 3,
+        recyclable: 2,
+        wishlisted: false,
         rarityKey: 'common',
         series: { id: alphaId, title: 'Alpha' },
       })
@@ -83,28 +96,52 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
       expect(result.total).toBe(3)
     })
 
-    it('filters and sorts', async () => {
-      const names = async (query: Partial<Parameters<typeof listCollection>[2]>) =>
-        (await listCollection(db, 'p1', { ...page, sort: 'recent', ...query })).items.map(
-          (item) => item.name,
-        )
-      expect(await names({ sort: 'rarity' })).toEqual(['Dana', 'Aiko', 'Ben'])
-      expect(await names({ sort: 'count' })).toEqual(['Ben', 'Dana', 'Aiko'])
-      expect(await names({ sort: 'name' })).toEqual(['Aiko', 'Ben', 'Dana'])
-      expect(await names({ duplicates: true, sort: 'name' })).toEqual(['Ben', 'Dana'])
-      expect(await names({ rarity: 'epic' })).toEqual(['Aiko'])
-      expect(await names({ seriesId: betaId })).toEqual(['Dana'])
-      expect(await names({ search: 'ik' })).toEqual(['Aiko'])
+    it('filters and sorts, with multi-key sorts', async () => {
+      const list = async (input: CollectionQueryInput) =>
+        names((await listCollection(db, 'p1', query(input))).items)
+      expect(await list({ sort: 'rarity:desc' })).toEqual(['Dana', 'Aiko', 'Ben'])
+      expect(await list({ sort: 'count:desc' })).toEqual(['Ben', 'Dana', 'Aiko'])
+      expect(await list({ sort: 'name:asc' })).toEqual(['Aiko', 'Ben', 'Dana'])
+      expect(await list({ sort: 'series:asc,name:desc' })).toEqual(['Ben', 'Aiko', 'Dana'])
+      expect(await list({ duplicates: 'true', sort: 'name' })).toEqual(['Ben', 'Dana'])
+      expect(await list({ rarity: 'epic' })).toEqual(['Aiko'])
+      expect(await list({ seriesId: String(betaId) })).toEqual(['Dana'])
+      expect(await list({ search: 'ik' })).toEqual(['Aiko'])
     })
 
-    it('hides cards no longer owned and other players cards', async () => {
+    it('lists missing characters masked, and never matches locked names in search', async () => {
       await db
         .update(userCards)
         .set({ quantity: 0 })
         .where(and(eq(userCards.userId, 'p1'), eq(userCards.characterId, ids['Ben']!)))
-      const result = await listCollection(db, 'p1', { ...page, sort: 'name' })
-      expect(result.items.map((item) => item.name)).toEqual(['Aiko', 'Dana'])
-      expect((await listCollection(db, 'p2', { ...page, sort: 'name' })).total).toBe(0)
+      const missing = await listCollection(db, 'p1', query({ ownership: 'missing', sort: 'name' }))
+      // Ben is unlocked (no copy left), Chloe was never obtained.
+      expect(names(missing.items)).toEqual(['Ben', '?rare'])
+      expect(missing.items[0]).toMatchObject({ locked: false, quantity: 0 })
+      const all = await listCollection(db, 'p1', query({ ownership: 'all', sort: 'rarity:desc' }))
+      expect(names(all.items)).toEqual(['Dana', 'Aiko', '?rare', 'Ben'])
+      const search = await listCollection(db, 'p1', query({ ownership: 'all', search: 'chlo' }))
+      expect(search.total).toBe(0)
+      expect((await listCollection(db, 'p2', query())).total).toBe(0)
+    })
+
+    it('filters the wishlist, owned or not', async () => {
+      await setWishlisted(db, 'p1', ids['Chloe']!, true)
+      await setWishlisted(db, 'p1', ids['Dana']!, true)
+      await setWishlisted(db, 'p1', ids['Dana']!, true)
+      const wished = await listCollection(
+        db,
+        'p1',
+        query({ ownership: 'all', wishlist: 'true', sort: 'rarity:desc' }),
+      )
+      expect(names(wished.items)).toEqual(['Dana', '?rare'])
+      expect(wished.items.every((item) => item.wishlisted)).toBe(true)
+      await setWishlisted(db, 'p1', ids['Dana']!, false)
+      expect((await listCollection(db, 'p1', query({ wishlist: 'true' }))).total).toBe(0)
+      // Undrawable characters never obtained cannot be wishlisted.
+      await expect(setWishlisted(db, 'p1', ids['Retired']!, true)).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+      })
     })
   })
 
@@ -123,6 +160,15 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
       expect(byProgress.items.map((item) => item.title)).toEqual(['Alpha', 'Beta'])
       const searched = await listWikiSeries(db, 'p1', { ...page, sort: 'title', search: 'bet' })
       expect(searched.items.map((item) => item.title)).toEqual(['Beta'])
+
+      await give('Dana', 1)
+      const status = async (value: 'complete' | 'incomplete' | 'started') =>
+        (await listWikiSeries(db, 'p1', { ...page, sort: 'title', status: value })).items.map(
+          (item) => item.title,
+        )
+      expect(await status('complete')).toEqual(['Beta'])
+      expect(await status('incomplete')).toEqual(['Alpha'])
+      expect(await status('started')).toEqual(['Alpha', 'Beta'])
     })
 
     it('masks locked entries of a series', async () => {
@@ -156,6 +202,7 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
         id: ids['Aiko'],
         rarityKey: 'epic',
         series: [{ id: alphaId, title: 'Alpha' }],
+        wishlisted: false,
       })
 
       await give('Aiko', 0)
@@ -164,6 +211,8 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
         locked: false,
         name: 'Aiko',
         quantity: 0,
+        recyclable: 0,
+        recycleValue: 10,
         source: 'manual',
         anilistUrl: null,
       })
