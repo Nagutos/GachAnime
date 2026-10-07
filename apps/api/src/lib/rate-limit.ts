@@ -9,6 +9,8 @@ export const RATE_LIMIT_POLICIES = {
   profileUpdate: { points: 20, duration: 60 },
   /** Booster openings (each request is one transaction of up to 50 cards). */
   boosterOpen: { points: 30, duration: 60 },
+  /** Recycling and wishlist changes. */
+  economy: { points: 60, duration: 60 },
   admin: { points: 300, duration: 60 },
   /** Calls that reach AniList (search) or start long jobs. */
   adminAniList: { points: 20, duration: 60 },
