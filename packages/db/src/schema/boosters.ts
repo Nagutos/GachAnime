@@ -156,3 +156,21 @@ export const gemTransactions = pgTable(
     check('gem_transactions_balance_non_negative', sql`${table.balanceAfter} >= 0`),
   ],
 )
+
+/** Characters a player wants (owned or not): collection filter, market and trade highlights. */
+export const wishlistItems = pgTable(
+  'wishlist_items',
+  {
+    userId: text()
+      .notNull()
+      .references(() => playerProfiles.userId, { onDelete: 'cascade' }),
+    characterId: bigint({ mode: 'number' })
+      .notNull()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.characterId] }),
+    index().on(table.characterId),
+  ],
+)

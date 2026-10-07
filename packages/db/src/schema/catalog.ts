@@ -45,6 +45,11 @@ export const rarities = pgTable('rarities', {
   colorToken: text().notNull(),
   /** Minimum AniList favourites for this rarity (absolute threshold, ADR-015). */
   favouritesThreshold: integer().notNull(),
+  /** Gems earned by recycling one duplicate of this rarity. */
+  recycleValue: integer().notNull().default(0),
+  /** Market price bounds (Phase 6): the minimum defaults to the recycle value. */
+  marketMinPrice: integer().notNull().default(0),
+  marketMaxPrice: integer().notNull().default(0),
 })
 
 /**

@@ -29,6 +29,13 @@
       "when": 1791388286111,
       "tag": "0003_boosters_and_inventory",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791396521850,
+      "tag": "0004_economy",
+      "breakpoints": true
     }
   ]
 }
