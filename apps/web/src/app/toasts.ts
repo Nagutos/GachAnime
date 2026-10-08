@@ -16,11 +16,30 @@ export function dismissToast(id: number): void {
   toasts.value = toasts.value.filter((toast) => toast.id !== id)
 }
 
-/** One toast per mission or achievement an action completed. */
-export function notifyProgression(update: ProgressionUpdate | undefined): void {
-  for (const objective of update?.completed ?? []) {
-    const id = nextId++
-    toasts.value = [...toasts.value, { id, objective }]
-    setTimeout(() => dismissToast(id), DURATION_MS)
-  }
+function show(objective: CompletedObjective): void {
+  const id = nextId++
+  toasts.value = [...toasts.value, { id, objective }]
+  setTimeout(() => dismissToast(id), DURATION_MS)
+}
+
+/** Objectives completed by a booster opening, shown once the opening scene closes. */
+let deferred: CompletedObjective[] = []
+
+/**
+ * One toast per mission or achievement an action completed. `defer` keeps them until
+ * `flushDeferredToasts()` (they would cover the booster opening scene otherwise).
+ */
+export function notifyProgression(
+  update: ProgressionUpdate | undefined,
+  options: { defer?: boolean } = {},
+): void {
+  const completed = update?.completed ?? []
+  if (options.defer) deferred = [...deferred, ...completed]
+  else completed.forEach(show)
+}
+
+export function flushDeferredToasts(): void {
+  const pending = deferred
+  deferred = []
+  pending.forEach(show)
 }

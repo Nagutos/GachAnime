@@ -522,7 +522,11 @@
         "media_type": "Media type",
         "custom": "Special"
       }
-    }
+    },
+    "nextCard": "Next card",
+    "cardProgress": "Card {current} of {total}",
+    "tapToReveal": "Tap the card to reveal it",
+    "tiltHint": "Move over the card to tilt it"
   },
   "collection": {
     "title": "My collection",

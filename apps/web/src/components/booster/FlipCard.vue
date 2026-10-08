@@ -8,8 +8,16 @@ import CardBack from '@/components/cards/CardBack.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import { HIGHLIGHT_RARITIES, rarityStyle, SHINY_RARITIES } from '@/components/cards/rarity-styles'
 
-const props = defineProps<{ card: OpenedCard; revealed: boolean }>()
-const emit = defineEmits<{ reveal: [] }>()
+const props = withDefaults(
+  defineProps<{
+    card: OpenedCard
+    revealed: boolean
+    /** Once revealed, a click asks for the next card (one-by-one reveal). */
+    advance?: boolean
+  }>(),
+  { advance: false },
+)
+const emit = defineEmits<{ reveal: []; next: [] }>()
 
 const { t } = useI18n()
 const { nameOf } = usePlayerRarities()
@@ -34,11 +42,11 @@ const flipDuration = computed(() => (reduced.value ? 0 : shiny.value ? 0.9 : 0.5
           })
         : t('boosters.revealCard')
     "
-    :aria-disabled="revealed"
+    :aria-disabled="revealed && !advance"
     data-testid="flip-card"
     :data-character-id="revealed ? card.character.id : undefined"
     :data-revealed="revealed"
-    @click="!revealed && emit('reveal')"
+    @click="revealed ? advance && emit('next') : emit('reveal')"
   >
     <!-- Burst of light behind legendary and mythic reveals -->
     <motion.div

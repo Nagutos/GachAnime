@@ -52,3 +52,28 @@ test('a new player opens a free booster, then finds the cards in the collection 
   await expect(entries.getByTestId('locked-card')).toHaveCount(20 - owned)
   await expect(entries.getByTestId('locked-card').first()).toContainText('???')
 })
+
+test('cards are revealed one by one, then all laid out', async ({ page, context }) => {
+  await signInNewPlayer(context, 'One By One')
+  await page.goto('/boosters')
+  await page.getByTestId('open-1').click({ timeout: 30_000 })
+  const opening = page.getByTestId('booster-opening')
+  await opening.getByTestId('pack').click()
+
+  const revealed = opening.locator('[data-testid="flip-card"][data-revealed="true"]')
+  for (let index = 1; index <= 5; index++) {
+    await expect(opening.getByTestId('card-progress')).toHaveText(`Card ${index} of 5`)
+    // Wait until the previous card has flown away and the next one is face down.
+    await expect(revealed).toHaveCount(0)
+    await expect(opening.getByTestId('flip-card')).toHaveCount(1)
+    // The inspected card sways continuously: Playwright never sees it "stable".
+    await opening.getByTestId('flip-card').click({ force: true })
+    await expect(revealed).toHaveCount(1)
+    await opening.getByTestId('next-card').click()
+  }
+
+  // After the last card, the whole pack is laid out face up.
+  await expect(revealed).toHaveCount(5)
+  await opening.getByTestId('close-opening').click()
+  await expect(opening).toBeHidden()
+})

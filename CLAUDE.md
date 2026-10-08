@@ -249,3 +249,9 @@ before an answer. Ask the maintainer (in French) before any architecture or game
     names, page titles, skip link); e2e: security, axe-core a11y, phone layout, admin flows;
     `docs/SELF_HOSTING.md`, `docs/UPGRADING.md`, `CHANGELOG.md`. Known debt: some services run
     `Promise.all` on a transaction client (pg deprecation warning, breaks with pg@9).
+- 2026-10-08 — **Phase 8 done** (maintainer feedback): admin requests were refused for an admin
+  promoted at sign-in (Better Auth cached the session user with the old role) → role/ban read from
+  DB, role/ban changes via the internal adapter; packs with serrated edges and a tear animation
+  (`pack-shape.ts` clip-paths); seamless shine loop (`sheen-loop`); cards revealed one by one with
+  a 3D tilt (`TiltCard`), then dealt into a grid; booster toasts deferred until the opening
+  closes; site widened to `max-w-7xl`, header nav no longer shows a scrollbar with badges.

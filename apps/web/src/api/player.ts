@@ -87,7 +87,8 @@ export function useOpenBoostersMutation() {
           ? { ...parsed.data, free: result.free, gemBalance: result.gemBalance }
           : previous
       })
-      notifyProgression(result.progression)
+      // Shown when the opening scene closes (BoosterOpening).
+      notifyProgression(result.progression, { defer: true })
       invalidateInventory(queryClient)
     },
   })

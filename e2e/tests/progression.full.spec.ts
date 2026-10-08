@@ -16,14 +16,15 @@ test('a new player claims missions and unlocks achievements', async ({ page, con
   await expect(welcome).toBeHidden()
   await expect(page.getByTestId('header-gems')).toHaveText('30 gems')
 
-  // Opening a booster completes the daily mission: a toast appears.
+  // Opening a booster completes the daily mission: a toast appears once the opening closes.
   await page.getByTestId('nav-boosters').click()
   await page.getByTestId('open-1').click()
   await page.getByTestId('booster-opening').getByTestId('skip').click()
+  await expect(page.getByTestId('toast')).toHaveCount(0)
+  await page.getByTestId('booster-opening').getByTestId('close-opening').click()
   await expect(
     page.getByTestId('toast').filter({ hasText: 'Open your first booster' }),
   ).toBeVisible()
-  await page.getByTestId('booster-opening').getByTestId('close-opening').click()
 
   await page.getByTestId('nav-missions').click()
   const daily = page.getByTestId('mission-daily_open_booster')
@@ -35,8 +36,8 @@ test('a new player claims missions and unlocks achievements', async ({ page, con
   await page.getByTestId('nav-boosters').click()
   await page.getByTestId('open-10').click()
   await page.getByTestId('booster-opening').getByTestId('skip').click()
-  await expect(page.getByTestId('toast').filter({ hasText: 'First Steps' })).toBeVisible()
   await page.getByTestId('booster-opening').getByTestId('close-opening').click()
+  await expect(page.getByTestId('toast').filter({ hasText: 'First Steps' })).toBeVisible()
 
   await page.getByTestId('nav-achievements').click()
   const firstSteps = page.getByTestId('achievement-open_10')

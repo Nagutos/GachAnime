@@ -47,21 +47,22 @@
 /* ─── Card effects ─────────────────────────────────────────────────────────── */
 
 @layer components {
-  /* Moving light sweep on legendary cards. */
+  /* Moving light sweep on legendary cards (seamless loop, see @keyframes sheen-loop). */
   .card-shine::after {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(
-      115deg,
-      transparent 35%,
-      rgb(255 255 255 / 0.4) 48%,
+    background-image: linear-gradient(
+      105deg,
+      transparent 40%,
+      rgb(255 255 255 / 0.45) 50%,
       transparent 60%
     );
-    background-size: 250% 100%;
     mix-blend-mode: overlay;
-    animation: card-shine 3.2s ease-in-out infinite;
+    background-size: 300% 100%;
+    background-repeat: repeat-x;
+    animation: sheen-loop 4.5s linear infinite;
   }
 
   /* Iridescent sheen on mythic cards. */
@@ -100,7 +101,6 @@
   /* Foil of a booster pack. */
   .pack-foil {
     background-image:
-      linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.25) 45%, transparent 55%),
       radial-gradient(circle at 30% 20%, rgb(255 209 102 / 0.45), transparent 40%),
       linear-gradient(
         165deg,
@@ -108,11 +108,20 @@
         var(--color-night-700) 55%,
         var(--color-night-950)
       );
-    background-size:
-      250% 100%,
-      100% 100%,
-      100% 100%;
-    animation: card-shine 4s ease-in-out infinite;
+  }
+
+  /* Light sweeping across a pack, in a layer of its own. */
+  .pack-sheen {
+    background-image: linear-gradient(
+      105deg,
+      transparent 42%,
+      rgb(255 255 255 / 0.32) 50%,
+      transparent 58%
+    );
+    background-size: 300% 100%;
+    background-repeat: repeat-x;
+    mix-blend-mode: screen;
+    animation: sheen-loop 5s linear infinite;
   }
 
   /* Seal on a pack: the pack color, slightly darker so it stands out on the foil. */
@@ -135,12 +144,12 @@
     --pack-seal: var(--color-gold-400);
   }
 
-  /* Crimped edge at the top and bottom of a pack. */
+  /* Heat-sealed bands at the top and bottom of a pack (inside the serrated edges). */
   .pack-crimp {
     background-image: repeating-linear-gradient(
       90deg,
-      rgb(255 255 255 / 0.35) 0 3px,
-      transparent 3px 7px
+      rgb(255 255 255 / 0.28) 0 2px,
+      transparent 2px 6px
     );
   }
 
@@ -151,12 +160,32 @@
   }
 }
 
-@keyframes card-shine {
+/*
+ * Seamless sweep: with a 300% wide repeating layer, moving the position from 0% to -150% shifts
+ * it by exactly one tile, so the last frame equals the first. The band is outside the element
+ * at the loop point, and crosses it during about a third of the loop.
+ */
+@keyframes sheen-loop {
   from {
-    background-position: 150% 0;
+    background-position: 0% 0;
   }
   to {
-    background-position: -100% 0;
+    background-position: -150% 0;
+  }
+}
+
+/* Slow idle sway of the inspected card (TiltCard). */
+.tilt-sway {
+  animation: tilt-sway 5s ease-in-out infinite;
+}
+
+@keyframes tilt-sway {
+  0%,
+  100% {
+    transform: rotateY(-7deg) rotateX(3deg);
+  }
+  50% {
+    transform: rotateY(7deg) rotateX(-2deg);
   }
 }
 
@@ -172,7 +201,7 @@
 @media (prefers-reduced-motion: reduce) {
   .card-shine::after,
   .card-holo::after,
-  .pack-foil {
+  .pack-sheen {
     animation: none;
   }
 }
