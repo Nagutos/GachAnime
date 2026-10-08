@@ -1,6 +1,6 @@
 /** Shared Tailwind class sets of the player area. */
 export const playerUi = {
-  page: 'mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pb-16',
+  page: 'mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-16',
   title: 'font-display text-3xl font-bold',
   panel: 'rounded-2xl border border-night-700 bg-night-900/70 p-5',
   input:

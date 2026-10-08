@@ -30,19 +30,19 @@ const links = [
 
 <template>
   <header
-    class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4"
+    class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4"
   >
     <RouterLink to="/"><BrandMark /></RouterLink>
     <nav
       v-if="me"
-      class="order-last flex w-full gap-1 overflow-x-auto sm:order-0 sm:w-auto sm:flex-1"
+      class="order-last flex w-full gap-1 overflow-x-auto overflow-y-hidden [scrollbar-width:thin] sm:order-0 sm:w-auto sm:flex-1 xl:overflow-visible"
       :aria-label="t('nav.main')"
     >
       <RouterLink
         v-for="link in links"
         :key="link.name"
         :to="{ name: link.name }"
-        class="rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap text-mist-300 transition hover:bg-night-800 hover:text-mist-100"
+        class="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm leading-5 font-medium whitespace-nowrap text-mist-300 transition hover:bg-night-800 hover:text-mist-100"
         :class="{
           'bg-night-800 text-mist-100': $route.name?.toString().startsWith(link.name),
         }"
@@ -51,7 +51,7 @@ const links = [
         {{ t(link.label) }}
         <span
           v-if="badges[link.name]"
-          class="ml-1 rounded-full bg-gold-400 px-1.5 text-xs font-bold text-night-950"
+          class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold-400 px-1.5 text-xs leading-none font-bold text-night-950"
           :aria-label="t('nav.claimable', { count: badges[link.name] })"
           :data-testid="`badge-${link.name}`"
         >

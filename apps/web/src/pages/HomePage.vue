@@ -11,7 +11,7 @@ const features = ['collect', 'trade', 'wiki'] as const
 </script>
 
 <template>
-  <main class="mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-4 py-16 text-center">
+  <main class="mx-auto flex w-full max-w-7xl flex-col items-center gap-12 px-4 py-16 text-center">
     <section class="flex flex-col items-center gap-6">
       <h1 class="font-display text-5xl font-extrabold sm:text-6xl">
         <span class="bg-linear-to-r from-sakura-400 to-gold-400 bg-clip-text text-transparent">
