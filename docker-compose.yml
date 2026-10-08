@@ -1,4 +1,10 @@
-# Self-hosted GachAnime: `cp .env.example .env`, fill it, then `docker compose up -d`.
+# GachAnime, from the images published by CI on GitHub (ghcr.io): nothing to build.
+# On the server, next to a filled `.env` (see .env.example):
+#   docker compose up -d
+#   docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d   (behind Traefik)
+# Update: docker compose pull && docker compose up -d
+# GACHANIME_VERSION picks the release: `latest` (default), `1.2`, `1.2.3`, or `edge` (main).
+# To build the images from a checkout instead, add docker-compose.build.yml.
 name: gachanime
 
 x-app-env: &app-env
@@ -14,10 +20,15 @@ x-app-env: &app-env
   LOG_LEVEL: ${LOG_LEVEL:-info}
   UPLOADS_DIR: /app/uploads
 
+x-logging: &logging
+  driver: json-file
+  options: { max-size: 10m, max-file: '3' }
+
 services:
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
+    logging: *logging
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-gachanime}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
@@ -33,6 +44,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    logging: *logging
     command: ['redis-server', '--appendonly', 'yes']
     volumes:
       - redis-data:/data
@@ -43,8 +55,7 @@ services:
       retries: 20
 
   migrate:
-    build: { context: ., target: tools }
-    image: gachanime-tools
+    image: ${GACHANIME_IMAGES:-ghcr.io/nagutos/gachanime}-tools:${GACHANIME_VERSION:-latest}
     working_dir: /app/packages/db
     command: ['node', '--import', 'tsx', 'src/cli/migrate.ts']
     environment: *app-env
@@ -52,9 +63,9 @@ services:
       postgres: { condition: service_healthy }
 
   api:
-    build: { context: ., target: api }
-    image: gachanime-api
+    image: ${GACHANIME_IMAGES:-ghcr.io/nagutos/gachanime}-api:${GACHANIME_VERSION:-latest}
     restart: unless-stopped
+    logging: *logging
     environment: *app-env
     volumes:
       - uploads:/app/uploads
@@ -63,8 +74,9 @@ services:
       redis: { condition: service_healthy }
 
   worker:
-    image: gachanime-tools
+    image: ${GACHANIME_IMAGES:-ghcr.io/nagutos/gachanime}-tools:${GACHANIME_VERSION:-latest}
     restart: unless-stopped
+    logging: *logging
     working_dir: /app/apps/worker
     command: ['node', '--import', 'tsx', 'src/main.ts']
     environment: *app-env
@@ -75,9 +87,9 @@ services:
       redis: { condition: service_healthy }
 
   web:
-    build: { context: ., target: web }
-    image: gachanime-web
+    image: ${GACHANIME_IMAGES:-ghcr.io/nagutos/gachanime}-web:${GACHANIME_VERSION:-latest}
     restart: unless-stopped
+    logging: *logging
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-:80}
       TRUSTED_PROXIES: ${TRUSTED_PROXIES:-private_ranges}

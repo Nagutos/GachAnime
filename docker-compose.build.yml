@@ -1,0 +1,14 @@
+# Build the images from this checkout instead of pulling them from GitHub (to run modified code):
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+services:
+  migrate:
+    build: { context: ., target: tools }
+    image: gachanime-tools:local
+  api:
+    build: { context: ., target: api }
+    image: gachanime-api:local
+  worker:
+    image: gachanime-tools:local
+  web:
+    build: { context: ., target: web }
+    image: gachanime-web:local

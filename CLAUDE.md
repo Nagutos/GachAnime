@@ -121,9 +121,9 @@ pnpm admin:grant-gems -- --discord-id 123456789012345678 --amount 500   # audite
 pnpm economy:simulate -- --days 90 --free-per-day 25 --other-per-day 80
 pnpm import:anilist -- --top 500   # or --ids 16498,1535 / --resume <job id> (also from the admin UI)
 # IGDB (video games): from Admin → Catalog import, needs IGDB_CLIENT_ID / IGDB_CLIENT_SECRET in .env
-docker compose up -d     # full self-hosted stack on :8080, built from source (needs .env)
-docker compose -f docker-compose.prod.yml up -d   # same stack from the ghcr.io images (CI)
-docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d   # behind Traefik (maintainer's setup)
+docker compose up -d     # full self-hosted stack on :8080 from the ghcr.io images (needs .env)
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build   # built from source
+docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d   # behind Traefik (maintainer's setup)
 ```
 
 Gotchas:
@@ -292,8 +292,8 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   turns over (`TurnableCard`).
 - 2026-10-08 — CI publishes multi-arch images (amd64 + arm64, native runners) to
   `ghcr.io/nagutos/gachanime-{api,tools,web}` after check + e2e: `edge`/`sha-…` from main,
-  semver + `latest` from `v*` tags. `docker-compose.prod.yml` runs them (`GACHANIME_VERSION`);
-  keep it in sync with `docker-compose.yml`.
+  semver + `latest` from `v*` tags. `docker-compose.yml` pulls them (`GACHANIME_VERSION`);
+  `docker-compose.build.yml` adds `build:` to run a checkout instead.
 - 2026-10-08 — The maintainer serves the game through **Traefik**: `docker-compose.traefik.yml`
   (labels, external network, no published port; Caddy stays inside for the SPA, /media, /api and
   headers). Caddy trusts private-range proxies (`TRUSTED_PROXIES`) so X-Forwarded-For keeps the

@@ -1,6 +1,6 @@
 # Serve GachAnime through an existing Traefik (instead of publishing ports). Add it to the stack:
-#   docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
-# (or with docker-compose.yml when building from source). Requires Docker Compose 2.24+.
+#   docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
+# (plus docker-compose.build.yml when building from source). Requires Docker Compose 2.24+.
 #
 # The `web` container stays: Caddy serves the web app and /media, proxies /api to the API and
 # sets the security headers. Traefik only terminates TLS and routes your domain to it, over the

@@ -11,8 +11,7 @@ every version between yours and the target in [CHANGELOG.md](../CHANGELOG.md) be
    Migrations only run forward: the backup is your way back.
 2. **Fetch the new version**:
    - Published images: set `GACHANIME_VERSION=X.Y.Z` in `.env` (or keep `latest`), download the
-     new `docker-compose.prod.yml` if its notes say so, then
-     `docker compose -f docker-compose.prod.yml pull`.
+     new `docker-compose.yml` if its notes say so, then `docker compose pull`.
    - From source:
 
      ```bash
@@ -21,8 +20,8 @@ every version between yours and the target in [CHANGELOG.md](../CHANGELOG.md) be
      ```
 
 3. **Compare your `.env`** with `.env.example` for new variables.
-4. **Restart**: `docker compose -f docker-compose.prod.yml up -d` (published images) or
-   `docker compose up -d --build` (from source).
+4. **Restart**: `docker compose up -d` (published images) or
+   `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build` (from source).
 
    The `migrate` service applies the new migrations before `api` and `worker` start. Follow it with
    `docker compose logs migrate`; if it fails, the API does not start and your data is untouched

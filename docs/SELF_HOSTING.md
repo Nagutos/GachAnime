@@ -29,17 +29,18 @@ a home server is enough.
      compose file and the configuration template:
 
      ```bash
-     curl -fsSLO https://raw.githubusercontent.com/Nagutos/GachAnime/main/docker-compose.prod.yml
+     curl -fsSLO https://raw.githubusercontent.com/Nagutos/GachAnime/main/docker-compose.yml
      curl -fsSL -o .env https://raw.githubusercontent.com/Nagutos/GachAnime/main/.env.example
      ```
 
      Images are built by CI for x86_64 and arm64 and published on GitHub
      (`ghcr.io/nagutos/gachanime-{api,tools,web}`). `GACHANIME_VERSION` in `.env` picks the
-     version (`latest` by default). In the commands of this guide, write
-     `docker compose -f docker-compose.prod.yml` instead of `docker compose`.
+     version (`latest` by default). Behind Traefik, also download `docker-compose.traefik.yml`
+     (see [HTTPS](#https)).
 
-   - **From source** (to modify the code): clone the latest release, which builds the images on
-     your server:
+   - **From source** (to modify the code): clone the latest release, and add
+     `-f docker-compose.yml -f docker-compose.build.yml` to the `docker compose` commands of this
+     guide so that the images are built on your server:
 
      ```bash
      git clone https://github.com/Nagutos/GachAnime.git && cd GachAnime
@@ -65,8 +66,9 @@ a home server is enough.
    `PUBLIC_URL` must match the address in the browser exactly, otherwise sign-in fails with
    "Invalid origin".
 
-4. **Start**: `docker compose -f docker-compose.prod.yml up -d` (published images), or
-   `docker compose up -d --build` from source (the first build takes a few minutes). Check with
+4. **Start**: `docker compose up -d` (it pulls the images), or
+   `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build` from source
+   (the first build takes a few minutes). Check with
    `docker compose ps` that `api` is healthy, then open `PUBLIC_URL`.
 
 5. **Fill the catalog**: sign in, open _Admin → Catalog import_ and import the most popular anime
@@ -117,7 +119,7 @@ Pick one:
   | `TRAEFIK_CERT_RESOLVER` | Its certificate resolver (default `letsencrypt`)       |
 
   ```bash
-  docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
+  docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
   ```
 
   Traefik terminates TLS; Caddy keeps serving the app, the images and the security headers, and
