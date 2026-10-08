@@ -28,7 +28,7 @@ const { t, n } = useI18n()
       />
       <span
         v-if="listing.inMyWishlist"
-        class="absolute right-1.5 bottom-12 rounded-full bg-sakura-500 px-2 py-0.5 text-[10px] font-bold text-white"
+        class="absolute right-1.5 bottom-12 rounded-full bg-sakura-600 px-2 py-0.5 text-[10px] font-bold text-white"
       >
         {{ t('market.inWishlist') }}
       </span>
@@ -54,7 +54,7 @@ const { t, n } = useI18n()
     <button
       v-if="listing.status === 'active' && !listing.isMine"
       type="button"
-      class="rounded-lg bg-sakura-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-sakura-600 disabled:opacity-50"
+      class="rounded-lg bg-sakura-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-sakura-700 disabled:opacity-50"
       :disabled="busy"
       data-testid="buy-listing"
       @click="emit('buy')"

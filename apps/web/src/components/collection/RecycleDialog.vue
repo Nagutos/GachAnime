@@ -72,7 +72,7 @@ async function confirm(): Promise<void> {
       </p>
       <button
         type="button"
-        class="self-end rounded-xl bg-sakura-500 px-4 py-2 font-semibold text-white"
+        class="self-end rounded-xl bg-sakura-600 px-4 py-2 font-semibold text-white"
         @click="open = false"
       >
         {{ t('common.close') }}
@@ -145,7 +145,7 @@ async function confirm(): Promise<void> {
         </button>
         <button
           type="button"
-          class="rounded-xl bg-sakura-500 px-4 py-2 font-semibold text-white hover:bg-sakura-600 disabled:cursor-not-allowed disabled:opacity-50"
+          class="rounded-xl bg-sakura-600 px-4 py-2 font-semibold text-white hover:bg-sakura-700 disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="
             !preview.data.value?.cards || recycle.isPending.value || preview.isFetching.value
           "

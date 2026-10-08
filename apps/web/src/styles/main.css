@@ -11,7 +11,9 @@
   --color-mist-300: #c9c3ea;
   --color-sakura-400: #ff7ea6;
   --color-sakura-500: #ff5d8f;
-  --color-sakura-600: #e43f74;
+  /* Solid backgrounds behind white text: 4.6:1 contrast (WCAG AA). */
+  --color-sakura-600: #d6336a;
+  --color-sakura-700: #b52a59;
   --color-gold-400: #ffd166;
   --color-discord: #5865f2;
 

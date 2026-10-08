@@ -132,10 +132,14 @@ function back(): void {
               <h2 class="font-display text-lg font-bold">{{ t('recycle.single') }}</h2>
               <p v-if="entry.recyclable > 0" class="text-sm text-mist-300">
                 {{
-                  t('recycle.singleHelp', {
-                    count: n(entry.recyclable, 'integer'),
-                    gems: n(entry.recycleValue, 'integer'),
-                  })
+                  t(
+                    'recycle.singleHelp',
+                    {
+                      count: n(entry.recyclable, 'integer'),
+                      gems: n(entry.recycleValue, 'integer'),
+                    },
+                    entry.recyclable,
+                  )
                 }}
               </p>
               <div v-if="entry.recyclable > 0" class="flex flex-wrap items-center gap-3">
@@ -149,7 +153,7 @@ function back(): void {
                 />
                 <button
                   type="button"
-                  class="rounded-xl bg-sakura-500 px-4 py-2 font-semibold text-white hover:bg-sakura-600 disabled:opacity-50"
+                  class="rounded-xl bg-sakura-600 px-4 py-2 font-semibold text-white hover:bg-sakura-700 disabled:opacity-50"
                   :disabled="recycle.isPending.value"
                   data-testid="recycle-single"
                   @click="recycleCopies"

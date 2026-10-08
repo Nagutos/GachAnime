@@ -82,6 +82,7 @@ function claimMission(mission: MissionDto): void {
                 class="mt-2 max-w-sm"
                 :progress="mission.progress"
                 :target="mission.target"
+                :label="resolveLocalizedText(mission.name, locale)"
                 :done="mission.completed"
               />
             </div>

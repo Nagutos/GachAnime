@@ -2,7 +2,14 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const props = defineProps<{ progress: number; target: number; done?: boolean; percent?: boolean }>()
+const props = defineProps<{
+  progress: number
+  target: number
+  /** Accessible name of the progress bar (the objective's name). */
+  label: string
+  done?: boolean
+  percent?: boolean
+}>()
 const { t, n } = useI18n()
 const ratio = computed(() => Math.min(1, props.target ? props.progress / props.target : 0))
 </script>
@@ -15,6 +22,7 @@ const ratio = computed(() => Math.min(1, props.target ? props.progress / props.t
       :aria-valuenow="progress"
       :aria-valuemin="0"
       :aria-valuemax="target"
+      :aria-label="label"
     >
       <div
         class="h-full rounded-full transition-all"

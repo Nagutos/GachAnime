@@ -108,10 +108,18 @@ async function save(original: AdminRarity): Promise<void> {
                 </span>
               </td>
               <td :class="ui.td">
-                <input v-model.trim="drafts[rarity.key]!.name.en" :class="[ui.input, 'min-w-28']" />
+                <input
+                  v-model.trim="drafts[rarity.key]!.name.en"
+                  :class="[ui.input, 'min-w-28']"
+                  :aria-label="t('admin.rarities.columns.nameEn')"
+                />
               </td>
               <td :class="ui.td">
-                <input v-model.trim="drafts[rarity.key]!.name.fr" :class="[ui.input, 'min-w-28']" />
+                <input
+                  v-model.trim="drafts[rarity.key]!.name.fr"
+                  :class="[ui.input, 'min-w-28']"
+                  :aria-label="t('admin.rarities.columns.nameFr')"
+                />
               </td>
               <td :class="ui.td">
                 <input

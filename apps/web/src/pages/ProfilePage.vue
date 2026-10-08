@@ -78,7 +78,7 @@ const stats = computed(() =>
           <RouterLink
             v-if="!data.isMe"
             :to="{ name: 'trade-new', query: { to: data.username } }"
-            class="rounded-xl bg-sakura-500 px-4 py-2 font-semibold text-white hover:bg-sakura-600"
+            class="rounded-xl bg-sakura-600 px-4 py-2 font-semibold text-white hover:bg-sakura-700"
             data-testid="propose-trade"
           >
             {{ t('profile.proposeTrade') }}
@@ -139,7 +139,7 @@ const stats = computed(() =>
               </RouterLink>
               <span
                 v-if="card.inViewerWishlist && !data.isMe"
-                class="absolute right-1.5 bottom-12 rounded-full bg-sakura-500 px-2 py-0.5 text-[10px] font-bold text-white"
+                class="absolute right-1.5 bottom-12 rounded-full bg-sakura-600 px-2 py-0.5 text-[10px] font-bold text-white"
               >
                 {{ t('trades.inMyWishlist') }}
               </span>

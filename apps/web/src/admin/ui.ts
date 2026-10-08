@@ -9,7 +9,7 @@ export const ui = {
   button:
     'inline-flex items-center justify-center gap-2 rounded-lg border border-night-700 bg-night-800 px-3 py-2 text-sm font-medium text-mist-100 transition hover:bg-night-700 disabled:cursor-not-allowed disabled:opacity-50',
   buttonPrimary:
-    'inline-flex items-center justify-center gap-2 rounded-lg bg-sakura-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-sakura-600 disabled:cursor-not-allowed disabled:opacity-50',
+    'inline-flex items-center justify-center gap-2 rounded-lg bg-sakura-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-sakura-700 disabled:cursor-not-allowed disabled:opacity-50',
   buttonDanger:
     'inline-flex items-center justify-center gap-2 rounded-lg bg-rarity-mythic/90 px-3 py-2 text-sm font-semibold text-white transition hover:bg-rarity-mythic disabled:cursor-not-allowed disabled:opacity-50',
   table: 'w-full text-left text-sm',

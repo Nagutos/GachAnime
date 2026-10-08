@@ -8,6 +8,7 @@
     "test": "playwright test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@gachanime/core": "workspace:*",
     "@gachanime/db": "workspace:*",
     "@gachanime/shared": "workspace:*",

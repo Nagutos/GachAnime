@@ -184,7 +184,7 @@ async function buy(): Promise<void> {
             </button>
             <button
               type="button"
-              class="rounded-xl bg-sakura-500 px-4 py-2 font-semibold text-white disabled:opacity-50"
+              class="rounded-xl bg-sakura-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
               :disabled="action.isPending.value"
               data-testid="confirm-buy"
               @click="buy"

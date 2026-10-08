@@ -88,7 +88,7 @@ const pages = computed(() => (data.value ? Math.max(1, Math.ceil(data.value.tota
           </span>
           <span
             v-if="card.inViewerWishlist"
-            class="absolute top-1 left-1 rounded-full bg-sakura-500 px-1.5 text-[10px] font-bold text-white"
+            class="absolute top-1 left-1 rounded-full bg-sakura-600 px-1.5 text-[10px] font-bold text-white"
           >
             ♥
           </span>

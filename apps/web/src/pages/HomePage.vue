@@ -30,7 +30,7 @@ const features = ['collect', 'trade', 'wiki'] as const
         <div class="flex flex-wrap justify-center gap-3">
           <RouterLink
             :to="{ name: 'boosters' }"
-            class="rounded-xl bg-sakura-500 px-5 py-3 font-semibold text-white shadow-lg shadow-sakura-500/20 hover:bg-sakura-600"
+            class="rounded-xl bg-sakura-600 px-5 py-3 font-semibold text-white shadow-lg shadow-sakura-500/20 hover:bg-sakura-700"
             data-testid="cta-boosters"
           >
             {{ t('home.openBoosters') }}

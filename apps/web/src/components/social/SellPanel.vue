@@ -63,7 +63,7 @@ async function sell(): Promise<void> {
         />
         <button
           type="button"
-          class="rounded-xl bg-sakura-500 px-4 py-2 font-semibold text-white hover:bg-sakura-600 disabled:opacity-50"
+          class="rounded-xl bg-sakura-600 px-4 py-2 font-semibold text-white hover:bg-sakura-700 disabled:opacity-50"
           :disabled="!price || create.isPending.value"
           data-testid="sell-button"
           @click="sell"

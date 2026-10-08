@@ -63,7 +63,7 @@ const links = [
       <RouterLink
         v-if="me"
         :to="{ name: 'gems' }"
-        class="hidden rounded-full bg-night-800 px-3 py-1 text-sm text-gold-400 tabular-nums hover:bg-night-700 sm:inline"
+        class="rounded-full bg-night-800 px-3 py-1 text-sm whitespace-nowrap text-gold-400 tabular-nums hover:bg-night-700"
         :title="t('home.gemBalance')"
         data-testid="header-gems"
       >

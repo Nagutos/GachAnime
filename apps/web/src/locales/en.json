@@ -476,7 +476,8 @@
     "market": "Market",
     "trades": "Trades",
     "myProfile": "My profile",
-    "players": "Players"
+    "players": "Players",
+    "skipToContent": "Skip to content"
   },
   "cards": {
     "new": "New",
@@ -632,7 +633,7 @@
     "confirm": "Recycle for {gems} gems",
     "done": "{cards} card recycled: +{gems} gems. | {cards} cards recycled: +{gems} gems.",
     "single": "Recycle",
-    "singleHelp": "{count} duplicates can be recycled, {gems} gems each.",
+    "singleHelp": "{count} duplicate can be recycled, {gems} gems. | {count} duplicates can be recycled, {gems} gems each.",
     "count": "Copies to recycle",
     "singleConfirm": "Recycle (+{gems} gems)"
   },

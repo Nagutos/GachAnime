@@ -250,7 +250,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
               v-for="quantity in QUANTITIES"
               :key="quantity"
               type="button"
-              class="min-w-28 rounded-xl bg-sakura-500 px-5 py-3 font-semibold text-white shadow-lg shadow-sakura-500/20 transition hover:bg-sakura-600 disabled:cursor-not-allowed disabled:bg-night-700 disabled:text-mist-300 disabled:shadow-none"
+              class="min-w-28 rounded-xl bg-sakura-600 px-5 py-3 font-semibold text-white shadow-lg shadow-sakura-500/20 transition hover:bg-sakura-700 disabled:cursor-not-allowed disabled:bg-night-700 disabled:text-mist-300 disabled:shadow-none"
               :disabled="!canOpen(tier, quantity)"
               :data-testid="`open-${quantity}`"
               @click="openBoosters(tier, quantity)"

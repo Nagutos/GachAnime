@@ -98,6 +98,7 @@ const data = computed(() => query.data.value)
           <ObjectiveProgress
             :progress="achievement.progress"
             :target="achievement.target"
+            :label="resolveLocalizedText(achievement.name, locale)"
             :done="Boolean(achievement.completedAt)"
             :percent="achievement.metric === 'catalog_completion'"
           />

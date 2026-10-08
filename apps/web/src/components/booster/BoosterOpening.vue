@@ -219,7 +219,7 @@ onBeforeUnmount(() => timers.forEach(clearTimeout))
                   <button
                     v-if="!isLastPack"
                     type="button"
-                    class="rounded-xl bg-sakura-500 px-5 py-3 font-semibold text-white hover:bg-sakura-600"
+                    class="rounded-xl bg-sakura-600 px-5 py-3 font-semibold text-white hover:bg-sakura-700"
                     data-testid="next-pack"
                     @click="nextPack"
                   >
@@ -228,7 +228,7 @@ onBeforeUnmount(() => timers.forEach(clearTimeout))
                   <button
                     v-else-if="packs.length > 1"
                     type="button"
-                    class="rounded-xl bg-sakura-500 px-5 py-3 font-semibold text-white hover:bg-sakura-600"
+                    class="rounded-xl bg-sakura-600 px-5 py-3 font-semibold text-white hover:bg-sakura-700"
                     data-testid="show-summary"
                     @click="showSummary"
                   >
@@ -237,7 +237,7 @@ onBeforeUnmount(() => timers.forEach(clearTimeout))
                   <button
                     v-else
                     type="button"
-                    class="rounded-xl bg-sakura-500 px-5 py-3 font-semibold text-white hover:bg-sakura-600"
+                    class="rounded-xl bg-sakura-600 px-5 py-3 font-semibold text-white hover:bg-sakura-700"
                     data-testid="close-opening"
                     @click="emit('close')"
                   >
@@ -277,7 +277,7 @@ onBeforeUnmount(() => timers.forEach(clearTimeout))
               </ul>
               <button
                 type="button"
-                class="rounded-xl bg-sakura-500 px-6 py-3 font-semibold text-white hover:bg-sakura-600"
+                class="rounded-xl bg-sakura-600 px-6 py-3 font-semibold text-white hover:bg-sakura-700"
                 data-testid="close-opening"
                 @click="emit('close')"
               >

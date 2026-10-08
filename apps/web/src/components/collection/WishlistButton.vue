@@ -17,7 +17,7 @@ function toggle(): void {
     class="inline-flex items-center justify-center gap-2 rounded-full border transition disabled:opacity-50"
     :class="[
       wishlisted
-        ? 'border-sakura-400 bg-sakura-500/90 text-white'
+        ? 'border-sakura-400 bg-sakura-600 text-white'
         : 'border-night-500 bg-night-950/80 text-mist-300 hover:text-sakura-400',
       large ? 'px-4 py-2 text-sm font-semibold' : 'size-8',
     ]"

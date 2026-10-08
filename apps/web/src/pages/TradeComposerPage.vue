@@ -227,7 +227,7 @@ async function submit(): Promise<void> {
         <div class="flex justify-end">
           <button
             type="button"
-            class="rounded-xl bg-sakura-500 px-5 py-3 font-semibold text-white hover:bg-sakura-600 disabled:opacity-50"
+            class="rounded-xl bg-sakura-600 px-5 py-3 font-semibold text-white hover:bg-sakura-700 disabled:opacity-50"
             :disabled="!canSubmit"
             data-testid="send-trade"
             @click="submit"

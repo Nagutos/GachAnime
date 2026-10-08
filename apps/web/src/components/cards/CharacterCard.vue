@@ -70,7 +70,7 @@ const effectClass = computed(() => {
       </span>
       <span
         v-if="isNew"
-        class="rounded-full bg-sakura-500 px-2 py-0.5 text-[10px] font-bold text-white uppercase shadow"
+        class="rounded-full bg-sakura-600 px-2 py-0.5 text-[10px] font-bold text-white uppercase shadow"
         data-testid="new-badge"
       >
         {{ t('cards.new') }}

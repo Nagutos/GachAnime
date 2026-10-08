@@ -111,7 +111,7 @@ function clearSeries(): void {
           </button>
           <RouterLink
             :to="{ name: 'boosters' }"
-            class="rounded-xl bg-sakura-500 px-4 py-2 font-semibold text-white hover:bg-sakura-600"
+            class="rounded-xl bg-sakura-600 px-4 py-2 font-semibold text-white hover:bg-sakura-700"
           >
             {{ t('collection.openBoosters') }}
           </RouterLink>
