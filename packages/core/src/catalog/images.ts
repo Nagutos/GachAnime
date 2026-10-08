@@ -20,22 +20,10 @@ const SIZES = {
 
 export type ImageKind = keyof typeof SIZES
 
-/**
- * Validates, resizes (fit inside, never enlarged) and stores an uploaded image as WebP.
- * Returns its path relative to the uploads directory. Animated GIFs keep only the first frame.
- */
-export async function storeUploadedImage(
-  uploadsDir: string,
-  kind: ImageKind,
-  id: number,
-  data: Uint8Array,
-): Promise<string> {
-  if (data.byteLength === 0 || data.byteLength > IMAGE_UPLOAD_MAX_BYTES) {
-    throw new AppError('INVALID_IMAGE', 'Image is empty or too large')
-  }
-  let output: Buffer
+/** Resizes (fit inside, never enlarged) to WebP; animated GIFs keep only the first frame. */
+async function toWebp(kind: ImageKind, data: Uint8Array): Promise<Buffer> {
   try {
-    output = await sharp(data, { limitInputPixels: 40_000_000 })
+    return await sharp(data, { limitInputPixels: 40_000_000 })
       .rotate()
       .resize({ ...SIZES[kind], fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
@@ -43,8 +31,25 @@ export async function storeUploadedImage(
   } catch {
     throw new AppError('INVALID_IMAGE', 'Unsupported or corrupted image')
   }
+}
+
+/**
+ * Validates, resizes and stores an image as WebP under `<prefix><kind>/`. Returns its path
+ * relative to the uploads directory. `prefix` is `cache/` for cached copies of remote images.
+ */
+export async function storeUploadedImage(
+  uploadsDir: string,
+  kind: ImageKind,
+  id: number,
+  data: Uint8Array,
+  prefix = '',
+): Promise<string> {
+  if (data.byteLength === 0 || data.byteLength > IMAGE_UPLOAD_MAX_BYTES) {
+    throw new AppError('INVALID_IMAGE', 'Image is empty or too large')
+  }
+  const output = await toWebp(kind, data)
   // A random suffix busts browser caches when an image is replaced.
-  const relativePath = `${kind}/${id}-${randomBytes(4).toString('hex')}.webp`
+  const relativePath = `${prefix}${kind}/${id}-${randomBytes(4).toString('hex')}.webp`
   const absolutePath = join(uploadsDir, relativePath)
   await mkdir(dirname(absolutePath), { recursive: true })
   await writeFile(absolutePath, output)

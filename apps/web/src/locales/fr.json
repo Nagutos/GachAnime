@@ -314,7 +314,10 @@
         "listingTtlDays": "Durée d'une annonce (jours)"
       },
       "trades": "Échanges",
-      "offerTtlDays": "Durée d'une offre en jours (0 = n'expire jamais)"
+      "offerTtlDays": "Durée d'une offre en jours (0 = n'expire jamais)",
+      "imageCache": "Cache d'images",
+      "imageCacheHelp": "Le worker télécharge les images du catalogue (AniList) sur ce serveur : les joueurs ne les chargent plus depuis AniList. Comptez environ 15 Ko par personnage sur le disque. Désactiver arrête les nouveaux téléchargements ; les fichiers déjà en cache restent utilisés.",
+      "imageCacheEnabled": "Mettre en cache les images du catalogue"
     },
     "rarities": {
       "title": "Raretés",

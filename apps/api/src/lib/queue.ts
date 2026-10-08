@@ -33,3 +33,12 @@ export async function enqueueCatalogRefresh(): Promise<void> {
     { jobId: 'catalog-refresh', delay: 15_000, removeOnComplete: true, removeOnFail: true },
   )
 }
+
+/** Starts an image cache run now instead of waiting for the next scheduled one. */
+export async function enqueueImageCache(): Promise<void> {
+  await getQueue().add(
+    'images.cache',
+    {},
+    { jobId: 'images-cache-now', removeOnComplete: true, removeOnFail: true },
+  )
+}

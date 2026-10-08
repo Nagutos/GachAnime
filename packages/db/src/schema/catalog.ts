@@ -67,7 +67,10 @@ export const series = pgTable(
     titleEnglish: text(),
     description: text(),
     coverUrl: text(),
-    /** Uploaded cover (manual series), relative to the uploads directory. */
+    /**
+     * Uploaded cover, or a cached copy of `coverUrl` under `cache/` (dropped by a trigger when
+     * `coverUrl` changes), relative to the uploads directory.
+     */
     coverUploadPath: text(),
     /** Manual series only; AniList genres live on `media`. */
     genres: text()
@@ -167,7 +170,10 @@ export const characters = pgTable(
     description: text(),
     /** Remote image (AniList CDN, or a URL given in a roster import). */
     imageUrl: text(),
-    /** Uploaded or cached image, relative to the uploads directory; wins over `imageUrl`. */
+    /**
+     * Uploaded image, or a cached copy of `imageUrl` under `cache/` (dropped by a trigger when
+     * `imageUrl` changes), relative to the uploads directory; wins over `imageUrl`.
+     */
     imagePath: text(),
     genderRaw: text(),
     genderClass: genderClass().notNull().default('unclassified'),

@@ -11,6 +11,7 @@ export const adminSettingsSchema = z.object({
   'missions.reset': settingsSchemas['missions.reset'],
   'market.limits': settingsSchemas['market.limits'],
   'trades.offers': settingsSchemas['trades.offers'],
+  'images.cache': settingsSchemas['images.cache'],
 })
 export type AdminSettings = z.infer<typeof adminSettingsSchema>
 

@@ -21,6 +21,7 @@ const market = ref<AdminSettings['market.limits']>({
   listingTtlDays: 7,
 })
 const tradeOffers = ref<AdminSettings['trades.offers']>({ offerTtlDays: 0 })
+const imageCache = ref<AdminSettings['images.cache']>({ enabled: false })
 const marketFields = [
   'maxActiveListings',
   'maxSalesPerDay',
@@ -35,6 +36,7 @@ watch(
     reset.value = { ...value['missions.reset'] }
     market.value = { ...value['market.limits'] }
     tradeOffers.value = { ...value['trades.offers'] }
+    imageCache.value = { ...value['images.cache'] }
   },
   { immediate: true },
 )
@@ -153,6 +155,31 @@ async function save<K extends keyof AdminSettings>(key: K, value: AdminSettings[
         </label>
         <div class="flex items-center justify-end gap-3">
           <span v-if="saved === 'trades.offers'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+
+      <form
+        :class="[ui.card, 'flex flex-col gap-4']"
+        @submit.prevent="save('images.cache', imageCache)"
+      >
+        <h2 class="font-display text-xl font-bold">{{ t('admin.settings.imageCache') }}</h2>
+        <p class="text-sm text-mist-300">{{ t('admin.settings.imageCacheHelp') }}</p>
+        <label class="flex items-center gap-2">
+          <input
+            v-model="imageCache.enabled"
+            type="checkbox"
+            data-testid="image-cache-enabled"
+            class="size-4 accent-sakura-500"
+          />
+          {{ t('admin.settings.imageCacheEnabled') }}
+        </label>
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === 'images.cache'" class="text-sm text-emerald-400">
             {{ t('admin.common.saved') }}
           </span>
           <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">

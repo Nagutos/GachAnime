@@ -314,7 +314,10 @@
         "listingTtlDays": "Listing lifetime (days)"
       },
       "trades": "Trades",
-      "offerTtlDays": "Offer lifetime in days (0 = never expires)"
+      "offerTtlDays": "Offer lifetime in days (0 = never expires)",
+      "imageCache": "Image cache",
+      "imageCacheHelp": "The worker downloads catalog pictures (AniList) to this server so that players never load them from AniList. Count about 15 KB per character on disk. Disabling stops new downloads; cached files stay in use.",
+      "imageCacheEnabled": "Cache catalog images locally"
     },
     "rarities": {
       "title": "Rarities",

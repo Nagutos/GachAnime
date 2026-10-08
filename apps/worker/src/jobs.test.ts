@@ -8,6 +8,7 @@ const context = {
   db: {} as Database,
   logger: pino({ level: 'silent' }),
   anilist: new AniListClient(),
+  uploadsDir: '/tmp/unused',
 }
 
 describe('runJob', () => {

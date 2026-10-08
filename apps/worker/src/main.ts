@@ -5,7 +5,13 @@ import { Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 import pino from 'pino'
 import { parseWorkerEnv } from './env'
-import { QUEUE_NAME, SWEEP_INTERVAL_MS, importBullJobId, runJob } from './jobs'
+import {
+  IMAGE_CACHE_INTERVAL_MS,
+  QUEUE_NAME,
+  SWEEP_INTERVAL_MS,
+  importBullJobId,
+  runJob,
+} from './jobs'
 
 const env = parseWorkerEnv(process.env)
 const logger = pino({ name: 'worker', level: env.LOG_LEVEL })
@@ -20,6 +26,7 @@ const worker = new Worker(
     runJob(job.name, job.data, {
       db,
       anilist,
+      uploadsDir: env.UPLOADS_DIR,
       logger: logger.child({ job: job.name, id: job.id }),
     }),
   { connection, concurrency: env.WORKER_CONCURRENCY },
@@ -50,6 +57,11 @@ async function scheduleRepeatedJobs(): Promise<void> {
     'market-sweep',
     { every: SWEEP_INTERVAL_MS },
     { name: 'market.sweep', data: {}, opts: { removeOnComplete: true, removeOnFail: true } },
+  )
+  await queue.upsertJobScheduler(
+    'images-cache',
+    { every: IMAGE_CACHE_INTERVAL_MS },
+    { name: 'images.cache', data: {}, opts: { removeOnComplete: true, removeOnFail: true } },
   )
   await queue.close()
 }

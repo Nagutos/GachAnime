@@ -24,6 +24,13 @@ export const settingsSchemas = {
   'trades.offers': z.object({
     offerTtlDays: z.number().int().min(0).max(365).default(0),
   }),
+  /**
+   * Local image cache: the worker downloads remote catalog images (AniList CDN) into the uploads
+   * directory so players never hit the remote host. Off by default (disk usage).
+   */
+  'images.cache': z.object({
+    enabled: z.boolean().default(false),
+  }),
 } as const
 
 export type SettingKey = keyof typeof settingsSchemas
