@@ -4,9 +4,18 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
     "jsx": "preserve",
+    // vite.config.ts imports local modules with their extension (Vite native config loader).
+    "allowImportingTsExtensions": true,
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "scripts", "vite.config.ts", "env.d.ts"]
+  "include": [
+    "src",
+    "scripts",
+    "vite.config.ts",
+    "security-headers.ts",
+    "security-headers.test.ts",
+    "env.d.ts"
+  ]
 }

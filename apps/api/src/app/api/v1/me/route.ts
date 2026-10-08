@@ -7,6 +7,7 @@ import { requireUser } from '@/lib/session'
 
 export const GET = route(async (request) => {
   const user = await requireUser(request)
+  await enforceRateLimit('default', user.id)
   return Response.json(await getMe(getDb(), user.id))
 })
 

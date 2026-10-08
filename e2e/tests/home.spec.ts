@@ -46,3 +46,15 @@ test.describe('admin area (signed out)', () => {
     await expect(page.getByText('This area is reserved for administrators.')).toBeVisible()
   })
 })
+
+test('pages are served with a strict CSP that the app respects', async ({ page }) => {
+  const violations: string[] = []
+  page.on('console', (message) => {
+    if (message.text().includes('Content Security Policy')) violations.push(message.text())
+  })
+  const response = await page.goto('/')
+  expect(response?.headers()['content-security-policy']).toContain("script-src 'self'")
+  expect(response?.headers()['x-frame-options']).toBe('DENY')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  expect(violations).toEqual([])
+})

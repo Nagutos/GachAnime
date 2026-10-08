@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 
 vi.mock('./logger', () => ({ logger: { error: vi.fn() } }))
+vi.mock('./env', () => ({ getEnv: () => ({ PUBLIC_URL: 'https://game.example.com/' }) }))
 const { parseJsonBody, route, toErrorResponse } = await import('./http')
 
 describe('toErrorResponse', () => {
@@ -41,5 +42,27 @@ describe('route + parseJsonBody', () => {
   it('passes valid bodies through', async () => {
     const request = new Request('http://x', { method: 'POST', body: '{"locale":"fr"}' })
     expect(await (await handler(request, {})).json()).toEqual({ locale: 'fr' })
+  })
+})
+
+describe('route origin check', () => {
+  const handler = route(async () => Response.json({ ok: true }))
+  const send = (method: string, origin?: string) =>
+    handler(new Request('http://x', { method, headers: origin ? { origin } : {} }), {})
+
+  it('accepts same-origin and origin-less mutations', async () => {
+    expect((await send('POST', 'https://game.example.com')).status).toBe(200)
+    expect((await send('DELETE')).status).toBe(200)
+  })
+
+  it('rejects cross-origin mutations', async () => {
+    const response = await send('POST', 'https://evil.example')
+    expect(response.status).toBe(403)
+    expect((await response.json()).error.code).toBe('FORBIDDEN')
+    expect((await send('PATCH', 'null')).status).toBe(403)
+  })
+
+  it('lets cross-origin reads through (no state change)', async () => {
+    expect((await send('GET', 'https://evil.example')).status).toBe(200)
   })
 })

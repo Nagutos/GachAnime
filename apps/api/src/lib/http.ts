@@ -2,6 +2,7 @@ import { AppError } from '@gachanime/core'
 import type { ApiErrorBody, ErrorCode } from '@gachanime/shared'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { getEnv } from './env'
 import { logger } from './logger'
 
 const STATUS_BY_CODE: Record<ErrorCode, number> = {
@@ -53,10 +54,30 @@ export function toErrorResponse(error: unknown): NextResponse {
 
 type RouteHandler<C> = (request: Request, context: C) => Promise<Response>
 
-/** Wraps a route handler so every thrown error becomes a typed JSON error response. */
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+
+/**
+ * CSRF defense in depth (session cookies are already SameSite=Lax): a state-changing request
+ * sent by a browser carries an `Origin` header, which must be the instance's own origin.
+ * Requests without one (CLI tools, server-to-server) are not browser-forged and pass.
+ */
+export function assertSameOrigin(request: Request): void {
+  if (SAFE_METHODS.has(request.method)) return
+  const origin = request.headers.get('origin')
+  if (origin === null) return
+  if (origin !== new URL(getEnv().PUBLIC_URL).origin) {
+    throw new AppError('FORBIDDEN', 'Cross-origin request rejected')
+  }
+}
+
+/**
+ * Wraps a route handler: rejects cross-origin mutations and turns every thrown error into a
+ * typed JSON error response.
+ */
 export function route<C = unknown>(handler: RouteHandler<C>): RouteHandler<C> {
   return async (request, context) => {
     try {
+      assertSameOrigin(request)
       return await handler(request, context)
     } catch (error) {
       return toErrorResponse(error)

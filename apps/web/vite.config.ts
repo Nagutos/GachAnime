@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import type { Connect, Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
+import { SECURITY_HEADERS } from './security-headers.ts'
 
 const MEDIA_TYPES: Record<string, string> = {
   '.webp': 'image/webp',
@@ -57,6 +58,10 @@ export default defineConfig({
     port: 5173,
     // Same-origin in development too: the API is proxied like Caddy does in production.
     proxy: { '/api': process.env.API_PROXY_TARGET ?? 'http://localhost:3000' },
+  },
+  // The e2e suite runs on `vite preview`: production headers there make CSP regressions visible.
+  preview: {
+    headers: SECURITY_HEADERS,
   },
   test: {
     environment: 'happy-dom',

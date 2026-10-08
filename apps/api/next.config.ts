@@ -24,6 +24,19 @@ const config: NextConfig = {
   ],
   serverExternalPackages: ['pg', 'pino', 'sharp', 'bullmq'],
   poweredByHeader: false,
+  // API responses are per-user data: never cached by browsers or proxies. Caddy adds the
+  // page-level security headers (CSP, HSTS…) in front of everything.
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+        ],
+      },
+    ]
+  },
 }
 
 export default config

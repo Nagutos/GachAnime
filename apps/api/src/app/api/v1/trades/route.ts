@@ -13,4 +13,4 @@ export const POST = playerRoute(async ({ request, user }) => {
   const body = await parseJsonBody(request, proposeTradeSchema)
   const trade = await withIdempotency(request, user.id, () => proposeTrade(getDb(), user.id, body))
   return Response.json(trade, { status: 201 })
-}, 'economy')
+}, 'social')

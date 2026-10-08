@@ -1,5 +1,6 @@
 import type { AdminActor } from '@gachanime/core'
 import { AppError } from '@gachanime/core'
+import { IMAGE_UPLOAD_MAX_BYTES } from '@gachanime/shared'
 import { route } from './http'
 import { enforceRateLimit, type RateLimitPolicy } from './rate-limit'
 import { requireAdmin } from './session'
@@ -34,8 +35,15 @@ export function adminRoute<P = Record<string, never>>(
   })
 }
 
-/** Reads the `file` field of a multipart upload. */
+/** Room for the multipart boundaries and headers around the file itself. */
+const MULTIPART_OVERHEAD_BYTES = 64 * 1024
+
+/** Reads the `file` field of a multipart upload, refusing oversized bodies before parsing. */
 export async function readUploadedFile(request: Request): Promise<Uint8Array> {
+  const length = Number(request.headers.get('content-length') ?? Number.NaN)
+  if (Number.isFinite(length) && length > IMAGE_UPLOAD_MAX_BYTES + MULTIPART_OVERHEAD_BYTES) {
+    throw new AppError('INVALID_IMAGE', 'Image is too large')
+  }
   let form: FormData
   try {
     form = await request.formData()

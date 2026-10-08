@@ -9,4 +9,4 @@ export const POST = playerRoute<{ id: string }>(async ({ request, user, params }
   return Response.json(await counterTrade(getDb(), user.id, parseId(params.id), body), {
     status: 201,
   })
-}, 'economy')
+}, 'social')

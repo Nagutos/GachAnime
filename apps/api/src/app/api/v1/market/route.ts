@@ -16,4 +16,4 @@ export const POST = playerRoute(async ({ request, user }) => {
     return { listing, progression, gemBalance: (await getMe(getDb(), user.id)).gemBalance }
   })
   return Response.json(result, { status: 201 })
-}, 'economy')
+}, 'social')
