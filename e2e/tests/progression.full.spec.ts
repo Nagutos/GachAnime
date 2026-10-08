@@ -38,6 +38,18 @@ test('a new player claims missions and unlocks achievements', async ({ page, con
   await page.getByTestId('booster-opening').getByTestId('skip').click()
   await page.getByTestId('booster-opening').getByTestId('close-opening').click()
   await expect(page.getByTestId('toast').filter({ hasText: 'First Steps' })).toBeVisible()
+  // Toasts sit at the bottom right, over the claim buttons: close them first.
+  const toasts = page.getByTestId('toast')
+  await expect(async () => {
+    // Toasts slide in and out: retry until none is left.
+    if (await toasts.count()) {
+      await toasts
+        .first()
+        .getByRole('button', { name: 'Close' })
+        .click({ force: true, timeout: 1000 })
+    }
+    await expect(toasts).toHaveCount(0, { timeout: 500 })
+  }).toPass({ timeout: 15_000 })
 
   await page.getByTestId('nav-achievements').click()
   const firstSteps = page.getByTestId('achievement-open_10')
