@@ -144,6 +144,42 @@
     --pack-seal: var(--color-gold-400);
   }
 
+  /*
+   * Pose of a pack: standing a bit sideways, facing the screen with a slight zoom on hover or
+   * when selected. The perspective is part of the transform (no preserve-3d: see TiltCard).
+   */
+  .pack-pose {
+    transform: perspective(1000px) rotateY(-24deg) rotateX(5deg) rotateZ(-1.5deg);
+    transition: transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .group\/pack:hover .pack-pose,
+  .pack-pose-front {
+    transform: perspective(1000px) rotateY(0deg) scale(1.04);
+  }
+
+  /* Pack colors per themed pack (`artToken`). */
+  .pack-art-shonen {
+    --pack-color: #ff8a3d;
+  }
+  .pack-art-shojo {
+    --pack-color: #ff8fc7;
+  }
+  .pack-art-seinen {
+    --pack-color: #4f7dff;
+  }
+  .pack-art-sports {
+    --pack-color: #2fc48d;
+  }
+  .pack-art-ecchi {
+    --pack-color: #e2487d;
+  }
+  .pack-art-waifus {
+    --pack-color: #ff6fae;
+  }
+  .pack-art-husbandos {
+    --pack-color: #3fb6e8;
+  }
+
   /* Heat-sealed bands at the top and bottom of a pack (inside the serrated edges). */
   .pack-crimp {
     background-image: repeating-linear-gradient(
@@ -203,5 +239,9 @@
   .card-holo::after,
   .pack-sheen {
     animation: none;
+  }
+
+  .pack-pose {
+    transition: none;
   }
 }

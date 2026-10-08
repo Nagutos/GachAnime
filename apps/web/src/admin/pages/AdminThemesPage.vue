@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useAdminThemesQuery } from '@/api/admin'
+import SealMark from '@/components/SealMark.vue'
 import { ui } from '../ui'
 
 const { t, n, locale } = useI18n()
@@ -38,8 +39,7 @@ const groups = computed(() =>
             <tr>
               <th :class="ui.th">{{ t('admin.objectives.name') }}</th>
               <th :class="[ui.th, 'text-right']">{{ t('admin.themes.characters') }}</th>
-              <th :class="ui.th">{{ t('admin.themes.availability') }}</th>
-              <th :class="[ui.th, 'text-right']">{{ t('admin.themes.surcharge') }}</th>
+              <th :class="ui.th">{{ t('admin.themes.seal') }}</th>
               <th :class="ui.th">{{ t('admin.common.active') }}</th>
               <th :class="ui.th">
                 <span class="sr-only">{{ t('admin.common.edit') }}</span>
@@ -68,15 +68,7 @@ const groups = computed(() =>
                 {{ n(theme.characterCount, 'integer') }}
               </td>
               <td :class="ui.td">
-                <span v-if="theme.freeEnabled" class="mr-1 rounded bg-night-800 px-1.5 text-xs">
-                  {{ t('admin.themes.free') }}
-                </span>
-                <span v-if="theme.paidEnabled" class="rounded bg-night-800 px-1.5 text-xs">
-                  {{ t('admin.themes.paid') }}
-                </span>
-              </td>
-              <td :class="[ui.td, 'text-right tabular-nums']">
-                {{ n(theme.surchargePercent / 100, 'percent') }}
+                <SealMark :glyph="theme.seal" class="size-8 text-sakura-600" />
               </td>
               <td :class="ui.td">
                 {{ theme.isActive ? t('admin.common.active') : t('admin.common.inactive') }}

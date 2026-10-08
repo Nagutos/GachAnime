@@ -327,7 +327,10 @@ export const DEFAULT_ACHIEVEMENTS: AchievementSeed[] = [
 
 const group = (...rules: ThemeRule[]): ThemeRule => ({ type: 'group', mode: 'all', rules })
 
-/** Starting packs (GAME_DESIGN §5). Pools are built by core on first use. */
+/**
+ * Starting packs (GAME_DESIGN §5), opened with free boosters. Each has its own kanji on the seal.
+ * Pools are built by core on first use.
+ */
 export const DEFAULT_THEMES = [
   {
     key: 'shonen',
@@ -336,6 +339,7 @@ export const DEFAULT_THEMES = [
     description: { en: 'Heroes of shōnen series.', fr: 'Les héros des séries shōnen.' },
     rules: group({ type: 'tag', tag: 'Shounen', minRank: 60 }),
     artToken: 'shonen',
+    seal: '少',
     sortOrder: 1,
   },
   {
@@ -345,6 +349,7 @@ export const DEFAULT_THEMES = [
     description: { en: 'Characters of shōjo series.', fr: 'Les personnages des séries shōjo.' },
     rules: group({ type: 'tag', tag: 'Shoujo', minRank: 60 }),
     artToken: 'shojo',
+    seal: '姫',
     sortOrder: 2,
   },
   {
@@ -354,6 +359,7 @@ export const DEFAULT_THEMES = [
     description: { en: 'Characters of seinen series.', fr: 'Les personnages des séries seinen.' },
     rules: group({ type: 'tag', tag: 'Seinen', minRank: 60 }),
     artToken: 'seinen',
+    seal: '青',
     sortOrder: 3,
   },
   {
@@ -363,6 +369,7 @@ export const DEFAULT_THEMES = [
     description: { en: 'Athletes and their teams.', fr: 'Les sportifs et leurs équipes.' },
     rules: group({ type: 'genre', genre: 'Sports' }),
     artToken: 'sports',
+    seal: '競',
     sortOrder: 4,
   },
   {
@@ -372,6 +379,7 @@ export const DEFAULT_THEMES = [
     description: { en: 'Characters of ecchi series.', fr: 'Les personnages des séries ecchi.' },
     rules: group({ type: 'genre', genre: 'Ecchi' }),
     artToken: 'ecchi',
+    seal: '艶',
     sortOrder: 5,
   },
   {
@@ -381,6 +389,7 @@ export const DEFAULT_THEMES = [
     description: { en: 'Female characters only.', fr: 'Uniquement des personnages féminins.' },
     rules: group({ type: 'gender', gender: 'female' }),
     artToken: 'waifus',
+    seal: '女',
     sortOrder: 6,
   },
   {
@@ -390,6 +399,7 @@ export const DEFAULT_THEMES = [
     description: { en: 'Male characters only.', fr: 'Uniquement des personnages masculins.' },
     rules: group({ type: 'gender', gender: 'male' }),
     artToken: 'husbandos',
+    seal: '男',
     sortOrder: 7,
   },
 ] as const

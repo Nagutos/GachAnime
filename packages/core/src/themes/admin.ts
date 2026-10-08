@@ -30,15 +30,12 @@ export async function listAdminThemes(db: Executor): Promise<AdminTheme[]> {
     description: theme.description ? localizedTextSchema.parse(theme.description) : null,
     category: theme.category,
     rules: themeRuleSchema.parse(theme.rules),
-    freeEnabled: theme.freeEnabled,
-    paidEnabled: theme.paidEnabled,
-    surchargePercent: theme.surchargePercent,
     artToken: theme.artToken,
+    seal: theme.seal,
     isActive: theme.isActive,
     sortOrder: theme.sortOrder,
     poolBuiltAt: theme.poolBuiltAt?.toISOString() ?? null,
     characterCount,
-    prices: {},
   }))
 }
 

@@ -118,6 +118,15 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
       vertical scrollbar appears in it; widen the site layout (and fix the nav overflow) so the
       navigation fits without scrollbars.
 
+## Phase 9 — Maintainer feedback, round 2 ✅ (2026-10-08)
+
+- [x] **Bug**: clicking a card to reveal it one by one did nothing (tilted card lost hit testing).
+- [x] Packs on the boosters page: no pre-cut look; sideways by default, facing the screen with a
+      slight zoom on hover.
+- [x] Packs (categories, character types) are free boosters of their own; premium tiers always
+      draw from the whole catalog (no pack, no surcharge).
+- [x] Each pack has its own kanji on the seal (少 Shōnen, 女 Waifus…), editable in the admin.
+
 ## Later (not scheduled)
 
 - [ ] Upgrades raising the free booster cap per player.

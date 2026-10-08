@@ -101,11 +101,17 @@ Format: context → decision → consequences. Status: Accepted / Proposed (wait
 
 - **Decision**: `crypto.randomInt` behind an `Rng` interface; seeded PRNG only in tests.
 
-## ADR-018 — Booster = tier × pool (Accepted)
+## ADR-018 — Packs are free boosters; paid tiers draw from the whole catalog (Accepted, revised 2026-10-08)
 
-- **Context**: every tier (Free, Epic, Legendary, Mythic, Divine) can be combined with any pack; paid themed boosters cost +20 % by default.
-- **Decision**: `booster_tiers` (rates + base price) and `themes` (pool rules, category, free/paid toggles, surcharge) are independent; the shop combines them at request time. No table of every combination.
-- **Consequences**: adding a pack instantly offers it in all enabled tiers. The admin "pack editor" manages packs per category.
+- **Context**: first version: every tier could be combined with any pack, paid themed boosters
+  costing +20 %. The maintainer decided (2026-10-08) that categories and character types are
+  boosters of their own, opened with free charges, and that paid tiers are not affected by them.
+- **Decision**: `booster_tiers` (rates + base price) and `themes` (pool rules, category, seal
+  kanji) stay independent. A pack can only be combined with the free tier (`THEME_UNAVAILABLE`
+  otherwise); paid tiers always use the whole catalog at their base price. The free/paid toggles
+  and the surcharge were dropped (migration 0011; packs that were paid-only were deactivated).
+- **Consequences**: the shop shows each pack as a free booster with its own kanji (少, 女, 男…);
+  premium boosters have a single price. Adding a pack instantly offers it as a free booster.
 
 ## ADR-019 — Manual catalog source for non-AniList series (Accepted)
 

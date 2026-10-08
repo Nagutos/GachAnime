@@ -98,7 +98,6 @@ export async function listBoosters(
       .orderBy(asc(themes.sortOrder), asc(themes.id)),
     loadThemePoolSizes(db),
   ])
-  const paidTiers = tiers.filter((tier) => tier.priceGems !== null)
   return {
     tiers: tiers.map((tier) => ({
       key: tier.key,
@@ -113,23 +112,15 @@ export async function listBoosters(
     gemBalance: profile.gemBalance,
     themes: themeRows
       .map((theme) => ({ theme, characterCount: poolSizes.get(theme.id) ?? 0 }))
-      .filter((row) => row.characterCount > 0 && (row.theme.freeEnabled || row.theme.paidEnabled))
+      .filter((row) => row.characterCount > 0)
       .map(({ theme, characterCount }) => ({
         key: theme.key,
         name: localizedTextSchema.parse(theme.name),
         description: theme.description ? localizedTextSchema.parse(theme.description) : null,
         category: theme.category,
         artToken: theme.artToken,
-        freeEnabled: theme.freeEnabled,
-        paidEnabled: theme.paidEnabled,
-        surchargePercent: theme.surchargePercent,
+        seal: theme.seal,
         characterCount,
-        prices: Object.fromEntries(
-          paidTiers.map((tier) => [
-            tier.key,
-            boosterPrice(tier.priceGems!, 1, theme.surchargePercent),
-          ]),
-        ),
       })),
   }
 }
@@ -158,22 +149,24 @@ export async function openBoosters(
     if (!tier) throw new AppError('BOOSTER_UNAVAILABLE', `Booster "${input.tier}" is not available`)
     const isFree = tier.priceGems === null
 
+    // Packs only apply to free boosters; paid tiers always draw from the whole catalog.
     let theme: typeof themes.$inferSelect | null = null
     if (input.theme) {
+      if (!isFree) {
+        throw new AppError('THEME_UNAVAILABLE', 'Packs can only be opened with free boosters')
+      }
       ;[theme = null] = await tx
         .select()
         .from(themes)
         .where(and(eq(themes.key, input.theme), eq(themes.isActive, true)))
-      if (!theme || !(isFree ? theme.freeEnabled : theme.paidEnabled)) {
-        throw new AppError('THEME_UNAVAILABLE', `Pack "${input.theme}" is not available here`)
+      if (!theme) {
+        throw new AppError('THEME_UNAVAILABLE', `Pack "${input.theme}" is not available`)
       }
       if (!theme.poolBuiltAt) await rebuildThemePool(tx, theme.id)
     }
 
     const rules = await getSetting(tx, 'boosters.free')
-    const gemsSpent = isFree
-      ? 0
-      : boosterPrice(tier.priceGems!, input.quantity, theme?.surchargePercent ?? 0)
+    const gemsSpent = isFree ? 0 : boosterPrice(tier.priceGems!, input.quantity)
     let nextAnchor = player.freeBoosterAnchorAt
     if (isFree) {
       const before = freeChargeState(player.freeBoosterAnchorAt, now, rules)

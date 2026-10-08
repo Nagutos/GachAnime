@@ -27,9 +27,9 @@ const props = withDefaults(
     result: OpenBoostersResponse
     packLabel: string
     packArt?: string
-    packRibbon?: string | null
+    packSeal?: string
   }>(),
-  { packArt: 'free', packRibbon: null },
+  { packArt: 'free', packSeal: '招' },
 )
 const emit = defineEmits<{ close: [] }>()
 
@@ -205,7 +205,7 @@ onBeforeUnmount(() => {
                 <BoosterPack
                   :label="packLabel"
                   :art="packArt"
-                  :ribbon="packRibbon"
+                  :seal="packSeal"
                   :cards="result.cardsPerBooster"
                   :torn="torn"
                   :glow-rarity="packGlow"

@@ -193,7 +193,7 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
     expect(preview.samples.map((sample) => sample.name)).toEqual(['Ace', 'Captain'])
   })
 
-  it('draws only from the pack and applies the surcharge to paid tiers', async () => {
+  it('draws only from the pack with free boosters; paid tiers ignore packs', async () => {
     const { id } = await createTheme(
       db,
       {
@@ -201,10 +201,8 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
         name: { en: 'Sports test' },
         category: 'genre',
         rules: group({ type: 'genre', genre: 'Sports' }),
-        freeEnabled: true,
-        paidEnabled: true,
-        surchargePercent: 20,
         artToken: 'sports',
+        seal: '競',
         isActive: true,
         sortOrder: 0,
       },
@@ -221,24 +219,29 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
       new Set(['Ace', 'Captain']),
     )
 
-    await adjustGems(db, { userId: 'p1', amount: 600, note: 'test' }, actor)
-    const paid = await openBoosters(
-      db,
-      'p1',
-      { tier: 'legendary', quantity: 1, theme: 'sports-test' },
-      { now: NOW },
-    )
-    expect(paid).toMatchObject({ gemsSpent: 600, gemBalance: 0 })
     const openings = await db.select().from(boosterOpenings)
     expect(openings.every((opening) => opening.themeId === id)).toBe(true)
+
+    // Paid tiers: no pack, no surcharge.
+    await adjustGems(db, { userId: 'p1', amount: 500, note: 'test' }, actor)
+    await expect(
+      openBoosters(
+        db,
+        'p1',
+        { tier: 'legendary', quantity: 1, theme: 'sports-test' },
+        { now: NOW },
+      ),
+    ).rejects.toMatchObject({ code: 'THEME_UNAVAILABLE' })
+    const paid = await openBoosters(db, 'p1', { tier: 'legendary', quantity: 1 }, { now: NOW })
+    expect(paid).toMatchObject({ gemsSpent: 500, gemBalance: 0, theme: null })
 
     const shop = await listBoosters(db, 'p1', NOW)
     expect(shop.themes.find((theme) => theme.key === 'sports-test')).toMatchObject({
       characterCount: 2,
-      prices: { epic: 180, legendary: 600, mythic: 1800, divine: 6000 },
+      seal: '競',
     })
 
-    await updateTheme(db, id, { freeEnabled: false }, actor)
+    await updateTheme(db, id, { isActive: false }, actor)
     await expect(
       openBoosters(db, 'p1', { tier: 'free', quantity: 1, theme: 'sports-test' }, { now: NOW }),
     ).rejects.toMatchObject({ code: 'THEME_UNAVAILABLE' })
@@ -289,10 +292,8 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
           name: { en: 'Again' },
           category: 'custom',
           rules: group(),
-          freeEnabled: true,
-          paidEnabled: true,
-          surchargePercent: 20,
           artToken: 'default',
+          seal: '招',
           isActive: true,
           sortOrder: 0,
         },

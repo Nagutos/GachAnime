@@ -73,20 +73,25 @@ export const themeKeySchema = z
   .string()
   .regex(/^[a-z][a-z0-9_-]{1,63}$/, 'Use lowercase letters, digits, dashes and underscores')
 
-/** A pack as offered in the shop. */
+/** One or two characters (a kanji, usually): pack seals are small. */
+export const themeSealSchema = z
+  .string()
+  .trim()
+  .refine((value) => [...value].length >= 1 && [...value].length <= 2, {
+    message: 'Use one or two characters',
+  })
+
+/** A pack as offered in the shop (free boosters only). */
 export const themeDtoSchema = z.object({
   key: themeKeySchema,
   name: localizedTextSchema,
   description: localizedTextSchema.nullable(),
   category: z.enum(THEME_CATEGORIES),
   artToken: z.string(),
-  freeEnabled: z.boolean(),
-  paidEnabled: z.boolean(),
-  surchargePercent: z.number().int().min(0).max(1000),
+  /** Kanji on the pack's seal. */
+  seal: z.string(),
   /** Drawable characters in the pack. */
   characterCount: z.number().int().nonnegative(),
-  /** Price of one booster of each paid tier with this pack (surcharge included). */
-  prices: z.record(z.string(), z.number().int().nonnegative()),
 })
 export type ThemeDto = z.infer<typeof themeDtoSchema>
 
@@ -107,9 +112,7 @@ const themeFields = {
   description: localizedTextSchema.nullable().optional(),
   category: z.enum(THEME_CATEGORIES),
   rules: themeRootRuleSchema,
-  freeEnabled: z.boolean(),
-  paidEnabled: z.boolean(),
-  surchargePercent: z.number().int().min(0).max(1000),
+  seal: themeSealSchema,
   artToken: z
     .string()
     .regex(/^[a-z][a-z0-9-]{0,31}$/)

@@ -9,20 +9,22 @@ test.describe.configure({ timeout: 90_000 })
 // The e2e catalog alternates female (odd student numbers) and male characters.
 const FEMALE = /^Student (0[13579]|1[13579])$/
 
-test('a player opens boosters from a pack, with the pack surcharge on premium boosters', async ({
+test('packs are free boosters of their own; premium boosters draw from the whole catalog', async ({
   page,
   context,
 }) => {
   const { userId } = await signInNewPlayer(context)
-  await grantGems(userId, 180)
+  await grantGems(userId, 150)
   await page.goto('/boosters')
 
   await page.getByTestId('pack-waifus').click({ timeout: 30_000 })
-  await expect(page.getByTestId('pack-summary')).toContainText('20 % more')
-  await expect(page.getByTestId('tier-epic')).toContainText('180 gems per booster')
+  await expect(page.getByTestId('pack-summary')).toHaveText('Waifus')
+  // Premium boosters keep their own price: no pack, no surcharge.
+  await expect(page.getByTestId('tier-epic')).toContainText('150 gems per booster')
 
   await page.getByTestId('open-5').click()
   const opening = page.getByTestId('booster-opening')
+  await expect(opening.getByRole('heading', { name: 'Waifus' })).toBeVisible()
   await opening.getByTestId('skip').click()
   const cards = opening.getByTestId('opening-summary').getByTestId('character-card')
   await expect(cards).toHaveCount(25)
@@ -31,6 +33,7 @@ test('a player opens boosters from a pack, with the pack surcharge on premium bo
   await opening.getByTestId('close-opening').click()
 
   await page.getByTestId('open-epic-1').click()
+  await expect(opening.getByRole('heading', { name: 'Epic booster' })).toBeVisible()
   await opening.getByTestId('skip').click()
   await opening.getByTestId('close-opening').click()
   await expect(page.getByTestId('boosters-gems')).toHaveText('0 gems')

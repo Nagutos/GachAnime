@@ -192,15 +192,14 @@ All limits above are settings and can be relaxed or disabled (0 = unlimited).
 
 Days are counted with the same reset hour as daily missions.
 
-## 5. Shop: tiers × pools, themed packs
+## 5. Shop: free boosters and packs, premium tiers
 
-The shop is a grid: **pool** (whole catalog or a themed pack) × **tier** (Free, Epic, Legendary,
-Mythic, Divine).
-
-- Free tier: the player chooses any active pool; same rates, consumes free charges.
-- Paid tiers: price = tier price × (1 + pack surcharge). Default surcharge **20 %**, because
-  targeting a pack makes series completion easier. Example: Shōnen Legendary = 600 gems.
-- Each pack can be enabled for free and/or paid tiers independently.
+- **Free boosters** (free charges): the whole catalog, or a **pack** — a category (Shōnen,
+  Shōjo, Seinen, Sports, Ecchi…) or a character type (Waifus, Husbandos). Each pack is shown as
+  a booster of its own with its kanji on the seal (少 Shōnen, 姫 Shōjo, 青 Seinen, 競 Sports,
+  艶 Ecchi, 女 Waifus, 男 Husbandos; 招 for the whole catalog). Same rates, one charge each.
+- **Premium tiers** (Epic, Legendary, Mythic, Divine, paid with gems) always draw from the whole
+  catalog at their base price: packs do not apply to them (ADR-018).
 
 ### Packs (themes)
 
@@ -220,8 +219,8 @@ Rule types (combined with `all` / `any` groups):
 Series-level rules match if **any** media of the series matches. Membership is **materialized** in
 `theme_characters` (rebuilt on pack save and after imports/catalog changes) for fast draws.
 
-The pack editor provides: translated name/description, category, visual token, rule builder,
-free/paid toggles, surcharge, active toggle, and a **live preview** (characters per rarity, sample
+The pack editor provides: translated name/description, category, seal kanji (one or two
+characters), visual token, rule builder, active toggle, and a **live preview** (characters per rarity, sample
 characters, warnings for empty rarities). Empty rarity fallback: next lower rarity, then next higher.
 
 Gender: AniList `gender` "Female" → `female`, "Male" → `male`, anything else or empty →

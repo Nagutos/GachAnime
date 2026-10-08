@@ -17,6 +17,7 @@ import ConfirmDialog from '../components/ConfirmDialog.vue'
 import ObjectiveTextFields from '../components/ObjectiveTextFields.vue'
 import RuleEditor from '../components/RuleEditor.vue'
 import { cleanLocalized } from '../text'
+import SealMark from '@/components/SealMark.vue'
 import { ui } from '../ui'
 
 interface Draft {
@@ -25,9 +26,7 @@ interface Draft {
   description: { en: string; fr?: string }
   category: AdminTheme['category']
   rules: ThemeRule
-  freeEnabled: boolean
-  paidEnabled: boolean
-  surchargePercent: number
+  seal: string
   artToken: string
   isActive: boolean
   sortOrder: number
@@ -61,9 +60,7 @@ watch(
           description: { en: '', ...(theme.description ?? {}) },
           category: theme.category,
           rules: JSON.parse(JSON.stringify(theme.rules)) as ThemeRule,
-          freeEnabled: theme.freeEnabled,
-          paidEnabled: theme.paidEnabled,
-          surchargePercent: theme.surchargePercent,
+          seal: theme.seal,
           artToken: theme.artToken,
           isActive: theme.isActive,
           sortOrder: theme.sortOrder,
@@ -74,9 +71,7 @@ watch(
           description: { en: '' },
           category: 'custom',
           rules: { type: 'group', mode: 'all', rules: [] },
-          freeEnabled: true,
-          paidEnabled: true,
-          surchargePercent: 20,
+          seal: '招',
           artToken: 'default',
           isActive: true,
           sortOrder: 0,
@@ -99,9 +94,7 @@ async function submit(): Promise<void> {
     description: description.en ? description : null,
     category: value.category,
     rules: value.rules,
-    freeEnabled: value.freeEnabled,
-    paidEnabled: value.paidEnabled,
-    surchargePercent: value.surchargePercent,
+    seal: value.seal,
     artToken: value.artToken,
     isActive: value.isActive,
     sortOrder: value.sortOrder,
@@ -152,14 +145,17 @@ async function deleteTheme(): Promise<void> {
             </select>
           </label>
           <label :class="ui.label">
-            {{ t('admin.themes.surcharge') }}
-            <input
-              v-model.number="draft.surchargePercent"
-              type="number"
-              min="0"
-              max="1000"
-              :class="ui.input"
-            />
+            {{ t('admin.themes.seal') }}
+            <span class="flex items-center gap-2">
+              <input
+                v-model.trim="draft.seal"
+                required
+                maxlength="2"
+                :class="[ui.input, 'w-20 text-center text-lg']"
+                data-testid="theme-seal"
+              />
+              <SealMark :glyph="draft.seal || '招'" class="size-9 text-sakura-600" />
+            </span>
           </label>
           <label :class="ui.label">
             {{ t('admin.boosters.sortOrder') }}
@@ -167,14 +163,6 @@ async function deleteTheme(): Promise<void> {
           </label>
         </div>
         <div class="flex flex-wrap gap-4 text-sm">
-          <label class="flex items-center gap-2">
-            <input v-model="draft.freeEnabled" type="checkbox" class="accent-sakura-500" />
-            {{ t('admin.themes.freeEnabled') }}
-          </label>
-          <label class="flex items-center gap-2">
-            <input v-model="draft.paidEnabled" type="checkbox" class="accent-sakura-500" />
-            {{ t('admin.themes.paidEnabled') }}
-          </label>
           <label class="flex items-center gap-2">
             <input v-model="draft.isActive" type="checkbox" class="accent-sakura-500" />
             {{ t('admin.common.active') }}

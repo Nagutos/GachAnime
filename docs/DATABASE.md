@@ -134,11 +134,11 @@ recycle_value, market_min_price, market_max_price)`. Changing a threshold re-app
 price_gems bigint NULL (NULL = free tier), is_active, sort_order, art_token)`.
   Weights sum = 1 000 000 enforced by Zod + test.
 - `themes(id, key UNIQUE, category enum(demographic, genre, characters, media_type, custom),
-name jsonb, description jsonb, rules jsonb, free_enabled bool, paid_enabled bool,
-surcharge_percent smallint default 20, art_token, is_active, sort_order, updated_at)`.
+name jsonb, description jsonb, rules jsonb, seal text (1–2 characters, default 招), art_token,
+is_active, sort_order, pool_built_at, updated_at)`. Packs are opened with free boosters only.
 - `theme_characters(theme_id, character_id)` PK both; index `character_id`. Materialized membership.
 
-A booster = tier × pool (`theme_id` NULL = whole catalog). No combinatorial table (ADR-018).
+An opening = tier + optional pack (`theme_id`, free tier only; NULL = whole catalog) (ADR-018).
 
 ### Openings (audit + reveal history)
 

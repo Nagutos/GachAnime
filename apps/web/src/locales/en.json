@@ -404,18 +404,12 @@
     },
     "themes": {
       "title": "Packs",
-      "help": "A pack draws only the characters matching its rules. Its content is updated when you save it and after every catalog change.",
+      "help": "A pack is a free booster that draws only the characters matching its rules (premium boosters always draw from the whole catalog). Its content is updated when you save it and after every catalog change.",
       "new": "New pack",
       "edit": "Edit pack",
       "back": "← All packs",
       "characters": "Characters",
-      "availability": "Boosters",
-      "surcharge": "Premium surcharge (%)",
-      "free": "Free",
-      "paid": "Premium",
       "category": "Category",
-      "freeEnabled": "Available with free boosters",
-      "paidEnabled": "Available with premium boosters",
       "preview": "Preview",
       "previewTotal": "{count} characters",
       "emptyRarities": "No character for: {rarities}. These draws fall back to the next lower rarity, then the next higher one.",
@@ -440,7 +434,8 @@
           "media_format": "Format",
           "series": "Series"
         }
-      }
+      },
+      "seal": "Kanji"
     },
     "users": {
       "title": "Users",
@@ -509,19 +504,17 @@
     "paidSubtitle": "Spend your gems for better odds. Gems come from recycling duplicates, missions and achievements.",
     "pricePerPack": "{price} gems per booster",
     "packs": {
-      "title": "Pack",
-      "help": "Pick a pack to draw only its characters. Free boosters cost the same; premium boosters cost a little more.",
+      "title": "Free boosters",
+      "help": "Open the whole catalog, or a category or character type: every booster here costs one free charge.",
       "all": "Whole catalog",
-      "surcharge": "Premium boosters of this pack cost {percent} % more.",
-      "noFree": " Free boosters are not available with this pack.",
-      "noPaid": " Premium boosters are not available with this pack.",
       "categories": {
         "demographic": "Demographic",
         "genre": "Genre",
         "characters": "Characters",
         "media_type": "Media type",
         "custom": "Special"
-      }
+      },
+      "characters": "{count} characters"
     },
     "nextCard": "Next card",
     "cardProgress": "Card {current} of {total}",

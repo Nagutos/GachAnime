@@ -56,7 +56,7 @@ export const themeCategory = pgEnum('theme_category', [
   'custom',
 ])
 
-/** A pack: rules selecting characters (GAME_DESIGN §5), offered with every enabled tier. */
+/** A pack: rules selecting characters (GAME_DESIGN §5), opened with free boosters only. */
 export const themes = pgTable(
   'themes',
   {
@@ -66,11 +66,9 @@ export const themes = pgTable(
     name: jsonb().$type<LocalizedText>().notNull(),
     description: jsonb().$type<LocalizedText>(),
     rules: jsonb().$type<ThemeRule>().notNull(),
-    freeEnabled: boolean().notNull().default(true),
-    paidEnabled: boolean().notNull().default(true),
-    /** Price increase of paid tiers opened with this pack, in percent. */
-    surchargePercent: smallint().notNull().default(20),
     artToken: text().notNull().default('default'),
+    /** Kanji on the pack's seal (one or two characters). */
+    seal: text().notNull().default('招'),
     isActive: boolean().notNull().default(true),
     sortOrder: smallint().notNull().default(0),
     /** Last rebuild of `theme_characters`; null = never built. */
@@ -80,7 +78,7 @@ export const themes = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [check('themes_surcharge_range', sql`${table.surchargePercent} BETWEEN 0 AND 1000`)],
+  (table) => [check('themes_seal_length', sql`char_length(${table.seal}) BETWEEN 1 AND 2`)],
 )
 
 /** Materialized pack membership, rebuilt on pack save and after catalog changes. */

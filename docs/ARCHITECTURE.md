@@ -72,7 +72,7 @@ POST /api/v1/boosters/open { tier: key, themeId?: id (Phase 5), quantity: 1|5|10
  2. BEGIN
  3. SELECT player_profiles … FOR UPDATE
  4. free booster: compute available charges from anchor timestamp (game.timer) → reject if < quantity
-    paid booster: check gem balance ≥ tier price × (1 + surcharge) × quantity
+    paid booster: check gem balance ≥ tier price × quantity (packs: free boosters only)
  5. load pool ids per rarity (theme pool or full catalog, active characters only), from the
     per-process cache keyed by catalog_state.version (ADR-024)
  6. draw quantity × 5 cards with crypto Rng (game.draw), apply empty-rarity fallback

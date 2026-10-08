@@ -1,12 +1,14 @@
 /**
- * Outline of a booster pack as two CSS `clip-path` polygons (percentages, so any size works):
- * serrated top and bottom edges, and a ragged tear line near the top. The top strip and the body
- * share the exact same tear points, so before opening they look like a single pack.
+ * Outline of a booster pack as CSS `clip-path` polygons (percentages, so any size works):
+ * serrated top and bottom edges. When the pack is torn, it splits along a ragged line near the
+ * top into a strip and a body that share the exact same tear points.
  */
 /** Duration of the tear animation of a pack. */
 export const PACK_TEAR_MS = 850
 
 export interface PackShape {
+  /** Whole pack (serrated top and bottom), shown until it is torn: no visible cut line. */
+  full: string
   /** Strip above the tear line, torn away when opening. */
   strip: string
   /** Rest of the pack. */
@@ -67,6 +69,7 @@ export function packShape(options: PackShapeOptions = {}): PackShape {
   const tearRightToLeft = [...tearLeftToRight].reverse()
 
   return {
+    full: `polygon(${[...top, ...bottom].join(', ')})`,
     strip: `polygon(${[...top, ...tearRightToLeft].join(', ')})`,
     body: `polygon(${[...tearLeftToRight, ...bottom].join(', ')})`,
     tearAt,

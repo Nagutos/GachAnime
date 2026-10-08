@@ -28,4 +28,10 @@ describe('packShape', () => {
     const bottom = points(shape.body).slice(-9)
     expect(bottom.map(([, y]) => y)).toEqual([98, 100, 98, 100, 98, 100, 98, 100, 98])
   })
+  it('has a whole outline made of the two serrated edges', () => {
+    const shape = packShape({ teeth: 4, toothDepth: 2 })
+    const full = points(shape.full)
+    expect(full).toHaveLength(18)
+    expect(full.slice(0, 9).map(([, y]) => y)).toEqual([2, 0, 2, 0, 2, 0, 2, 0, 2])
+  })
 })

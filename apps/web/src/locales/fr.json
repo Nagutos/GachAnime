@@ -404,18 +404,12 @@
     },
     "themes": {
       "title": "Packs",
-      "help": "Un pack ne tire que les personnages qui respectent ses règles. Son contenu est mis à jour à l'enregistrement et après chaque changement du catalogue.",
+      "help": "Un pack est un booster gratuit qui ne tire que les personnages respectant ses règles (les boosters premium tirent toujours dans tout le catalogue). Son contenu est mis à jour à l'enregistrement et après chaque changement du catalogue.",
       "new": "Nouveau pack",
       "edit": "Modifier le pack",
       "back": "← Tous les packs",
       "characters": "Personnages",
-      "availability": "Boosters",
-      "surcharge": "Surcoût premium (%)",
-      "free": "Gratuit",
-      "paid": "Premium",
       "category": "Catégorie",
-      "freeEnabled": "Disponible avec les boosters gratuits",
-      "paidEnabled": "Disponible avec les boosters premium",
       "preview": "Aperçu",
       "previewTotal": "{count} personnages",
       "emptyRarities": "Aucun personnage pour : {rarities}. Ces tirages passent à la rareté inférieure, puis supérieure.",
@@ -440,7 +434,8 @@
           "media_format": "Format",
           "series": "Séries"
         }
-      }
+      },
+      "seal": "Kanji"
     },
     "users": {
       "title": "Utilisateurs",
@@ -509,19 +504,17 @@
     "paidSubtitle": "Dépense tes gemmes pour de meilleures chances. Les gemmes viennent du recyclage des doublons, des missions et des succès.",
     "pricePerPack": "{price} gemmes le booster",
     "packs": {
-      "title": "Pack",
-      "help": "Choisis un pack pour ne tirer que ses personnages. Les boosters gratuits coûtent pareil ; les boosters premium un peu plus.",
+      "title": "Boosters gratuits",
+      "help": "Ouvre tout le catalogue, ou une catégorie ou un type de personnage : chaque booster ici coûte une charge gratuite.",
       "all": "Tout le catalogue",
-      "surcharge": "Les boosters premium de ce pack coûtent {percent} % de plus.",
-      "noFree": " Les boosters gratuits ne sont pas disponibles avec ce pack.",
-      "noPaid": " Les boosters premium ne sont pas disponibles avec ce pack.",
       "categories": {
         "demographic": "Public",
         "genre": "Genre",
         "characters": "Personnages",
         "media_type": "Type de média",
         "custom": "Spécial"
-      }
+      },
+      "characters": "{count} personnages"
     },
     "nextCard": "Carte suivante",
     "cardProgress": "Carte {current} sur {total}",

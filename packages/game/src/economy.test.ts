@@ -17,11 +17,9 @@ describe('recyclableCopies', () => {
 })
 
 describe('boosterPrice', () => {
-  it('multiplies the tier price and applies the surcharge per booster', () => {
+  it('multiplies the tier price', () => {
     expect(boosterPrice(150, 1)).toBe(150)
     expect(boosterPrice(150, 10)).toBe(1500)
-    expect(boosterPrice(500, 1, 20)).toBe(600)
-    expect(boosterPrice(155, 2, 20)).toBe(372)
   })
 
   it('refuses invalid input', () => {
