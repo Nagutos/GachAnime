@@ -152,7 +152,10 @@ Gotchas:
 - Operations on two players (trades, purchases) lock both profiles with `lockPlayers` (id order)
   and move cards with `moveCopies` (core `social/inventory`); listed/offered copies are counted in
   `locked_quantity`.
-- Role and ban changes go through Better Auth's admin API (it revokes sessions), then the audit log.
+- Authorization reads role and ban from the DB (`requireUser` → `getUserAccess`): the session
+  cached in Redis keeps the user as it was at sign-in. Role and ban changes use `setUserRole` /
+  `setUserBan` (api `lib/auth`, Better Auth internal adapter; a ban revokes sessions), then the
+  audit log. Never use the admin plugin endpoints: they trust the caller's cached role.
 - Game outcomes take a `GameClock` (`{ rng, now }`) in core services: tests inject `seededRng`
   and a fixed date; production uses `cryptoRng` (`@gachanime/core`).
 - Anything that changes drawability or a pack pool is picked up by the pool cache through DB

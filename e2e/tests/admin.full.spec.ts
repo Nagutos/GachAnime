@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { setRoleInDatabase } from '../support/player-data'
 import { signInNewPlayer } from '../support/session'
 
 /** Admin critical paths: an audited settings change, and a ban that ends the player's session. */
@@ -50,4 +51,30 @@ test('a banned player is signed out', async ({ browser }) => {
   expect((await playerContext.request.get('/api/v1/me')).status()).toBe(401)
   await adminContext.close()
   await playerContext.close()
+})
+
+test('a player promoted after signing in can administrate without signing in again', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ locale: 'en-US' })
+  // The session is created (and cached) while the account is still a plain player.
+  const promoted = await signInNewPlayer(context, 'Late Admin')
+  const target = await signInNewPlayer(await browser.newContext(), 'Late Target')
+  expect((await context.request.get('/api/v1/admin/users')).status()).toBe(403)
+  await setRoleInDatabase(promoted.userId, 'admin')
+
+  // A settings write (the current value, so parallel tests are not affected).
+  const settings = await context.request.get('/api/v1/admin/settings')
+  expect(settings.status()).toBe(200)
+  const offers = (await settings.json())['trades.offers']
+  const saved = await context.request.put('/api/v1/admin/settings/trades.offers', { data: offers })
+  expect(saved.status()).toBe(200)
+
+  // Role changes and bans also work for this admin (they used to check the cached session).
+  const ban = await context.request.patch(`/api/v1/admin/users/${target.userId}`, {
+    data: { banned: true, banReason: 'test' },
+  })
+  expect(ban.status()).toBe(200)
+  expect((await ban.json()).banned).toBe(true)
+  await context.close()
 })

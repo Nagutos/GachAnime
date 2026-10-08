@@ -159,7 +159,8 @@ an affecting event happens, and in bulk by a worker job after catalog changes. S
   (Better Auth `trustedOrigins` for `/api/auth`, `assertSameOrigin` in every `/api/v1` handler:
   a state-changing request whose `Origin` is not `PUBLIC_URL` gets 403) and same-origin deployment.
 - Admin: role check on every `/api/v1/admin/*` handler (helper `requireAdmin`), audit log for
-  every mutation. Banned users rejected at session resolution.
+  every mutation. Role and ban are read from the database on every request (the session cached by
+  Better Auth keeps the role it had at sign-in); banned users get `PLAYER_BANNED`.
 - Rate limiting (rate-limiter-flexible + Redis), per user, with named policies
   (`apps/api/src/lib/rate-limit.ts`): default 120/min, booster opening 30/min, economy actions
   60/min, trade offers and market listings 20/min, profile 20/min, admin 300/min, AniList calls

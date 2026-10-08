@@ -85,3 +85,19 @@ export async function getUserRole(db: Executor, userId: string): Promise<Role> {
   })
   return user?.role === 'admin' ? 'admin' : 'user'
 }
+
+/**
+ * Current role and ban state, read from the database. Sessions cached by Better Auth keep the
+ * user as it was at sign-in, so authorization must not trust their copy of the role.
+ */
+export async function getUserAccess(
+  db: Executor,
+  userId: string,
+): Promise<{ role: Role; banned: boolean } | null> {
+  const user = await db.query.users.findFirst({
+    columns: { role: true, banned: true },
+    where: eq(users.id, userId),
+  })
+  if (!user) return null
+  return { role: user.role === 'admin' ? 'admin' : 'user', banned: user.banned ?? false }
+}

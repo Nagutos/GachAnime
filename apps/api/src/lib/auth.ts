@@ -90,3 +90,28 @@ export type Auth = ReturnType<typeof createAuth>
 export function getAuth(): Auth {
   return singleton('auth', createAuth)
 }
+
+/**
+ * Role and ban changes, through Better Auth's internal adapter (it keeps its session storage
+ * consistent and revokes a banned user's sessions). The admin plugin's endpoints are not used:
+ * they authorize the caller from the role cached in its session, which is stale for an admin
+ * promoted after signing in. Callers must have checked the admin role (`requireAdmin`).
+ */
+export async function setUserRole(userId: string, role: 'user' | 'admin'): Promise<void> {
+  const { internalAdapter } = await getAuth().$context
+  await internalAdapter.updateUser(userId, { role, updatedAt: new Date() })
+}
+
+export async function setUserBan(
+  userId: string,
+  ban: { banned: true; reason: string | null } | { banned: false },
+): Promise<void> {
+  const { internalAdapter } = await getAuth().$context
+  await internalAdapter.updateUser(userId, {
+    banned: ban.banned,
+    banReason: ban.banned ? ban.reason : null,
+    banExpires: null,
+    updatedAt: new Date(),
+  })
+  if (ban.banned) await internalAdapter.deleteUserSessions(userId)
+}
