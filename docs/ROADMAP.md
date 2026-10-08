@@ -102,6 +102,22 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] Complete e2e suite on critical paths; backup/restore docs
 - [x] Self-hosting guide, upgrade guide, v1.0.0 tag
 
+## Phase 8 — Maintainer feedback on 1.0 (reported 2026-10-08)
+
+- [ ] **Bug — admin rights**: an account configured as administrator cannot change anything in
+      the admin area. Reproduce on the maintainer's setup (role in DB vs session, `ADMIN_DISCORD_IDS`
+      promotion timing, cached session role, cross-origin check on admin mutations), fix, and add
+      an e2e regression test.
+- [ ] **Booster pack design**: redraw the packs with serrated (zigzag) top and bottom edges, and
+      add a tearing animation when a pack is opened.
+- [ ] **Booster shine animation**: the light sweep stops abruptly mid-animation; make it smooth
+      and continuous (seamless loop).
+- [ ] **Card reveal flow**: reveal opened cards one by one, each with a small 3D tilt effect to
+      inspect it, plus a "reveal all" action with a transition that lays out every card.
+- [ ] **Header layout**: when notification badges show, the main navigation overflows and a
+      vertical scrollbar appears in it; widen the site layout (and fix the nav overflow) so the
+      navigation fits without scrollbars.
+
 ## Later (not scheduled)
 
 - [ ] Upgrades raising the free booster cap per player.
