@@ -73,7 +73,8 @@ POST /api/v1/boosters/open { tier: key, themeId?: id (Phase 5), quantity: 1|5|10
  3. SELECT player_profiles … FOR UPDATE
  4. free booster: compute available charges from anchor timestamp (game.timer) → reject if < quantity
     paid booster: check gem balance ≥ tier price × (1 + surcharge) × quantity
- 5. load pool ids per rarity (theme pool or full catalog, active characters only)
+ 5. load pool ids per rarity (theme pool or full catalog, active characters only), from the
+    per-process cache keyed by catalog_state.version (ADR-024)
  6. draw quantity × 5 cards with crypto Rng (game.draw), apply empty-rarity fallback
  7. upsert user_cards (quantity += n), mark is_new for first discovery
  8. debit gems (+ gem_transactions) or advance free anchor
@@ -155,11 +156,17 @@ an affecting event happens, and in bulk by a worker job after catalog changes. S
 - Sign-in with Discord only (Better Auth OAuth). First admins: `ADMIN_DISCORD_IDS` env var
   (promoted at sign-in) or `pnpm admin:promote`.
 - Better Auth sessions (httpOnly, secure, SameSite=Lax cookies); CSRF protection by origin check
-  (Better Auth `trustedOrigins`) and same-origin deployment.
+  (Better Auth `trustedOrigins` for `/api/auth`, `assertSameOrigin` in every `/api/v1` handler:
+  a state-changing request whose `Origin` is not `PUBLIC_URL` gets 403) and same-origin deployment.
 - Admin: role check on every `/api/v1/admin/*` handler (helper `requireAdmin`), audit log for
   every mutation. Banned users rejected at session resolution.
-- Rate limiting (rate-limiter-flexible + Redis): auth endpoints, booster opening, recycling,
-  trades, market, admin import. Per user and per IP.
+- Rate limiting (rate-limiter-flexible + Redis), per user, with named policies
+  (`apps/api/src/lib/rate-limit.ts`): default 120/min, booster opening 30/min, economy actions
+  60/min, trade offers and market listings 20/min, profile 20/min, admin 300/min, AniList calls
+  20/min. Better Auth limits its own endpoints per IP.
+- HTTP headers (Caddy, mirrored by `vite preview` for e2e): strict CSP (`script-src 'self'`, images
+  from self, AniList and Discord only), HSTS, COOP, Permissions-Policy, `X-Frame-Options: DENY`;
+  API responses are `Cache-Control: no-store`; request bodies capped at 10 MB.
 - Cryptographically secure randomness (`crypto.randomInt`).
 - Idempotency: mutating game endpoints accept an `Idempotency-Key` header (stored 24h in Redis)
   so a double click / retry never opens or buys twice.

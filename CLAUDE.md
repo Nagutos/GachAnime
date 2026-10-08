@@ -155,6 +155,9 @@ Gotchas:
 - Role and ban changes go through Better Auth's admin API (it revokes sessions), then the audit log.
 - Game outcomes take a `GameClock` (`{ rng, now }`) in core services: tests inject `seededRng`
   and a fixed date; production uses `cryptoRng` (`@gachanime/core`).
+- Anything that changes drawability or a pack pool is picked up by the pool cache through DB
+  triggers (`catalog_state.version`); never cache catalog data in a process without a version key.
+- Security headers live in `apps/web/security-headers.ts` and `docker/Caddyfile`: change both.
 - Uploaded images live in `UPLOADS_DIR` (default `<repo>/uploads` in dev, the `uploads` volume in
   Docker) and are served under `/media` (Caddy in production, a Vite middleware in dev).
 
@@ -235,3 +238,11 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   atomic accept, decline, cancel, expiry), player market (listings, atomic purchase, limits,
   price bounds, expiry), worker sweep, admin users (role, ban) and market/trade settings.
   Next: Phase 7 (hardening & release).
+- 2026-10-08 — **Phase 7 done, v1.0.0**: Origin check on `/api/v1` mutations, `social` rate
+  limit, CSP/HSTS/COOP headers (Caddy + `vite preview`, kept in sync by a test), upload size
+  checks; optional image cache (`images.cache` setting, worker job every 15 min, `cache/` prefix
+  - invalidation triggers); booster pools cached per `catalog_state.version` (opening 160 → 40 ms
+    on a 40k-character benchmark), faster wiki/collection/profile queries; WCAG AA fixes (contrast,
+    names, page titles, skip link); e2e: security, axe-core a11y, phone layout, admin flows;
+    `docs/SELF_HOSTING.md`, `docs/UPGRADING.md`, `CHANGELOG.md`. Known debt: some services run
+    `Promise.all` on a transaction client (pg deprecation warning, breaks with pg@9).

@@ -93,7 +93,7 @@ Rank (0–100 relevance) is required for "Shounen ≥ 60" rules.
 | name_full, name_native, name_alternatives (text[]) |                                  | As provided by AniList.                                     |
 | description                                        | text                             | AniList markdown (rendered sanitized).                      |
 | image_url                                          | text                             | AniList CDN.                                                |
-| image_path                                         | text NULL                        | Uploaded (or cached) image, relative to the uploads volume. |
+| image_path                                         | text NULL                        | Uploaded image, or cached copy under `cache/` (see below).  |
 | gender_raw                                         | text NULL                        | AniList value.                                              |
 | gender_class                                       | enum(female, male, unclassified) | Derived at import.                                          |
 | gender_override                                    | enum NULL                        | Admin decision, wins over `gender_class`.                   |
@@ -104,6 +104,11 @@ Rank (0–100 relevance) is required for "Shounen ≥ 60" rules.
 | updated_at                                         | timestamptz                      |                                                             |
 
 Indexes: `(rarity_id) WHERE is_active`, trigram GIN on `name_full` (pg_trgm) for search.
+
+Image cache: the worker stores copies of remote images as `image_path` (and
+`series.cover_upload_path`) under the `cache/` prefix. `BEFORE UPDATE` triggers clear a `cache/`
+path when `image_url` (`cover_url`) changes, so a new remote image is never hidden by a stale copy;
+uploaded images (no prefix) are never touched.
 
 ### `character_media`
 
@@ -193,6 +198,10 @@ bigint, reward_gems, icon_token, is_active, sort_order)`.
 - `settings(key PK, value jsonb, updated_at, updated_by)` — validated with a Zod schema per key in
   `@app/shared` (free booster interval/cap, mission reset hour/timezone, market limits, rarity
   thresholds toggle, image cache enabled…).
+- `catalog_state(id = 1, version uuid)` — a single row. Statement-level triggers on `characters`
+  (insert, delete, `is_active`, `rarity_id`), `series` (delete, `is_active`), `series_characters`
+  and `theme_characters` give it a new random version whenever drawability or a pack pool may
+  change. Processes cache booster pools per version (ADR-024).
 - `admin_audit_log(id, actor_id, action, target_type, target_id, before jsonb, after jsonb, ip, created_at)`
   index `(created_at desc)`, `(target_type, target_id)`.
 - `import_jobs(id, requested_by, params jsonb, status enum(queued, running, completed, failed,

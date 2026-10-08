@@ -5,21 +5,22 @@ friends: open free boosters on a timer, collect characters from your favorite se
 duplicates for gems, trade and sell cards, complete missions and achievements, and unlock each
 character's wiki page.
 
-> Status: early development (Phase 1 — catalog and AniList import done). See
-> [docs/ROADMAP.md](docs/ROADMAP.md).
+> Status: **1.0.0** — see the [changelog](CHANGELOG.md) and [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Self-hosting
 
 Requirements: Docker with Compose, and a Discord application for sign-in.
 
+1. **Get the code**: `git clone https://github.com/Nagutos/GachAnime.git`, then check out the
+   latest release tag (`git checkout v1.0.0`).
 1. **Create a Discord application** at <https://discord.com/developers/applications>.
    In _OAuth2_, copy the client id and secret and add the redirect URL
    `<PUBLIC_URL>/api/auth/callback/discord` (e.g. `http://localhost:8080/api/auth/callback/discord`).
-2. **Configure**: `cp .env.example .env`, then fill at least `PUBLIC_URL`, `BETTER_AUTH_SECRET`
+1. **Configure**: `cp .env.example .env`, then fill at least `PUBLIC_URL`, `BETTER_AUTH_SECRET`
    (`openssl rand -base64 32`), `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `POSTGRES_PASSWORD`
    and `ADMIN_DISCORD_IDS` (your Discord user id, to become admin at first sign-in).
-3. **Start**: `docker compose up -d`, then open `PUBLIC_URL` (default <http://localhost:8080>).
-4. **Fill the catalog**: sign in, open _Administration → AniList import_ and start an import of the
+1. **Start**: `docker compose up -d`, then open `PUBLIC_URL` (default <http://localhost:8080>).
+1. **Fill the catalog**: sign in, open _Administration → AniList import_ and start an import of the
    most popular anime (500 by default, with their whole franchises). AniList currently allows about
    30 requests per minute, so the first full import takes a few hours; it runs in the `worker`
    container and resumes where it stopped after a restart. You can also import single anime from
@@ -29,6 +30,10 @@ Requirements: Docker with Compose, and a Discord application for sign-in.
 
 Migrations run automatically at startup. To serve HTTPS directly, set `SITE_ADDRESS` to your domain
 and expose ports 80/443 (`HTTP_PORT=80`, `HTTPS_PORT=443`); Caddy obtains the certificate.
+
+The full guide — sizing, HTTPS options, image cache, command-line tools, **backups and restore** —
+is in [docs/SELF_HOSTING.md](docs/SELF_HOSTING.md); upgrades are described in
+[docs/UPGRADING.md](docs/UPGRADING.md).
 
 ## Development
 

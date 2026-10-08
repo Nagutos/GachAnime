@@ -37,6 +37,13 @@
 		file_server
 	}
 
+	# Missing hashed assets (an old chunk after an upgrade) must 404, never fall back to the
+	# SPA shell: the shell would be cached forever under the asset URL.
+	handle /assets/* {
+		root * /srv
+		file_server
+	}
+
 	handle {
 		root * /srv
 		try_files {path} /index.html

@@ -94,13 +94,13 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] E2E: full trade between two users; market sale
 - [x] Worker sweep (every 5 minutes) for expired listings and offers; market/trade achievements activated
 
-## Phase 7 — Hardening & release 1.0
+## Phase 7 — Hardening & release 1.0 ✅ (2026-10-08)
 
-- [ ] Rate limits review on all sensitive routes, security headers, abuse tests
-- [ ] Optional local image cache (worker + Caddy)
-- [ ] Performance pass (indexes, pool caching), accessibility pass, mobile layout
-- [ ] Complete e2e suite on critical paths; backup/restore docs
-- [ ] Self-hosting guide, upgrade guide, v1.0.0 tag
+- [x] Rate limits review on all sensitive routes, security headers, abuse tests
+- [x] Optional local image cache (worker + Caddy)
+- [x] Performance pass (indexes, pool caching), accessibility pass, mobile layout
+- [x] Complete e2e suite on critical paths; backup/restore docs
+- [x] Self-hosting guide, upgrade guide, v1.0.0 tag
 
 ## Later (not scheduled)
 
