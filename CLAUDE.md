@@ -181,7 +181,7 @@ Gotchas:
 - ADR-021 AniList client: plain GraphQL strings + Zod, own throttling (no gql.tada / p-queue).
 - ADR-022 One integration test database per package (`@gachanime/db/testing`).
 - ADR-023 Full-stack e2e sign-in through Better Auth `testUtils` in a test-only instance (no API backdoor).
-- ADR-024 Booster pool loaded per opening from `drawable_characters` (caching deferred to Phase 7).
+- ADR-024 Booster pools cached per process, keyed by a trigger-maintained `catalog_state.version`.
 
 ## Open questions (waiting for the maintainer)
 

@@ -2,7 +2,6 @@ import { alias } from 'drizzle-orm/pg-core'
 import {
   achievements,
   characters,
-  drawableCharacters,
   playerProfiles,
   rarities,
   userAchievements,
@@ -23,6 +22,7 @@ import { and, asc, count, desc, eq, gt, ilike, isNotNull, or, sql, type SQL } fr
 import { containsPattern } from '../catalog/admin-series'
 import { AppError } from '../errors'
 import { characterCardColumns, toCharacterCard } from '../players/cards'
+import { loadDrawableIds } from '../catalog/drawable-pool'
 
 export interface PlayerRecord extends PlayerSummary {
   userId: string
@@ -100,7 +100,7 @@ export async function getPlayerProfile(
         })
         .from(userCards)
         .where(and(eq(userCards.userId, player.userId), gt(userCards.quantity, 0))),
-      db.select({ value: count() }).from(drawableCharacters),
+      loadDrawableIds(db).then((ids) => [{ value: ids.size }]),
       db
         .select({
           key: achievements.key,

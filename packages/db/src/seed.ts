@@ -1,7 +1,15 @@
 import { defaultSettingValue, settingsSchemas, type SettingKey } from '@gachanime/shared'
 import type { ThemeRule } from '@gachanime/shared'
 import type { Executor } from './client'
-import { achievements, boosterTiers, missions, rarities, settings, themes } from './schema'
+import {
+  achievements,
+  boosterTiers,
+  catalogState,
+  missions,
+  rarities,
+  settings,
+  themes,
+} from './schema'
 
 /** Default rarities (GAME_DESIGN §1). Thresholds are absolute AniList favourites (ADR-015). */
 export const DEFAULT_RARITIES = [
@@ -388,6 +396,7 @@ export const DEFAULT_THEMES = [
 
 /** Idempotent seed: inserts missing default rows, never overwrites admin changes. */
 export async function seed(db: Executor): Promise<void> {
+  await db.insert(catalogState).values({}).onConflictDoNothing()
   const keys = Object.keys(settingsSchemas) as SettingKey[]
   await db
     .insert(settings)

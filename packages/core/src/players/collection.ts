@@ -1,11 +1,4 @@
-import {
-  characters,
-  drawableCharacters,
-  rarities,
-  userCards,
-  wishlistItems,
-  type Executor,
-} from '@gachanime/db'
+import { characters, rarities, userCards, wishlistItems, type Executor } from '@gachanime/db'
 import { recyclableCopies } from '@gachanime/game'
 import type {
   CollectionItem,
@@ -16,6 +9,7 @@ import type {
 import { and, count, eq, gt, ilike, or, sql, type SQL } from 'drizzle-orm'
 import { containsPattern } from '../catalog/admin-series'
 import { characterCardColumns, toCharacterCard } from './cards'
+import { loadDrawableIds } from '../catalog/drawable-pool'
 
 const isDrawable = sql`EXISTS (SELECT 1 FROM drawable_characters d
   WHERE d.character_id = "characters"."id")`
@@ -44,7 +38,9 @@ export async function listCollection(
   query: CollectionQuery,
 ): Promise<CollectionResponse> {
   const conditions: SQL[] = []
-  if (query.ownership === 'owned') conditions.push(sql`${ownedQuantity} > 0`)
+  // Strict on user_cards: Postgres turns the left join into an inner join driven by the
+  // player's cards instead of scanning the whole catalog.
+  if (query.ownership === 'owned') conditions.push(gt(userCards.quantity, 0))
   else {
     // The catalog (drawable characters) plus everything the player ever obtained.
     conditions.push(sql`(${isDrawable} OR ${isUnlocked})`)
@@ -117,7 +113,7 @@ export async function listCollection(
       })
       .from(userCards)
       .where(and(eq(userCards.userId, userId), gt(userCards.quantity, 0))),
-    db.select({ value: count() }).from(drawableCharacters),
+    loadDrawableIds(db).then((ids) => [{ value: ids.size }]),
   ])
 
   return {

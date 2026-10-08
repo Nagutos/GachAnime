@@ -45,11 +45,31 @@ import { activeSeriesList } from './cards'
  * unlocked (the `user_cards` row is kept at quantity 0). Locked entries reveal only their rarity.
  */
 
-/** Active series with the player's progress, as a subquery (correlated on "series"."id"). */
+/**
+ * Active series with at least one active character and the player's progress, as a subquery.
+ * The progress is aggregated in one pass over `series_characters` (filters on the series id are
+ * pushed down into the aggregate by Postgres).
+ */
 function seriesWithProgress(db: Executor, userId: string) {
-  const members = sql`FROM series_characters sc
-    JOIN characters c ON c.id = sc.character_id AND c.is_active
-    WHERE sc.series_id = "series"."id"`
+  const progress = db
+    .select({
+      seriesId: seriesCharacters.seriesId,
+      characterCount: sql<number>`count(*)::int`.as('character_count'),
+      unlockedCount: sql<number>`count(${userCards.characterId})::int`.as('unlocked_count'),
+      ownedCount: sql<number>`(count(${userCards.characterId})
+        FILTER (WHERE ${userCards.quantity} > 0))::int`.as('owned_count'),
+    })
+    .from(seriesCharacters)
+    .innerJoin(
+      characters,
+      and(eq(characters.id, seriesCharacters.characterId), eq(characters.isActive, true)),
+    )
+    .leftJoin(
+      userCards,
+      and(eq(userCards.characterId, characters.id), eq(userCards.userId, userId)),
+    )
+    .groupBy(seriesCharacters.seriesId)
+    .as('series_progress')
   return db
     .select({
       id: series.id,
@@ -70,17 +90,12 @@ function seriesWithProgress(db: Executor, userId: string) {
       >`(SELECT m.site_url FROM media m WHERE m.id = "series"."primary_media_id")`.as(
         'wiki_site_url',
       ),
-      characterCount: sql<number>`(SELECT count(*)::int ${members})`.as('character_count'),
-      unlockedCount: sql<number>`(SELECT count(*)::int ${members}
-        AND EXISTS (SELECT 1 FROM user_cards uc
-          WHERE uc.user_id = ${userId} AND uc.character_id = c.id))`.as('unlocked_count'),
-      ownedCount: sql<number>`(SELECT count(*)::int ${members}
-        AND EXISTS (SELECT 1 FROM user_cards uc
-          WHERE uc.user_id = ${userId} AND uc.character_id = c.id AND uc.quantity > 0))`.as(
-        'owned_count',
-      ),
+      characterCount: progress.characterCount,
+      unlockedCount: progress.unlockedCount,
+      ownedCount: progress.ownedCount,
     })
     .from(series)
+    .innerJoin(progress, eq(progress.seriesId, series.id))
     .where(eq(series.isActive, true))
     .as('wiki_series')
 }

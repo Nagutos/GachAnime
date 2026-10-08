@@ -148,14 +148,21 @@ Format: context → decision → consequences. Status: Accepted / Proposed (wait
 - **Consequences**: no test code ships in the API; the e2e helper must follow the API's secondary
   storage key layout (`auth:<key>`).
 
-## ADR-024 — Booster pool loaded per opening (Accepted)
+## ADR-024 — Booster pools cached per catalog version (Accepted, revised 2026-10-08)
 
 - **Context**: a draw picks a uniform character among the drawable characters of a rarity.
-- **Decision**: each opening loads the drawable ids grouped by rarity (`array_agg` over the
-  `drawable_characters` view) inside its transaction, then draws indexes with the injected `Rng`.
-- **Consequences**: always consistent with the catalog, no cache invalidation; tens of thousands
-  of ids per opening is acceptable for friend-sized instances. Pool caching is part of the
-  Phase 7 performance pass (themed packs will use materialized `theme_characters`).
+  Loading the pool from the `drawable_characters` view on every opening cost ~80 ms with a
+  40 000-character catalog (top 500 scale), and catalog completion recounted the view too.
+- **Decision**: a single-row `catalog_state.version` (uuid) gets a new value from
+  statement-level triggers whenever drawability or a pack pool may change (characters inserted,
+  deleted, activated or re-rarified; series activated or deleted; `series_characters` and
+  `theme_characters` changes). Each process caches the pools, the drawable id set and the pack
+  pool sizes keyed by that version (`core/catalog/drawable-pool`), and reads the version (one
+  primary-key lookup) before using them.
+- **Consequences**: an opening went from ~160 ms to ~40 ms on the benchmark catalog; the cache
+  is never stale once a change is committed, and needs no explicit invalidation in services.
+  A transaction that bumps the version and rolls back only leaves an unused cache entry.
+  Unrelated character updates (images, names) keep the version. Memory: a few hundred kB.
 
 ## Main dependencies
 

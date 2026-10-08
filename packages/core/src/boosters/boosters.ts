@@ -2,9 +2,7 @@ import {
   boosterOpeningCards,
   boosterOpenings,
   boosterTiers,
-  drawableCharacters,
   playerProfiles,
-  themeCharacters,
   themes,
   userCards,
   type Database,
@@ -28,13 +26,13 @@ import {
   type OpenBoostersResponse,
 } from '@gachanime/shared'
 import { and, asc, eq, inArray, sql } from 'drizzle-orm'
+import { loadDrawablePool, loadThemePoolSizes } from '../catalog/drawable-pool'
 import { loadRarities } from '../catalog/rarities'
 import { AppError } from '../errors'
 import { loadCharacterCards } from '../players/cards'
 import { changeGems, lockPlayer } from '../players/gems'
 import { cryptoRng } from '../random'
 import { emitEvents } from '../progression/engine'
-import { themePoolSize } from '../themes/admin'
 import { ensureThemePools, rebuildThemePool } from '../themes/pools'
 import { getSetting } from '../settings'
 
@@ -85,7 +83,7 @@ export async function listBoosters(
   now = new Date(),
 ): Promise<BoostersResponse> {
   await ensureThemePools(db)
-  const [tiers, free, profile, themeRows] = await Promise.all([
+  const [tiers, free, profile, themeRows, poolSizes] = await Promise.all([
     db
       .select()
       .from(boosterTiers)
@@ -94,10 +92,11 @@ export async function listBoosters(
     getFreeBoosterStatus(db, userId, now),
     loadProfile(db, userId),
     db
-      .select({ theme: themes, characterCount: themePoolSize })
+      .select()
       .from(themes)
       .where(eq(themes.isActive, true))
       .orderBy(asc(themes.sortOrder), asc(themes.id)),
+    loadThemePoolSizes(db),
   ])
   const paidTiers = tiers.filter((tier) => tier.priceGems !== null)
   return {
@@ -113,6 +112,7 @@ export async function listBoosters(
     cardsPerBooster: CARDS_PER_BOOSTER,
     gemBalance: profile.gemBalance,
     themes: themeRows
+      .map((theme) => ({ theme, characterCount: poolSizes.get(theme.id) ?? 0 }))
       .filter((row) => row.characterCount > 0 && (row.theme.freeEnabled || row.theme.paidEnabled))
       .map(({ theme, characterCount }) => ({
         key: theme.key,
@@ -132,34 +132,6 @@ export async function listBoosters(
         ),
       })),
   }
-}
-
-/**
- * Drawable character ids per rarity id, sorted (the draw picks an index in each list), limited
- * to a pack's materialized pool when one is given.
- */
-async function loadPool(db: Executor, themeId: number | null): Promise<Map<number, number[]>> {
-  const base = db
-    .select({
-      rarityId: drawableCharacters.rarityId,
-      ids: sql<
-        string[]
-      >`array_agg(${drawableCharacters.characterId} ORDER BY ${drawableCharacters.characterId})`,
-    })
-    .from(drawableCharacters)
-  const rows = await (
-    themeId === null
-      ? base
-      : base.innerJoin(
-          themeCharacters,
-          and(
-            eq(themeCharacters.characterId, drawableCharacters.characterId),
-            eq(themeCharacters.themeId, themeId),
-          ),
-        )
-  ).groupBy(drawableCharacters.rarityId)
-  // array_agg of bigint comes back as strings.
-  return new Map(rows.map((row) => [row.rarityId, row.ids.map(Number)]))
 }
 
 /**
@@ -217,7 +189,7 @@ export async function openBoosters(
 
     const [rarityRows, pool] = await Promise.all([
       loadRarities(tx),
-      loadPool(tx, theme?.id ?? null),
+      loadDrawablePool(tx, theme?.id ?? null),
     ])
     const keyById = new Map(rarityRows.map((rarity) => [rarity.id, rarity.key]))
     const idByKey = new Map(rarityRows.map((rarity) => [rarity.key, rarity.id]))

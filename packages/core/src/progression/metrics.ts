@@ -1,6 +1,7 @@
 import { characters, rarities, userCards, userCounters, type Executor } from '@gachanime/db'
 import { counterKeysFor, isMetricKey, METRICS, type MetricKey } from '@gachanime/game'
 import { and, eq, gt, sql } from 'drizzle-orm'
+import { loadDrawableIds } from '../catalog/drawable-pool'
 import { loadRarities } from '../catalog/rarities'
 
 export interface AchievementMetric {
@@ -96,12 +97,15 @@ async function seriesCompleted(db: Executor, userId: string): Promise<number> {
 
 /** Whole percentage (rounded down) of drawable characters owned. */
 async function catalogCompletion(db: Executor, userId: string): Promise<number> {
-  const result = await db.execute<{ owned: number; total: number }>(sql`
-    SELECT count(uc.character_id)::int AS owned, count(*)::int AS total
-    FROM drawable_characters d
-    LEFT JOIN user_cards uc
-      ON uc.character_id = d.character_id AND uc.user_id = ${userId} AND uc.quantity > 0`)
-  const row = result.rows[0]
-  const total = Number(row?.total ?? 0)
-  return total === 0 ? 0 : Math.floor((Number(row?.owned ?? 0) * 100) / total)
+  // The drawable set is cached per catalog version: only the player's cards are read here.
+  const [drawable, owned] = await Promise.all([
+    loadDrawableIds(db),
+    db
+      .select({ characterId: userCards.characterId })
+      .from(userCards)
+      .where(and(eq(userCards.userId, userId), gt(userCards.quantity, 0))),
+  ])
+  if (drawable.size === 0) return 0
+  const ownedDrawable = owned.filter((row) => drawable.has(row.characterId)).length
+  return Math.floor((ownedDrawable * 100) / drawable.size)
 }
