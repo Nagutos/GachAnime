@@ -494,11 +494,8 @@
     "revealCard": "Révéler cette carte",
     "revealedCard": "{name}, {rarity}",
     "revealAll": "Tout révéler",
-    "nextPack": "Booster suivant",
-    "showSummary": "Voir toutes mes cartes",
     "done": "Terminé",
     "skip": "Passer",
-    "packProgress": "Booster {current} sur {total}",
     "summary": "{cards} cartes · {new} nouvelles",
     "paidTitle": "Boosters premium",
     "paidSubtitle": "Dépense tes gemmes pour de meilleures chances. Les gemmes viennent du recyclage des doublons, des missions et des succès.",
@@ -519,7 +516,8 @@
     "nextCard": "Carte suivante",
     "cardProgress": "Carte {current} sur {total}",
     "tapToReveal": "Touche la carte pour la révéler",
-    "tiltHint": "Survole la carte pour l’incliner"
+    "tiltHint": "Survole la carte pour l’incliner",
+    "slots": "{revealed} cartes révélées sur {total}"
   },
   "collection": {
     "title": "Ma collection",

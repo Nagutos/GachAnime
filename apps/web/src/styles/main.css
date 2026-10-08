@@ -210,6 +210,25 @@
   }
 }
 
+/* Drifting light particles behind a booster opening (OpeningBackdrop). */
+.opening-particle {
+  animation-name: particle-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes particle-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(28px, -90px) scale(1.15);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
 /* Slow idle sway of the inspected card (TiltCard). */
 .tilt-sway {
   animation: tilt-sway 5s ease-in-out infinite;
@@ -243,5 +262,9 @@
 
   .pack-pose {
     transition: none;
+  }
+
+  .opening-particle {
+    animation: none;
   }
 }

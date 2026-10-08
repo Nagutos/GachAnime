@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator } from '@playwright/test'
 import { E2E_SERIES_TITLE } from '../support/catalog'
 import { signInNewPlayer } from '../support/session'
 
@@ -61,6 +61,8 @@ test('cards are revealed one by one, then all laid out', async ({ page, context 
   await opening.getByTestId('pack').click()
 
   const revealed = opening.locator('[data-testid="flip-card"][data-revealed="true"]')
+  const filledSlots = opening.getByTestId('card-slots').locator('[data-filled="true"]')
+  await expect(opening.getByTestId('card-slots').locator('li')).toHaveCount(5)
   for (let index = 1; index <= 5; index++) {
     await expect(opening.getByTestId('card-progress')).toHaveText(`Card ${index} of 5`)
     // Wait until the previous card has flown away and the next one is face down.
@@ -87,11 +89,43 @@ test('cards are revealed one by one, then all laid out', async ({ page, context 
     }
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
     await expect(revealed).toHaveCount(1)
+    // Each revealed card fills its slot.
+    await expect(filledSlots).toHaveCount(index)
     await opening.getByTestId('next-card').click()
   }
 
-  // After the last card, the whole pack is laid out face up.
+  // After the last card, the whole pack is laid out face up, from the most common to the rarest.
   await expect(revealed).toHaveCount(5)
+  await expectRarityOrder(revealed)
   await opening.getByTestId('close-opening').click()
   await expect(opening).toBeHidden()
 })
+
+test('a ×5 opening tears a single pack and deals its 25 cards', async ({ page, context }) => {
+  await signInNewPlayer(context, 'Five Packs')
+  await page.goto('/boosters')
+  await page.getByTestId('open-5').click({ timeout: 30_000 })
+  const opening = page.getByTestId('booster-opening')
+  await expect(opening.getByTestId('pack')).toHaveCount(1)
+  await opening.getByTestId('pack').click()
+  await expect(opening.getByTestId('card-progress')).toHaveText('Card 1 of 25')
+  await expect(opening.getByTestId('card-slots').locator('li')).toHaveCount(25)
+  await opening.getByTestId('reveal-all').click()
+  const revealed = opening.locator('[data-testid="flip-card"][data-revealed="true"]')
+  await expect(revealed).toHaveCount(25, { timeout: 15_000 })
+  await expectRarityOrder(revealed)
+  await opening.getByTestId('close-opening').click()
+  await expect(opening).toBeHidden()
+})
+
+const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary', 'mythic']
+
+/** Cards come from the most common to the rarest. */
+async function expectRarityOrder(cards: Locator): Promise<void> {
+  const ranks = (
+    await cards.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute('data-rarity')),
+    )
+  ).map((rarity) => RARITY_ORDER.indexOf(rarity ?? ''))
+  expect(ranks).toEqual([...ranks].sort((a, b) => a - b))
+}

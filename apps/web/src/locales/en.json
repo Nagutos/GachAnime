@@ -494,11 +494,8 @@
     "revealCard": "Reveal this card",
     "revealedCard": "{name}, {rarity}",
     "revealAll": "Reveal all",
-    "nextPack": "Next booster",
-    "showSummary": "See all my cards",
     "done": "Done",
     "skip": "Skip",
-    "packProgress": "Booster {current} of {total}",
     "summary": "{cards} cards · {new} new",
     "paidTitle": "Premium boosters",
     "paidSubtitle": "Spend your gems for better odds. Gems come from recycling duplicates, missions and achievements.",
@@ -519,7 +516,8 @@
     "nextCard": "Next card",
     "cardProgress": "Card {current} of {total}",
     "tapToReveal": "Tap the card to reveal it",
-    "tiltHint": "Move over the card to tilt it"
+    "tiltHint": "Move over the card to tilt it",
+    "slots": "{revealed} of {total} cards revealed"
   },
   "collection": {
     "title": "My collection",

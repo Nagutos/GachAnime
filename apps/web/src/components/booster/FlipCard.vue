@@ -3,6 +3,7 @@ import type { OpenedCard } from '@gachanime/shared'
 import { motion, useReducedMotion } from 'motion-v'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import { usePlayerRarities } from '@/app/rarities'
 import CardBack from '@/components/cards/CardBack.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
@@ -14,10 +15,13 @@ const props = withDefaults(
     revealed: boolean
     /** Once revealed, a click asks for the next card (one-by-one reveal). */
     advance?: boolean
+    /** Once revealed, the card links to its wiki page (final grid of an opening). */
+    linked?: boolean
   }>(),
-  { advance: false },
+  { advance: false, linked: false },
 )
-const emit = defineEmits<{ reveal: []; next: [] }>()
+const emit = defineEmits<{ reveal: []; next: []; navigate: [] }>()
+const asLink = computed(() => props.revealed && props.linked)
 
 const { t } = useI18n()
 const { nameOf } = usePlayerRarities()
@@ -31,8 +35,10 @@ const flipDuration = computed(() => (reduced.value ? 0 : shiny.value ? 0.9 : 0.5
 </script>
 
 <template>
-  <button
-    type="button"
+  <component
+    :is="asLink ? RouterLink : 'button'"
+    :type="asLink ? undefined : 'button'"
+    :to="asLink ? { name: 'wiki-character', params: { id: card.character.id } } : undefined"
     class="group relative block w-full perspective-distant"
     :aria-label="
       revealed
@@ -42,11 +48,12 @@ const flipDuration = computed(() => (reduced.value ? 0 : shiny.value ? 0.9 : 0.5
           })
         : t('boosters.revealCard')
     "
-    :aria-disabled="revealed && !advance"
+    :aria-disabled="asLink ? undefined : revealed && !advance"
     data-testid="flip-card"
     :data-character-id="revealed ? card.character.id : undefined"
+    :data-rarity="revealed ? rarity : undefined"
     :data-revealed="revealed"
-    @click="revealed ? advance && emit('next') : emit('reveal')"
+    @click="asLink ? emit('navigate') : revealed ? advance && emit('next') : emit('reveal')"
   >
     <!-- Burst of light behind legendary and mythic reveals -->
     <motion.div
@@ -83,5 +90,5 @@ const flipDuration = computed(() => (reduced.value ? 0 : shiny.value ? 0.9 : 0.5
         />
       </div>
     </motion.div>
-  </button>
+  </component>
 </template>

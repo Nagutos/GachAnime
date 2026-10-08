@@ -127,6 +127,13 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
       draw from the whole catalog (no pack, no surcharge).
 - [x] Each pack has its own kanji on the seal (少 Shōnen, 女 Waifus…), editable in the admin.
 
+## Phase 10 — Opening scene polish ✅ (2026-10-08)
+
+- [x] Cards revealed from the most common to the rarest.
+- [x] x5 / x10 tear a single pack and reveal its 25 / 50 cards directly.
+- [x] Slot tray showing the cards left to reveal, filled card after card.
+- [x] Stronger background blur, card halo and a drifting light-particle backdrop.
+
 ## Later (not scheduled)
 
 - [ ] Upgrades raising the free booster cap per player.

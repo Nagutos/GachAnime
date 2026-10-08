@@ -40,6 +40,9 @@ A booster type = **pool filter** × **rate table** (+ price).
 - **Rate table**: per-card weights over rarities, in parts per million (integers, sum = 1 000 000).
 - **Price**: `null` = free (consumes free charges), otherwise a gem price per booster.
 - Every booster contains **5 cards**. Opening by **x1, x5, x10** = one request, one transaction.
+- Opening scene: a single pack is torn whatever the quantity (x5 = 25 cards, x10 = 50), then the
+  cards are revealed one by one from the most common to the rarest, with one slot per card filled
+  as they are revealed; "Reveal all" or the last card deals them all into a grid.
 
 ### Drawing algorithm (per card)
 
