@@ -24,18 +24,34 @@ a home server is enough.
 
 ## Installation
 
-1. **Get the code** of the latest release:
+1. **Get the files**. Pick one:
+   - **Published images** (recommended, nothing to build): in an empty directory, download the
+     compose file and the configuration template:
 
-   ```bash
-   git clone https://github.com/Nagutos/GachAnime.git && cd GachAnime
-   git checkout v1.0.0
-   ```
+     ```bash
+     curl -fsSLO https://raw.githubusercontent.com/Nagutos/GachAnime/main/docker-compose.prod.yml
+     curl -fsSL -o .env https://raw.githubusercontent.com/Nagutos/GachAnime/main/.env.example
+     ```
+
+     Images are built by CI for x86_64 and arm64 and published on GitHub
+     (`ghcr.io/nagutos/gachanime-{api,tools,web}`). `GACHANIME_VERSION` in `.env` picks the
+     version (`latest` by default). In the commands of this guide, write
+     `docker compose -f docker-compose.prod.yml` instead of `docker compose`.
+
+   - **From source** (to modify the code): clone the latest release, which builds the images on
+     your server:
+
+     ```bash
+     git clone https://github.com/Nagutos/GachAnime.git && cd GachAnime
+     git checkout v1.0.0
+     ```
 
 2. **Create a Discord application** at <https://discord.com/developers/applications>. In
    _OAuth2_, copy the client id and secret, and add the redirect URL
    `<PUBLIC_URL>/api/auth/callback/discord`.
 
-3. **Configure**: `cp .env.example .env`, then set at least:
+3. **Configure**: `cp .env.example .env` (already done with the published images), then set at
+   least:
 
    | Variable                                      | Value                                                                      |
    | --------------------------------------------- | -------------------------------------------------------------------------- |
@@ -49,7 +65,8 @@ a home server is enough.
    `PUBLIC_URL` must match the address in the browser exactly, otherwise sign-in fails with
    "Invalid origin".
 
-4. **Start**: `docker compose up -d --build`. The first build takes a few minutes. Check with
+4. **Start**: `docker compose -f docker-compose.prod.yml up -d` (published images), or
+   `docker compose up -d --build` from source (the first build takes a few minutes). Check with
    `docker compose ps` that `api` is healthy, then open `PUBLIC_URL`.
 
 5. **Fill the catalog**: sign in, open _Admin → Catalog import_ and import the most popular anime
@@ -88,9 +105,28 @@ Pick one:
   `SITE_ADDRESS=gacha.example.com`, `HTTP_PORT=80`, `HTTPS_PORT=443` and
   `PUBLIC_URL=https://gacha.example.com`. Caddy obtains and renews the certificate (stored in the
   `caddy-data` volume).
-- **Your own reverse proxy** (nginx, Traefik, an existing Caddy…): keep `SITE_ADDRESS=:80`, set
+- **Traefik** (already running on the server): add `docker-compose.traefik.yml` to the stack. The
+  `web` container then publishes no port and joins Traefik's Docker network with the routing
+  labels. In `.env`: keep `SITE_ADDRESS=:80`, set `PUBLIC_URL=https://gacha.example.com` and
+
+  | Variable                | Value                                                  |
+  | ----------------------- | ------------------------------------------------------ |
+  | `TRAEFIK_HOST`          | `gacha.example.com`                                    |
+  | `TRAEFIK_NETWORK`       | The Docker network of your Traefik (default `traefik`) |
+  | `TRAEFIK_ENTRYPOINT`    | Its HTTPS entrypoint (default `websecure`)             |
+  | `TRAEFIK_CERT_RESOLVER` | Its certificate resolver (default `letsencrypt`)       |
+
+  ```bash
+  docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
+  ```
+
+  Traefik terminates TLS; Caddy keeps serving the app, the images and the security headers, and
+  proxies `/api`. It trusts proxies on private networks, so the API sees the players' real IP.
+
+- **Another reverse proxy** (nginx, an existing Caddy…): keep `SITE_ADDRESS=:80`, set
   `HTTP_PORT` to a local port and proxy your domain to it. Forward the `Host` header and keep the
-  proxy's request body limit at 10 MB or more (image uploads).
+  proxy's request body limit at 10 MB or more (image uploads). If the proxy reaches the stack
+  from a public address, list it in `TRUSTED_PROXIES` (default: private ranges).
 
 The stack sends a strict Content-Security-Policy and HSTS (once served over HTTPS). Do not serve
 the instance over plain HTTP on the Internet: session cookies would travel unencrypted.
@@ -120,7 +156,8 @@ docker compose run --rm -w /app/packages/core worker \
 docker compose run --rm -w /app/packages/core worker \
   node --import tsx src/cli/grant-gems.ts --discord-id 123456789012345678 --amount 500 --note gift
 
-# AniList import from the command line (--top 500, --ids 16498,1535 or --resume <job id>)
+# AniList import from the command line (--top 500, --ids 16498,1535 or --resume <job id>;
+# --genre Romance / --tag Shoujo restrict --top to the most popular anime of a genre or tag)
 docker compose run --rm -w /app/packages/importer worker \
   node --import tsx src/cli/import-anilist.ts --top 500
 ```

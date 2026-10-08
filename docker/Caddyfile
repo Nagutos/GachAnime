@@ -1,5 +1,15 @@
 # SITE_ADDRESS: ":80" (plain HTTP, behind your own proxy) or a domain such as
 # "gachanime.example.com" (Caddy then obtains a TLS certificate automatically).
+
+{
+	servers {
+		# Behind another proxy (Traefik, nginx…) on a private network, keep the client IP and
+		# scheme it forwards (X-Forwarded-For / -Proto). Clients from the Internet never have a
+		# private address, so they cannot forge these headers. TRUSTED_PROXIES overrides the list.
+		trusted_proxies static {$TRUSTED_PROXIES:private_ranges}
+	}
+}
+
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 

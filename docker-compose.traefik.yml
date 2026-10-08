@@ -1,0 +1,26 @@
+# Serve GachAnime through an existing Traefik (instead of publishing ports). Add it to the stack:
+#   docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d
+# (or with docker-compose.yml when building from source). Requires Docker Compose 2.24+.
+#
+# The `web` container stays: Caddy serves the web app and /media, proxies /api to the API and
+# sets the security headers. Traefik only terminates TLS and routes your domain to it, over the
+# Traefik Docker network. Keep SITE_ADDRESS=:80 and PUBLIC_URL=https://<TRAEFIK_HOST>.
+services:
+  web:
+    # Only reachable through Traefik.
+    ports: !reset []
+    networks: [default, traefik]
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
+      traefik.http.routers.gachanime.rule: Host(`${TRAEFIK_HOST:?set TRAEFIK_HOST}`)
+      traefik.http.routers.gachanime.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.gachanime.tls: 'true'
+      traefik.http.routers.gachanime.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      traefik.http.services.gachanime.loadbalancer.server.port: '80'
+
+networks:
+  # The network your Traefik container is attached to (created outside this stack).
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}
