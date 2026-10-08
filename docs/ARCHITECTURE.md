@@ -120,7 +120,8 @@ images go to the `uploads` volume (resized with sharp) and are served by Caddy u
 
 ```
 Admin UI "Import" (POST /api/v1/admin/imports) or CLI → import_jobs row (one unfinished job max)
-  → BullMQ job "anilist.import" (jobId anilist-import-<id>; the worker requeues unfinished jobs at start)
+  → BullMQ job "catalog.import" (jobId catalog-import-<id>; AniList or IGDB depending on the job
+    params; the worker requeues unfinished jobs at start)
 worker → importer.runImportJob, resumable phase by phase:
   1. discover   top N ids (or explicit ids) → batches of 50 media (details, tags, relations and the
                 first 25 characters) → follow franchise relations breadth-first; media, tags and

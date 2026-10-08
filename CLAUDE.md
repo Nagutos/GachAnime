@@ -16,8 +16,8 @@ An open-source, self-hostable web game where players collect anime character car
 - a full admin panel (catalog, pack editor, rates, economy, missions, achievements, users, audit log).
 
 Audience: groups of friends on self-hosted instances. Sign-in with **Discord only**. No anti
-multi-account restrictions. Catalog: AniList (top 500 franchises, all characters) + manual series
-such as gacha games.
+multi-account restrictions. Catalog: AniList (top 500 franchises, all characters), IGDB video games
+(optional, instance Twitch credentials) + manual series such as gacha games.
 
 The **concept and mechanics** come from Kyara (kyara.games). The **identity does not**: name, logo,
 design, colors, copy and assets must be 100% original. Never copy any asset, text or code from it.
@@ -120,6 +120,7 @@ pnpm admin:promote -- --discord-id 123456789012345678
 pnpm admin:grant-gems -- --discord-id 123456789012345678 --amount 500   # audited, negative removes
 pnpm economy:simulate -- --days 90 --free-per-day 25 --other-per-day 80
 pnpm import:anilist -- --top 500   # or --ids 16498,1535 / --resume <job id> (also from the admin UI)
+# IGDB (video games): from Admin → Catalog import, needs IGDB_CLIENT_ID / IGDB_CLIENT_SECRET in .env
 docker compose up -d     # full self-hosted stack on :8080 (needs .env)
 ```
 
@@ -189,6 +190,8 @@ Gotchas:
 - ADR-022 One integration test database per package (`@gachanime/db/testing`).
 - ADR-023 Full-stack e2e sign-in through Better Auth `testUtils` in a test-only instance (no API backdoor).
 - ADR-024 Booster pools cached per process, keyed by a trigger-maintained `catalog_state.version`.
+- ADR-025 Video game characters from IGDB (Twitch credentials per instance; Mudae has no API).
+- ADR-026 Game character rarity from the IGDB rating count of their most popular game.
 
 ## Open questions (waiting for the maintainer)
 
@@ -265,3 +268,8 @@ before an answer. Ask the maintainer (in French) before any architecture or game
 - 2026-10-08 — Opening theme (seal outline, bottom halo, rising particles, rarity aura waves) and
   performance pass. Rule for animations: only `transform`/`opacity`, no `filter`/`backdrop-filter`
   or large box-shadows on animated layers (gradients instead), CSS animations for many elements.
+- 2026-10-08 — **Phase 12**: IGDB video game import (`packages/importer/src/igdb`, modes
+  `igdb_top`/`igdb_ids`, worker job renamed `catalog.import`), `igdb_games` + `character_games`,
+  game popularity rarity thresholds, admin import source switch and IGDB search, Anime (動) and
+  Video games (遊) packs. Not verified against the real IGDB yet (needs the maintainer's Twitch
+  credentials); tests use a fake IGDB (`importer/src/test/fake-igdb.ts`).

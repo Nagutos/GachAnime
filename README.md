@@ -64,9 +64,10 @@ language = adding a JSON file).
 
 ## Images and data
 
-Character and series data come from [AniList](https://anilist.co) and are credited in the game.
+Character and series data come from [AniList](https://anilist.co) (anime) and
+[IGDB](https://www.igdb.com) (video games, optional) and are credited in the game.
 **Images belong to their respective copyright holders.** GachAnime does not distribute them; each
-instance loads them from AniList (or caches them locally if enabled). The person hosting an
+instance loads them from AniList or IGDB (or caches them locally if enabled). The person hosting an
 instance is responsible for how these images are used on it.
 
 ## License

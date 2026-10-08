@@ -143,19 +143,21 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
       ~8 → ~48 fps): no filters/backdrop-filter, transform/opacity animations only, CSS flips and
       deals, the page behind the scene hidden, pack sheens only on hovered/selected packs.
 
-## Phase 12 — Video game characters (IGDB) and media-type packs
+## Phase 12 — Video game characters (IGDB) and media-type packs ✅ (2026-10-08)
 
 Decisions (2026-10-08): Mudae has no public API (only its Discord bot), so video game characters
 come from **IGDB** (Twitch; free for non-commercial use, each instance uses its own Twitch app
 credentials). A game character's default rarity comes from the **popularity of its most popular
 game** (IGDB rating count), with per-rarity thresholds editable in the admin.
 
-- [ ] IGDB client (Twitch app token, throttling, Zod) and resumable import job (top N games or
+- [x] IGDB client (Twitch app token, throttling, Zod) and resumable import job (top N games or
       game ids): games grouped into series by IGDB collection, characters with a portrait only
-- [ ] Rarity of game characters from game popularity; admin thresholds; recompute on change
-- [ ] Admin: choose the source of an import (AniList / IGDB), IGDB game search
-- [ ] Packs per media type: Anime and Video games (free boosters)
-- [ ] CSP and image cache for the IGDB image host; IGDB attribution; self-hosting docs
+- [x] Rarity of game characters from game popularity; admin thresholds; recompute on change
+- [x] Admin: choose the source of an import (AniList / IGDB), IGDB game search
+- [x] Packs per media type: Anime and Video games (free boosters)
+- [x] CSP and image cache for the IGDB image host; IGDB attribution; self-hosting docs
+- [ ] Verify against the real IGDB with the maintainer's Twitch credentials; tune the game
+      rarity thresholds on real data
 
 ## Later (not scheduled)
 

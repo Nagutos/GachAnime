@@ -170,6 +170,36 @@ Format: context → decision → consequences. Status: Accepted / Proposed (wait
   A transaction that bumps the version and rolls back only leaves an unused cache entry.
   Unrelated character updates (images, names) keep the version. Memory: a few hundred kB.
 
+## ADR-025 — Video game characters from IGDB (Accepted, 2026-10-08)
+
+- **Context**: the maintainer wants video game characters, which AniList does not cover. Mudae
+  was considered: it has no public API (its database is only reachable through its Discord bot;
+  self-bots break Discord's terms). Giant Bomb allows 200 requests per hour and has no reliable
+  gender; VNDB only covers visual novels.
+- **Decision**: IGDB (Twitch) API v4 with Apicalypse queries: characters with a portrait
+  (`mug_shot`), gender and games. Each instance creates its own Twitch application
+  (`IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`, optional: without them video game imports are
+  disabled). Import jobs share the AniList machinery (`import_jobs`, worker job `catalog.import`,
+  resumable phases, admin UI), with `igdb_top` / `igdb_ids` modes. A series is an IGDB
+  collection (game series) or a game alone; games live in `igdb_games`, provenance in
+  `character_games`. Adult games (theme Erotic) and characters without a portrait are skipped.
+  IGDB genre/theme names that match AniList ones are aligned (Sport → Sports, Science fiction →
+  Sci-Fi) so genre packs span anime and games.
+- **Consequences**: IGDB is free for non-commercial use only, as GachAnime instances are; data is
+  credited (wiki links to IGDB). Coverage is good on popular games and uneven elsewhere; manual
+  series (ADR-019) remain for what IGDB lacks (e.g. many gacha rosters).
+
+## ADR-026 — Rarity of game characters from game popularity (Accepted, 2026-10-08)
+
+- **Context**: IGDB has no per-character popularity (AniList favourites drive ADR-015).
+- **Decision**: a game character's default rarity comes from the IGDB rating count
+  (`total_rating_count`) of its **most popular game** (`characters.game_popularity`), against a
+  second set of absolute thresholds (`rarities.game_popularity_threshold`, editable in Admin →
+  Rarities; defaults 0 / 150 / 500 / 1 200 / 2 500, to tune on real data). Changing a threshold
+  re-applies default rarities; rarities set by hand are kept, as for AniList.
+- **Consequences**: every character of a game shares the same default rarity (IGDB has no role
+  either); admins promote or demote individual characters by hand.
+
 ## Main dependencies
 
 Checked on npm on 2026-10-07 (latest version, last publish ≤ 1 month unless noted). All licenses

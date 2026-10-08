@@ -110,6 +110,17 @@ Image cache: the worker stores copies of remote images as `image_path` (and
 path when `image_url` (`cover_url`) changes, so a new remote image is never hidden by a stale copy;
 uploaded images (no prefix) are never touched.
 
+### `igdb_games` / `character_games` (IGDB, ADR-025)
+
+- `igdb_games(id, igdb_id UNIQUE, series_id FK series, name, summary, cover_url, rating_count,
+genres text[] (genres + themes, AniList spelling when equivalent), themes text[], release_year,
+site_url, characters_synced_at, updated_at)`. A game belongs to the series of its first IGDB
+  collection (`series.igdb_key = 'collection:<id>'`) or to a series of its own (`'game:<id>'`).
+- `character_games(character_id, game_id)` PK both; index `game_id`. Series membership of IGDB
+  series is rebuilt from it. IGDB characters have `source = 'igdb'`, `igdb_id` (unique, checked
+  against the source), `site_url` and `game_popularity` (rating count of their most popular game,
+  ADR-026); `rarities.game_popularity_threshold` gives their default rarity.
+
 ### `character_media`
 
 `(character_id, media_id, role enum(MAIN, SUPPORTING, BACKGROUND))` PK both ids, index `media_id`.

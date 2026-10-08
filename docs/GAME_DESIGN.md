@@ -32,6 +32,10 @@ is never touched by re-imports).
 
 The admin shows the resulting distribution so thresholds can be tuned after the first import.
 
+Video game characters (IGDB, §10) have no favourites: their default rarity comes from the IGDB
+rating count of their **most popular game**, with thresholds of their own (ADR-026; defaults
+Rare ≥ 150, Epic ≥ 500, Legendary ≥ 1 200, Mythic ≥ 2 500 ratings).
+
 ## 2. Boosters
 
 A booster type = **pool filter** × **rate table** (+ price).
@@ -200,7 +204,7 @@ Days are counted with the same reset hour as daily missions.
 - **Free boosters** (free charges): the whole catalog, or a **pack** — a category (Shōnen,
   Shōjo, Seinen, Sports, Ecchi…) or a character type (Waifus, Husbandos). Each pack is shown as
   a booster of its own with its kanji on the seal (少 Shōnen, 姫 Shōjo, 青 Seinen, 競 Sports,
-  艶 Ecchi, 女 Waifus, 男 Husbandos; 招 for the whole catalog). Same rates, one charge each.
+  艶 Ecchi, 女 Waifus, 男 Husbandos, 動 Anime, 遊 Video games; 招 for the whole catalog). Same rates, one charge each.
 - **Premium tiers** (Epic, Legendary, Mythic, Divine, paid with gems) always draw from the whole
   catalog at their base price: packs do not apply to them (ADR-018).
 
@@ -365,7 +369,12 @@ Removed (maintainer decision, 2026-10-07): there is no feedback form.
   background), **except characters without an image** (AniList placeholder `default.jpg`), which
   are skipped (decision). They are picked up by a later re-import once AniList has an image.
 - **Manual AniList additions**: admin searches AniList by name or pastes ids → same pipeline.
-- **Manual series** (e.g. gacha games, which AniList does not cover): admin creates a series of kind
+- **IGDB** (video games, ADR-025): import the N most rated main games, or games picked from an
+  IGDB search. Games are grouped into series by IGDB collection (e.g. all "The Legend of Zelda"
+  games), a game outside any collection forms its own series. Characters with a portrait are
+  imported with their gender; adult games are skipped. Needs the instance's own Twitch app
+  credentials.
+- **Manual series** (e.g. gacha games, which AniList and IGDB do not cover well): admin creates a series of kind
   `game`/`other`, then characters with name, description, image upload, gender and rarity
   (no favourites → rarity chosen by the admin, default Common). A JSON bulk import (documented
   format) allows adding a whole game roster at once.

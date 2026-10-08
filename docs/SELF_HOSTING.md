@@ -52,14 +52,33 @@ a home server is enough.
 4. **Start**: `docker compose up -d --build`. The first build takes a few minutes. Check with
    `docker compose ps` that `api` is healthy, then open `PUBLIC_URL`.
 
-5. **Fill the catalog**: sign in, open _Admin → AniList import_ and import the most popular anime
+5. **Fill the catalog**: sign in, open _Admin → Catalog import_ and import the most popular anime
    (500 by default, each with its whole franchise). AniList allows about 30 requests per minute,
    so a full import takes a few hours. It runs in the `worker` and resumes after a restart. You can
-   also import single anime, or add series AniList does not cover (games…) by hand or with a JSON
-   roster.
+   also import single anime, video games from IGDB (see below), or add series no source covers by
+   hand or with a JSON roster.
 
 6. **Tune the game** in the admin area: booster timers and caps, rarity thresholds (_Rarities_
    shows how many characters fall into each rarity), packs, missions, achievements, market limits.
+
+## Video games (IGDB, optional)
+
+Video game characters come from [IGDB](https://www.igdb.com), free for non-commercial use. IGDB
+authenticates through Twitch, so each instance uses its own Twitch application:
+
+1. Sign in at <https://dev.twitch.tv/console/apps> (enable two-factor authentication on the Twitch
+   account if asked) and register an application: any name, OAuth redirect URL
+   `http://localhost`, category _Website Integration_, client type _Confidential_.
+2. Copy its **Client ID**, generate a **New Secret**, and set them in `.env`:
+   `IGDB_CLIENT_ID=…` and `IGDB_CLIENT_SECRET=…`.
+3. `docker compose up -d` (the API and the worker read them at start).
+4. In _Admin → Catalog import_, choose _Video games (IGDB)_: import the most rated games (200 by
+   default, a few minutes) or search for specific games. Games of the same IGDB series form one
+   series; only characters with a portrait are imported.
+5. Tune the _Game ratings ≥_ thresholds in _Admin → Rarities_: a game character's default rarity
+   comes from the number of IGDB ratings of its most popular game.
+
+The free boosters then include a _Video games_ pack (and an _Anime_ one).
 
 ## HTTPS
 
