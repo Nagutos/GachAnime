@@ -49,7 +49,8 @@ function createAuth() {
     baseURL: env.PUBLIC_URL,
     basePath: '/api/auth',
     secret: env.BETTER_AUTH_SECRET,
-    trustedOrigins: [env.PUBLIC_URL],
+    // Browsers send the bare origin: a PUBLIC_URL with a path or a trailing slash must still match.
+    trustedOrigins: [new URL(env.PUBLIC_URL).origin],
     database: drizzleAdapter(db, { provider: 'pg', usePlural: true, schema }),
     secondaryStorage: {
       get: (key) => redis.get(`auth:${key}`),
