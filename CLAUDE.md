@@ -121,7 +121,9 @@ pnpm admin:grant-gems -- --discord-id 123456789012345678 --amount 500   # audite
 pnpm economy:simulate -- --days 90 --free-per-day 25 --other-per-day 80
 pnpm import:anilist -- --top 500   # or --ids 16498,1535 / --resume <job id> (also from the admin UI)
 # IGDB (video games): from Admin → Catalog import, needs IGDB_CLIENT_ID / IGDB_CLIENT_SECRET in .env
-docker compose up -d     # full self-hosted stack on :8080 (needs .env)
+docker compose up -d     # full self-hosted stack on :8080, built from source (needs .env)
+docker compose -f docker-compose.prod.yml up -d   # same stack from the ghcr.io images (CI)
+docker compose -f docker-compose.prod.yml -f docker-compose.traefik.yml up -d   # behind Traefik (maintainer's setup)
 ```
 
 Gotchas:
@@ -273,3 +275,26 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   game popularity rarity thresholds, admin import source switch and IGDB search, Anime (動) and
   Video games (遊) packs. Not verified against the real IGDB yet (needs the maintainer's Twitch
   credentials); tests use a fake IGDB (`importer/src/test/fake-igdb.ts`).
+- 2026-10-08 — `imports.adult` setting (AniList `isAdult` / IGDB Erotic filter, off by default;
+  AniList treats `isAdult: null` as "match nothing": omit the variable instead). Default rarity
+  thresholds recalibrated: Mythic ≥ 20 000, Legendary ≥ 8 000 favourites. All native `<select>`
+  replaced by `AppSelect` (Reka UI; `''` mapped internally); `PaginationBar` with chevrons and
+  page numbers, also used by the admin and the card picker.
+- 2026-10-08 — Top AniList imports can be restricted to genres / tags (`genres`, `tags` params,
+  CLI `--genre` / `--tag`; Shōjo is a tag). Packs get a `color` column (migrations 0015/0016,
+  `art_token` dropped for packs; tiers keep theirs) chosen in the editor, and a shop order set by
+  drag and drop (`PUT /admin/themes/order`); the shop no longer groups packs by category.
+- 2026-10-08 — Opening sounds synthesized with Web Audio (`app/sounds.ts`, no audio asset; on/off
+  per browser), swipe (motion drag, any direction) and arrow keys to go to the next card (the
+  click ending a drag is ignored: `onDragEnd` runs after it). Cards get a metal frame in the
+  rarity color (`.card-frame`, `--frame`), a stretched link when given `to`, and a series link to
+  the collection filtered by series. `BackLink` for every "back" control; the wiki card tilts and
+  turns over (`TurnableCard`).
+- 2026-10-08 — CI publishes multi-arch images (amd64 + arm64, native runners) to
+  `ghcr.io/nagutos/gachanime-{api,tools,web}` after check + e2e: `edge`/`sha-…` from main,
+  semver + `latest` from `v*` tags. `docker-compose.prod.yml` runs them (`GACHANIME_VERSION`);
+  keep it in sync with `docker-compose.yml`.
+- 2026-10-08 — The maintainer serves the game through **Traefik**: `docker-compose.traefik.yml`
+  (labels, external network, no published port; Caddy stays inside for the SPA, /media, /api and
+  headers). Caddy trusts private-range proxies (`TRUSTED_PROXIES`) so X-Forwarded-For keeps the
+  client IP; verified end to end with Traefik 3.7.
