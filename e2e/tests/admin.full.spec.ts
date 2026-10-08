@@ -78,3 +78,24 @@ test('a player promoted after signing in can administrate without signing in aga
   expect((await ban.json()).banned).toBe(true)
   await context.close()
 })
+
+test('video game imports explain how to enable IGDB when it is not configured', async ({
+  browser,
+}) => {
+  // The e2e API reads the root .env: with IGDB credentials there, this case does not apply.
+  test.skip(Boolean(process.env.IGDB_CLIENT_ID), 'IGDB is configured locally')
+  const context = await browser.newContext({ locale: 'en-US' })
+  await signInNewPlayer(context, 'Import Admin', undefined, 'admin')
+  const page = await context.newPage()
+  await page.goto('/admin/imports')
+  await page.getByTestId('import-source-igdb').click({ timeout: 30_000 })
+  await expect(page.getByTestId('igdb-not-configured')).toContainText('IGDB_CLIENT_ID')
+  await expect(page.getByRole('button', { name: 'Start import' })).toBeDisabled()
+
+  const refused = await context.request.post('/api/v1/admin/imports', {
+    data: { mode: 'igdb_top', top: 5 },
+  })
+  expect(refused.status()).toBe(409)
+  expect((await refused.json()).error.code).toBe('IGDB_NOT_CONFIGURED')
+  await context.close()
+})

@@ -216,15 +216,15 @@ function back(): void {
               </ul>
             </section>
 
-            <p v-if="entry.anilistUrl" class="text-xs text-mist-300">
+            <p v-if="entry.sourceUrl" class="text-xs text-mist-300">
               {{ t('wiki.source') }}
               <a
-                :href="entry.anilistUrl"
+                :href="entry.sourceUrl"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="underline hover:text-sakura-400"
               >
-                {{ t('wiki.sourceAniList') }}
+                {{ t(`wiki.sources.${entry.source}`) }}
               </a>
             </p>
           </template>

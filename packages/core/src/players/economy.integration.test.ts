@@ -261,6 +261,45 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
       })
     })
 
+    it('re-applies game popularity thresholds to IGDB characters only', async () => {
+      const table = await RarityTable.load(db)
+      const [hero] = await db
+        .insert(characters)
+        .values({
+          source: 'igdb',
+          igdbId: 1,
+          nameFull: 'Game hero',
+          gamePopularity: 800,
+          rarityId: table.idForGamePopularity(800),
+        })
+        .returning({ id: characters.id })
+      const [anime] = await db
+        .insert(characters)
+        .values({
+          source: 'anilist',
+          anilistId: 1,
+          nameFull: 'Anime hero',
+          favourites: 800,
+          rarityId: table.idForFavourites(800),
+        })
+        .returning({ id: characters.id })
+      const rarityOf = async (id: number) =>
+        table.keyForId(
+          (await db.query.characters.findFirst({ where: eq(characters.id, id) }))!.rarityId,
+        )
+      expect(await rarityOf(hero!.id)).toBe('epic')
+
+      const result = await updateRarity(db, 'legendary', { gamePopularityThreshold: 700 }, actor)
+      expect(result.recomputedCharacters).toBe(1)
+      expect(await rarityOf(hero!.id)).toBe('legendary')
+      expect(await rarityOf(anime!.id)).toBe('rare')
+
+      // Thresholds of each kind must increase with the rarity order.
+      await expect(
+        updateRarity(db, 'mythic', { gamePopularityThreshold: 100 }, actor),
+      ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' })
+    })
+
     it('edits booster tiers with valid weights only', async () => {
       const weights = { common: 0, rare: 0, epic: 500_000, legendary: 400_000, mythic: 100_000 }
       await updateBoosterTier(db, 'divine', { weights, priceGems: 4000 }, actor)

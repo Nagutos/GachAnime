@@ -102,7 +102,7 @@ const series = computed(() => detail.data.value)
                 rel="noopener noreferrer"
                 class="text-mist-300 hover:text-sakura-400"
               >
-                {{ t('wiki.credit') }}
+                {{ t(`wiki.credits.${series.source}`) }}
               </a>
             </div>
           </div>

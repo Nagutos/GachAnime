@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rarityFromFavourites } from './rarity'
+import { rarityFromFavourites, rarityFromGamePopularity } from './rarity'
 
 const thresholds = [
   { key: 'common', favouritesThreshold: 0 },
@@ -38,5 +38,23 @@ describe('rarityFromFavourites', () => {
 
   it('requires at least one rarity', () => {
     expect(() => rarityFromFavourites(10, [])).toThrow()
+  })
+})
+
+describe('rarityFromGamePopularity', () => {
+  const gameThresholds = [
+    { key: 'common', gamePopularityThreshold: 0 },
+    { key: 'epic', gamePopularityThreshold: 500 },
+    { key: 'rare', gamePopularityThreshold: 150 },
+  ]
+
+  it.each([
+    [null, 'common'],
+    [149, 'common'],
+    [150, 'rare'],
+    [499, 'rare'],
+    [5_000, 'epic'],
+  ])('%s ratings → %s', (popularity, expected) => {
+    expect(rarityFromGamePopularity(popularity, gameThresholds)).toBe(expected)
   })
 })

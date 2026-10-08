@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { rarityKeySchema, seriesKindSchema, slugSchema } from '../catalog'
+import { catalogSourceSchema, rarityKeySchema, seriesKindSchema, slugSchema } from '../catalog'
 import { localizedTextSchema } from '../localized-text'
 import { booleanQuery, paginatedSchema, paginationQuerySchema } from './pagination'
 import { themeDtoSchema, themeKeySchema } from '../themes'
@@ -298,7 +298,7 @@ export const wikiSeriesListSchema = paginatedSchema(wikiSeriesItemSchema)
 export const wikiSeriesDetailSchema = wikiSeriesItemSchema.extend({
   description: z.string().nullable(),
   genres: z.array(z.string()),
-  source: z.enum(['anilist', 'manual']),
+  source: catalogSourceSchema,
   /** AniList page of the main media, for the credit link. */
   siteUrl: z.string().nullable(),
 })
@@ -353,9 +353,10 @@ export const wikiCharacterSchema = z.discriminatedUnion('locked', [
     /** AniList markdown (spoilers as `~!…!~`); the client renders it as plain text. */
     description: z.string().nullable(),
     imageUrl: z.string().nullable(),
-    source: z.enum(['anilist', 'manual']),
+    source: catalogSourceSchema,
     /** AniList character page (credit link); null for manual characters. */
-    anilistUrl: z.string().nullable(),
+    /** Page of the character at its source (AniList, IGDB); null for manual characters. */
+    sourceUrl: z.string().nullable(),
     appearances: z.array(wikiAppearanceSchema),
     quantity: z.number().int().nonnegative(),
     lockedQuantity: z.number().int().nonnegative(),

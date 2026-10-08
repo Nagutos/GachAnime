@@ -1,0 +1,1 @@
+ALTER TABLE "characters" ADD COLUMN "site_url" text;

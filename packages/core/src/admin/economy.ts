@@ -67,6 +67,7 @@ const rarityColumns = {
   name: rarities.name,
   colorToken: rarities.colorToken,
   favouritesThreshold: rarities.favouritesThreshold,
+  gamePopularityThreshold: rarities.gamePopularityThreshold,
   recycleValue: rarities.recycleValue,
   marketMinPrice: rarities.marketMinPrice,
   marketMaxPrice: rarities.marketMaxPrice,
@@ -78,20 +79,26 @@ export async function listAdminRarities(db: Executor): Promise<AdminRarity[]> {
 }
 
 /**
- * Applies the favourites thresholds to every AniList character whose rarity was not set by hand
- * (ADR-015: highest threshold reached, else the lowest-threshold rarity). Returns how many
- * characters changed.
+ * Applies the thresholds to every imported character whose rarity was not set by hand: AniList
+ * favourites (ADR-015) and IGDB game popularity (ADR-026); highest threshold reached, else the
+ * lowest-threshold rarity. Returns how many characters changed.
  */
 export async function recomputeDefaultRarities(db: Executor): Promise<number> {
   const result = await db.execute(sql`
     UPDATE characters c SET rarity_id = target.id
     FROM (
-      SELECT ch.id AS character_id, coalesce(
-        (SELECT r.id FROM rarities r WHERE r.favourites_threshold <= coalesce(ch.favourites, 0)
-          ORDER BY r.favourites_threshold DESC LIMIT 1),
-        (SELECT r.id FROM rarities r ORDER BY r.favourites_threshold ASC LIMIT 1)) AS id
+      SELECT ch.id AS character_id, CASE WHEN ch.source = 'anilist' THEN coalesce(
+          (SELECT r.id FROM rarities r WHERE r.favourites_threshold <= coalesce(ch.favourites, 0)
+            ORDER BY r.favourites_threshold DESC LIMIT 1),
+          (SELECT r.id FROM rarities r ORDER BY r.favourites_threshold ASC LIMIT 1))
+        ELSE coalesce(
+          (SELECT r.id FROM rarities r
+            WHERE r.game_popularity_threshold <= coalesce(ch.game_popularity, 0)
+            ORDER BY r.game_popularity_threshold DESC LIMIT 1),
+          (SELECT r.id FROM rarities r ORDER BY r.game_popularity_threshold ASC LIMIT 1))
+        END AS id
       FROM characters ch
-      WHERE ch.source = 'anilist' AND NOT ch.rarity_overridden
+      WHERE ch.source IN ('anilist', 'igdb') AND NOT ch.rarity_overridden
     ) AS target
     WHERE c.id = target.character_id AND c.rarity_id IS DISTINCT FROM target.id`)
   return result.rowCount ?? 0
@@ -118,13 +125,14 @@ export async function updateRarity(
     if (!before) throw new AppError('NOT_FOUND', `Rarity "${key}" not found`)
     const after = { ...before, ...input }
 
-    const thresholds = all.map((rarity) =>
-      rarity.key === key ? after.favouritesThreshold : rarity.favouritesThreshold,
-    )
-    if (thresholds.some((value, index) => index > 0 && value <= thresholds[index - 1]!)) {
+    const increasing = (field: 'favouritesThreshold' | 'gamePopularityThreshold') => {
+      const values = all.map((rarity) => (rarity.key === key ? after[field] : rarity[field]))
+      return values.every((value, index) => index === 0 || value > values[index - 1]!)
+    }
+    if (!increasing('favouritesThreshold') || !increasing('gamePopularityThreshold')) {
       throw new AppError(
         'VALIDATION_FAILED',
-        'Favourites thresholds must increase strictly with the rarity order',
+        'Thresholds must increase strictly with the rarity order',
       )
     }
     if (after.marketMinPrice > after.marketMaxPrice) {
@@ -132,11 +140,12 @@ export async function updateRarity(
     }
 
     await tx.update(rarities).set(input).where(eq(rarities.key, key))
-    const recomputedCharacters =
-      input.favouritesThreshold !== undefined &&
-      input.favouritesThreshold !== before.favouritesThreshold
-        ? await recomputeDefaultRarities(tx)
-        : 0
+    const thresholdChanged =
+      (input.favouritesThreshold !== undefined &&
+        input.favouritesThreshold !== before.favouritesThreshold) ||
+      (input.gamePopularityThreshold !== undefined &&
+        input.gamePopularityThreshold !== before.gamePopularityThreshold)
+    const recomputedCharacters = thresholdChanged ? await recomputeDefaultRarities(tx) : 0
     await recordAdminAction(tx, {
       ...actor,
       action: 'rarity.update',

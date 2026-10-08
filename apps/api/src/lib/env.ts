@@ -11,6 +11,9 @@ const envSchema = z.object({
   DISCORD_CLIENT_ID: z.string().min(1),
   DISCORD_CLIENT_SECRET: z.string().min(1),
   ADMIN_DISCORD_IDS: z.string().optional(),
+  /** Twitch application used for IGDB (video game catalog); both empty = IGDB disabled. */
+  IGDB_CLIENT_ID: z.string().optional(),
+  IGDB_CLIENT_SECRET: z.string().optional(),
   /** Uploaded images (served under /media by Caddy). Defaults to `<repository>/uploads` in dev. */
   UPLOADS_DIR: z.string().min(1).default(resolve(process.cwd(), '../../uploads')),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),

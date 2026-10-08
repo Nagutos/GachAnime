@@ -1,6 +1,6 @@
 import { listUnfinishedImportJobs } from '@gachanime/core'
 import { createDatabase } from '@gachanime/db'
-import { AniListClient } from '@gachanime/importer'
+import { AniListClient, IgdbClient } from '@gachanime/importer'
 import { Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 import pino from 'pino'
@@ -19,6 +19,13 @@ const { db, pool } = createDatabase(env.DATABASE_URL, { max: env.WORKER_CONCURRE
 const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null })
 // One client per process: AniList's rate limit is per IP.
 const anilist = new AniListClient({ logger: logger.child({ component: 'anilist' }) })
+const igdb =
+  env.IGDB_CLIENT_ID && env.IGDB_CLIENT_SECRET
+    ? new IgdbClient(
+        { clientId: env.IGDB_CLIENT_ID, clientSecret: env.IGDB_CLIENT_SECRET },
+        { logger: logger.child({ component: 'igdb' }) },
+      )
+    : null
 
 const worker = new Worker(
   QUEUE_NAME,
@@ -26,6 +33,7 @@ const worker = new Worker(
     runJob(job.name, job.data, {
       db,
       anilist,
+      igdb,
       uploadsDir: env.UPLOADS_DIR,
       logger: logger.child({ job: job.name, id: job.id }),
     }),
@@ -40,7 +48,7 @@ async function requeueUnfinishedImports(): Promise<void> {
   const queue = new Queue(QUEUE_NAME, { connection })
   for (const importJobId of await listUnfinishedImportJobs(db)) {
     await queue.add(
-      'anilist.import',
+      'catalog.import',
       { importJobId },
       { jobId: importBullJobId(importJobId), removeOnComplete: true, removeOnFail: true },
     )

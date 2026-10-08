@@ -214,7 +214,7 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
         recyclable: 0,
         recycleValue: 10,
         source: 'manual',
-        anilistUrl: null,
+        sourceUrl: null,
       })
     })
 

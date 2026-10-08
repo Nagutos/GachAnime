@@ -40,6 +40,7 @@ function changesOf(original: AdminRarity) {
   const changes: Partial<AdminRarity> = {}
   for (const field of [
     'favouritesThreshold',
+    'gamePopularityThreshold',
     'recycleValue',
     'marketMinPrice',
     'marketMaxPrice',
@@ -82,6 +83,7 @@ async function save(original: AdminRarity): Promise<void> {
             <th :class="ui.th">{{ t('admin.rarities.columns.nameEn') }}</th>
             <th :class="ui.th">{{ t('admin.rarities.columns.nameFr') }}</th>
             <th :class="ui.th">{{ t('admin.rarities.columns.threshold') }}</th>
+            <th :class="ui.th">{{ t('admin.rarities.columns.gameThreshold') }}</th>
             <th :class="ui.th">{{ t('admin.rarities.columns.recycle') }}</th>
             <th :class="ui.th">{{ t('admin.rarities.columns.marketMin') }}</th>
             <th :class="ui.th">{{ t('admin.rarities.columns.marketMax') }}</th>
@@ -128,6 +130,15 @@ async function save(original: AdminRarity): Promise<void> {
                   min="0"
                   :class="[ui.input, 'w-28']"
                   :aria-label="t('admin.rarities.columns.threshold')"
+                />
+              </td>
+              <td :class="ui.td">
+                <input
+                  v-model.number="drafts[rarity.key]!.gamePopularityThreshold"
+                  type="number"
+                  min="0"
+                  :class="[ui.input, 'w-24']"
+                  :aria-label="t('admin.rarities.columns.gameThreshold')"
                 />
               </td>
               <td :class="ui.td">

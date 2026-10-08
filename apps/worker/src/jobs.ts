@@ -6,7 +6,7 @@ import {
   rebuildAllThemePools,
   recomputeStateAchievementsForAll,
 } from '@gachanime/core'
-import { runImportJob, type AniListClient } from '@gachanime/importer'
+import { runImportJob, type AniListClient, type IgdbClient } from '@gachanime/importer'
 import type { Logger } from 'pino'
 import { z } from 'zod'
 
@@ -17,6 +17,8 @@ export interface JobContext {
   db: Database
   logger: Logger
   anilist: AniListClient
+  /** Null without IGDB credentials. */
+  igdb: IgdbClient | null
   uploadsDir: string
 }
 
@@ -24,14 +26,14 @@ export type JobHandler = (data: unknown, context: JobContext) => Promise<unknown
 
 const importJobDataSchema = z.object({ importJobId: z.number().int().positive() })
 
-/** BullMQ job id of an import: one queued job per import row. */
 /** Every 5 minutes. */
 export const SWEEP_INTERVAL_MS = 5 * 60_000
 
 /** Every 15 minutes (each run stops after a few minutes; the next one continues). */
 export const IMAGE_CACHE_INTERVAL_MS = 15 * 60_000
 
-export const importBullJobId = (importJobId: number) => `anilist-import-${importJobId}`
+/** BullMQ job id of an import: one queued job per import row. */
+export const importBullJobId = (importJobId: number) => `catalog-import-${importJobId}`
 
 /**
  * After a catalog change: pack pools are rebuilt, then series and catalog completion are
@@ -50,9 +52,10 @@ export const jobHandlers: Record<string, JobHandler> = {
     logger.info('pong')
     return { pong: true }
   },
-  'anilist.import': async (data, { db, logger, anilist }) => {
+  /** An AniList or IGDB import (the job row says which). */
+  'catalog.import': async (data, { db, logger, anilist, igdb }) => {
     const { importJobId } = importJobDataSchema.parse(data)
-    const outcome = await runImportJob({ db, client: anilist, logger }, importJobId)
+    const outcome = await runImportJob({ db, client: anilist, igdb, logger }, importJobId)
     if (outcome === 'completed') await refreshCatalog(db, logger)
     return { outcome }
   },

@@ -13,12 +13,15 @@ function getQueue(): Queue {
   })
 }
 
-/** Queues an import job for the worker; the BullMQ job id deduplicates repeated requests. */
+/**
+ * Queues an import job (AniList or IGDB) for the worker; the BullMQ job id deduplicates repeated
+ * requests.
+ */
 export async function enqueueImportJob(importJobId: number): Promise<void> {
   await getQueue().add(
-    'anilist.import',
+    'catalog.import',
     { importJobId },
-    { jobId: `anilist-import-${importJobId}`, removeOnComplete: true, removeOnFail: true },
+    { jobId: `catalog-import-${importJobId}`, removeOnComplete: true, removeOnFail: true },
   )
 }
 

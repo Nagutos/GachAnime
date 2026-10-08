@@ -29,6 +29,7 @@ const characterColumns = {
   id: characters.id,
   source: characters.source,
   anilistId: characters.anilistId,
+  igdbId: characters.igdbId,
   manualKey: characters.manualKey,
   nameFull: characters.nameFull,
   nameNative: characters.nameNative,
@@ -40,6 +41,7 @@ const characterColumns = {
   genderClass: characters.genderClass,
   genderOverride: characters.genderOverride,
   favourites: characters.favourites,
+  gamePopularity: characters.gamePopularity,
   rarityKey: rarities.key,
   rarityOverridden: characters.rarityOverridden,
   isActive: characters.isActive,
@@ -64,6 +66,7 @@ function toAdminCharacter(row: CharacterRow, table: RarityTable): AdminCharacter
     id: row.id,
     source: row.source,
     anilistId: row.anilistId,
+    igdbId: row.igdbId,
     nameFull: row.nameFull,
     nameNative: row.nameNative,
     imageUrl: publicImageUrl(row.imagePath, row.imageUrl),
@@ -71,9 +74,10 @@ function toAdminCharacter(row: CharacterRow, table: RarityTable): AdminCharacter
     genderClass: row.genderClass,
     genderOverride: row.genderOverride,
     favourites: row.favourites,
+    gamePopularity: row.gamePopularity,
     rarityKey: row.rarityKey,
     rarityOverridden: row.rarityOverridden,
-    defaultRarityKey: row.source === 'anilist' ? table.keyForFavourites(row.favourites) : null,
+    defaultRarityKey: row.source === 'manual' ? null : table.keyForId(table.idForImported(row)),
     isActive: row.isActive,
     series: row.series,
     roles: row.roles,
@@ -162,17 +166,17 @@ export async function updateCharacter(
       (value) => value !== undefined,
     )
     if (editsContent && before.source !== 'manual') {
-      throw new AppError('NOT_MANUAL_ENTRY', 'AniList characters are edited on AniList')
+      throw new AppError('NOT_MANUAL_ENTRY', 'Imported characters are edited at their source')
     }
 
     const changes: Partial<typeof characters.$inferInsert> = {}
     if (input.rarity !== undefined) {
       if (input.rarity !== null) {
         changes.rarityId = table.idForKey(input.rarity)
-        // Manual characters have no favourites: their rarity is always the admin's choice.
-        changes.rarityOverridden = before.source === 'anilist'
-      } else if (before.source === 'anilist') {
-        changes.rarityId = table.idForFavourites(before.favourites)
+        // Manual characters have no popularity: their rarity is always the admin's choice.
+        changes.rarityOverridden = before.source !== 'manual'
+      } else if (before.source !== 'manual') {
+        changes.rarityId = table.idForImported(before)
         changes.rarityOverridden = false
       } else {
         changes.rarityId = table.lowest.id

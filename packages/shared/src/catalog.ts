@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const seriesKindSchema = z.enum(['anime', 'game', 'other'])
 export type SeriesKind = z.infer<typeof seriesKindSchema>
 
-export const catalogSourceSchema = z.enum(['anilist', 'manual'])
+export const catalogSourceSchema = z.enum(['anilist', 'manual', 'igdb'])
 export type CatalogSource = z.infer<typeof catalogSourceSchema>
 
 export const genderClassSchema = z.enum(['female', 'male', 'unclassified'])
@@ -35,6 +35,9 @@ export function slugify(value: string): string {
 
 export const IMPORT_TOP_DEFAULT = 500
 
+export const IGDB_IMPORT_TOP_DEFAULT = 200
+
+/** AniList modes: `top`, `ids`. IGDB (video games, ADR-025) modes: `igdb_top`, `igdb_ids`. */
 export const importParamsSchema = z.discriminatedUnion('mode', [
   z.object({
     mode: z.literal('top'),
@@ -47,8 +50,23 @@ export const importParamsSchema = z.discriminatedUnion('mode', [
     anilistIds: z.array(z.number().int().positive()).min(1).max(500),
     expandFranchise: z.boolean().default(true),
   }),
+  z.object({
+    mode: z.literal('igdb_top'),
+    /** The N most rated main games on IGDB. */
+    top: z.number().int().min(1).max(2000).default(IGDB_IMPORT_TOP_DEFAULT),
+  }),
+  z.object({
+    mode: z.literal('igdb_ids'),
+    igdbIds: z.array(z.number().int().positive()).min(1).max(500),
+  }),
 ])
 export type ImportParams = z.infer<typeof importParamsSchema>
+
+export type ImportSource = 'anilist' | 'igdb'
+
+export function importSource(params: ImportParams): ImportSource {
+  return params.mode === 'igdb_top' || params.mode === 'igdb_ids' ? 'igdb' : 'anilist'
+}
 
 export const importPhaseSchema = z.enum(['discover', 'group', 'characters', 'finalize', 'done'])
 export type ImportPhase = z.infer<typeof importPhaseSchema>
@@ -57,6 +75,8 @@ export const importProgressSchema = z.object({
   phase: importPhaseSchema.default('discover'),
   /** AniList ids of every media reached by the discovery (seeds + franchises). */
   mediaAnilistIds: z.array(z.number().int()).default([]),
+  /** IGDB imports: ids of the games to import (`media*` counters count games). */
+  gameIgdbIds: z.array(z.number().int()).default([]),
   seedCount: z.number().int().default(0),
   mediaTotal: z.number().int().default(0),
   mediaCharactersDone: z.number().int().default(0),

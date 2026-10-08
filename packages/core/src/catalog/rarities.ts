@@ -1,5 +1,5 @@
 import { rarities, type Executor } from '@gachanime/db'
-import { rarityFromFavourites } from '@gachanime/game'
+import { rarityFromFavourites, rarityFromGamePopularity } from '@gachanime/game'
 import { localizedTextSchema, type PublicRarity } from '@gachanime/shared'
 import { asc } from 'drizzle-orm'
 import { AppError } from '../errors'
@@ -9,6 +9,7 @@ export interface RarityRow {
   key: string
   sortOrder: number
   favouritesThreshold: number
+  gamePopularityThreshold: number
 }
 
 export async function loadRarities(db: Executor): Promise<RarityRow[]> {
@@ -18,6 +19,7 @@ export async function loadRarities(db: Executor): Promise<RarityRow[]> {
       key: rarities.key,
       sortOrder: rarities.sortOrder,
       favouritesThreshold: rarities.favouritesThreshold,
+      gamePopularityThreshold: rarities.gamePopularityThreshold,
     })
     .from(rarities)
     .orderBy(asc(rarities.sortOrder))
@@ -46,6 +48,22 @@ export class RarityTable {
 
   keyForFavourites(favourites: number | null): string {
     return rarityFromFavourites(favourites, this.rows)
+  }
+
+  /** Default rarity of an IGDB character (ADR-026). */
+  idForGamePopularity(popularity: number | null): number {
+    return this.byKey.get(rarityFromGamePopularity(popularity, this.rows))!.id
+  }
+
+  /** Default rarity of an imported character, from its source's popularity measure. */
+  idForImported(character: {
+    source: 'anilist' | 'igdb' | 'manual'
+    favourites: number | null
+    gamePopularity: number | null
+  }): number {
+    if (character.source === 'anilist') return this.idForFavourites(character.favourites)
+    if (character.source === 'igdb') return this.idForGamePopularity(character.gamePopularity)
+    return this.lowest.id
   }
 
   /** The lowest rarity: default for manual characters. */

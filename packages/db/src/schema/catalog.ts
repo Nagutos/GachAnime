@@ -19,7 +19,7 @@ import type { LocalizedText } from '@gachanime/shared'
 import { users } from './auth'
 
 export const seriesKind = pgEnum('series_kind', ['anime', 'game', 'other'])
-export const catalogSource = pgEnum('catalog_source', ['anilist', 'manual'])
+export const catalogSource = pgEnum('catalog_source', ['anilist', 'manual', 'igdb'])
 export const characterRole = pgEnum('character_role', ['MAIN', 'SUPPORTING', 'BACKGROUND'])
 export const genderClass = pgEnum('gender_class', ['female', 'male', 'unclassified'])
 export const importJobStatus = pgEnum('import_job_status', [
@@ -35,7 +35,10 @@ const updatedAt = timestamp({ withTimezone: true })
   .defaultNow()
   .$onUpdate(() => new Date())
 
-/** Card rarities. The default rarity of an AniList character comes from `favouritesThreshold`. */
+/**
+ * Card rarities. The default rarity of an AniList character comes from `favouritesThreshold`, the
+ * one of an IGDB (video game) character from `gamePopularityThreshold` (ADR-026).
+ */
 export const rarities = pgTable('rarities', {
   id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
   key: text().notNull().unique(),
@@ -45,6 +48,8 @@ export const rarities = pgTable('rarities', {
   colorToken: text().notNull(),
   /** Minimum AniList favourites for this rarity (absolute threshold, ADR-015). */
   favouritesThreshold: integer().notNull(),
+  /** Minimum IGDB rating count of a character's most popular game for this rarity (ADR-026). */
+  gamePopularityThreshold: integer().notNull().default(0),
   /** Gems earned by recycling one duplicate of this rarity. */
   recycleValue: integer().notNull().default(0),
   /** Market price bounds (Phase 6): the minimum defaults to the recycle value. */
@@ -72,7 +77,9 @@ export const series = pgTable(
      * `coverUrl` changes), relative to the uploads directory.
      */
     coverUploadPath: text(),
-    /** Manual series only; AniList genres live on `media`. */
+    /** IGDB series: `collection:<id>` or `game:<id>` (a game outside any IGDB collection). */
+    igdbKey: text().unique(),
+    /** Manual and IGDB series; AniList genres live on `media`. */
     genres: text()
       .array()
       .notNull()
@@ -158,6 +165,8 @@ export const characters = pgTable(
     source: catalogSource().notNull(),
     /** Upsert key for AniList re-imports. */
     anilistId: integer().unique(),
+    /** Upsert key for IGDB re-imports. */
+    igdbId: integer().unique(),
     /** Upsert key for manual roster imports: `<series slug>/<roster key>`. */
     manualKey: text().unique(),
     nameFull: text().notNull(),
@@ -179,8 +188,12 @@ export const characters = pgTable(
     genderClass: genderClass().notNull().default('unclassified'),
     /** Admin decision, wins over `genderClass`. */
     genderOverride: genderClass(),
-    /** AniList favourites (null for manual characters). */
+    /** AniList favourites (null for other sources). */
     favourites: integer(),
+    /** IGDB page of the character (AniList pages are derived from `anilistId`). */
+    siteUrl: text(),
+    /** IGDB: rating count of the character's most popular game (drives its rarity, ADR-026). */
+    gamePopularity: integer(),
     rarityId: bigint({ mode: 'number' })
       .notNull()
       .references(() => rarities.id),
@@ -197,6 +210,11 @@ export const characters = pgTable(
     check(
       'characters_source_key',
       sql`(${table.source} = 'anilist') = (${table.anilistId} IS NOT NULL)`,
+    ),
+    // `::text`: the enum value is added in the same migration and cannot be used directly there.
+    check(
+      'characters_igdb_key',
+      sql`(${table.source}::text = 'igdb') = (${table.igdbId} IS NOT NULL)`,
     ),
   ],
 )
@@ -219,9 +237,54 @@ export const characterMedia = pgTable(
   ],
 )
 
+/** One IGDB game, member of an IGDB series (its collection, or the game alone). */
+export const igdbGames = pgTable(
+  'igdb_games',
+  {
+    id: bigint({ mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    igdbId: integer().notNull().unique(),
+    seriesId: bigint({ mode: 'number' })
+      .notNull()
+      .references(() => series.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    summary: text(),
+    coverUrl: text(),
+    /** IGDB `total_rating_count`: the popularity used for series order and rarities. */
+    ratingCount: integer().notNull().default(0),
+    genres: text()
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    themes: text()
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    releaseYear: smallint(),
+    siteUrl: text(),
+    /** Last time its characters were imported (null = never completed). */
+    charactersSyncedAt: timestamp({ withTimezone: true }),
+    updatedAt,
+  },
+  (table) => [index().on(table.seriesId)],
+)
+
+/** Provenance: which IGDB games a character appears in. */
+export const characterGames = pgTable(
+  'character_games',
+  {
+    characterId: bigint({ mode: 'number' })
+      .notNull()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+    gameId: bigint({ mode: 'number' })
+      .notNull()
+      .references(() => igdbGames.id, { onDelete: 'cascade' }),
+  },
+  (table) => [primaryKey({ columns: [table.characterId, table.gameId] }), index().on(table.gameId)],
+)
+
 /**
- * Canonical series membership: derived from `character_media` for AniList series, edited directly
- * for manual series.
+ * Canonical series membership: derived from `character_media` for AniList series and from
+ * `character_games` for IGDB series, edited directly for manual series.
  */
 export const seriesCharacters = pgTable(
   'series_characters',

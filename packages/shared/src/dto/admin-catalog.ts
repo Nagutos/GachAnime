@@ -162,6 +162,7 @@ export const adminCharacterSchema = z.object({
   id: idSchema,
   source: catalogSourceSchema,
   anilistId: z.number().int().nullable(),
+  igdbId: z.number().int().nullable(),
   nameFull: z.string(),
   nameNative: z.string().nullable(),
   /** Best image to display: uploaded file (`/media/…`) or remote URL. */
@@ -170,9 +171,11 @@ export const adminCharacterSchema = z.object({
   genderClass: genderClassSchema,
   genderOverride: genderClassSchema.nullable(),
   favourites: z.number().int().nullable(),
+  /** IGDB characters: rating count of their most popular game (ADR-026). */
+  gamePopularity: z.number().int().nullable(),
   rarityKey: rarityKeySchema,
   rarityOverridden: z.boolean(),
-  /** Rarity the favourites thresholds would give (null for manual characters). */
+  /** Rarity the thresholds would give (favourites or game popularity; null for manual ones). */
   defaultRarityKey: rarityKeySchema.nullable(),
   isActive: z.boolean(),
   series: z.array(z.object({ id: idSchema, title: z.string() })),
@@ -256,6 +259,28 @@ export const anilistSearchResponseSchema = z.object({
   results: z.array(anilistSearchResultSchema),
 })
 
+// ─── IGDB search (video games) ───────────────────────────────────────────────
+
+export const igdbSearchQuerySchema = z.object({
+  q: z.string().trim().min(2).max(100),
+})
+
+export const igdbSearchResultSchema = z.object({
+  igdbId: z.number().int(),
+  name: z.string(),
+  releaseYear: z.number().int().nullable(),
+  ratingCount: z.number().int(),
+  coverUrl: z.string().nullable(),
+  siteUrl: z.string().nullable(),
+  /** Series already containing this game, if imported. */
+  importedSeriesId: z.number().int().nullable(),
+})
+export type IgdbSearchResult = z.infer<typeof igdbSearchResultSchema>
+
+export const igdbSearchResponseSchema = z.object({
+  results: z.array(igdbSearchResultSchema),
+})
+
 export const createImportSchema = importParamsSchema
 export type CreateImportRequest = z.input<typeof createImportSchema>
 
@@ -263,7 +288,7 @@ export const importJobDtoSchema = z.object({
   id: idSchema,
   params: importParamsSchema,
   status: importJobStatusSchema,
-  progress: importProgressSchema.omit({ mediaAnilistIds: true }),
+  progress: importProgressSchema.omit({ mediaAnilistIds: true, gameIgdbIds: true }),
   error: z.string().nullable(),
   requestedBy: z.string().nullable(),
   createdAt: z.iso.datetime(),
@@ -272,7 +297,11 @@ export const importJobDtoSchema = z.object({
 })
 export type ImportJobDto = z.infer<typeof importJobDtoSchema>
 
-export const importJobListSchema = z.object({ items: z.array(importJobDtoSchema) })
+export const importJobListSchema = z.object({
+  items: z.array(importJobDtoSchema),
+  /** IGDB credentials are set on this instance (video game imports available). */
+  igdbConfigured: z.boolean(),
+})
 
 // ─── Audit log ───────────────────────────────────────────────────────────────
 

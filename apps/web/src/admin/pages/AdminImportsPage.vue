@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { IMPORT_TOP_DEFAULT, type ImportJobDto } from '@gachanime/shared'
+import {
+  IGDB_IMPORT_TOP_DEFAULT,
+  IMPORT_TOP_DEFAULT,
+  importSource,
+  type ImportJobDto,
+  type ImportSource,
+} from '@gachanime/shared'
 import { refDebounced } from '@vueuse/core'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import {
   useAniListSearchQuery,
   useCreateImportMutation,
+  useIgdbSearchQuery,
   useImportActionMutation,
   useImportJobsQuery,
 } from '@/api/admin'
@@ -19,23 +26,65 @@ const create = useCreateImportMutation()
 const action = useImportActionMutation()
 const errorMessage = useErrorMessage(computed(() => create.error.value ?? action.error.value))
 
+/** AniList (anime) or IGDB (video games, ADR-025). */
+const source = ref<ImportSource>('anilist')
+const igdbConfigured = computed(() => jobs.data.value?.igdbConfigured ?? false)
+const sourceReady = computed(() => source.value === 'anilist' || igdbConfigured.value)
+
 const top = ref(IMPORT_TOP_DEFAULT)
 const expandFranchise = ref(true)
+watch(source, (value) => {
+  top.value = value === 'igdb' ? IGDB_IMPORT_TOP_DEFAULT : IMPORT_TOP_DEFAULT
+  selected.value = []
+  search.value = ''
+})
 function startTop(): void {
-  create.mutate({ mode: 'top', top: top.value, expandFranchise: expandFranchise.value })
+  create.mutate(
+    source.value === 'igdb'
+      ? { mode: 'igdb_top', top: top.value }
+      : { mode: 'top', top: top.value, expandFranchise: expandFranchise.value },
+  )
 }
 
 const search = ref('')
 const debouncedSearch = refDebounced(search, 400)
-const results = useAniListSearchQuery(debouncedSearch)
-const searchError = useErrorMessage(results.error)
+const anilistResults = useAniListSearchQuery(
+  computed(() => (source.value === 'anilist' ? debouncedSearch.value : '')),
+)
+const igdbResults = useIgdbSearchQuery(
+  computed(() => (source.value === 'igdb' && igdbConfigured.value ? debouncedSearch.value : '')),
+)
+
+/** Search results of the selected source, in one shape. */
+const results = computed(() =>
+  source.value === 'igdb'
+    ? (igdbResults.data.value?.results ?? []).map((result) => ({
+        id: result.igdbId,
+        title: result.name,
+        details: [
+          result.releaseYear,
+          t('admin.imports.ratings', { count: n(result.ratingCount, 'integer') }),
+        ],
+        coverUrl: result.coverUrl,
+        importedSeriesId: result.importedSeriesId,
+      }))
+    : (anilistResults.data.value?.results ?? []).map((result) => ({
+        id: result.anilistId,
+        title: result.title,
+        details: [result.titleEnglish, result.format, result.seasonYear],
+        coverUrl: result.coverUrl,
+        importedSeriesId: result.importedSeriesId,
+      })),
+)
+const activeSearch = computed(() => (source.value === 'igdb' ? igdbResults : anilistResults))
+const searchError = useErrorMessage(computed(() => activeSearch.value.error.value))
 const selected = ref<number[]>([])
 async function importSelected(): Promise<void> {
-  await create.mutateAsync({
-    mode: 'ids',
-    anilistIds: selected.value,
-    expandFranchise: expandFranchise.value,
-  })
+  await create.mutateAsync(
+    source.value === 'igdb'
+      ? { mode: 'igdb_ids', igdbIds: selected.value }
+      : { mode: 'ids', anilistIds: selected.value, expandFranchise: expandFranchise.value },
+  )
   selected.value = []
 }
 
@@ -57,37 +106,81 @@ function percent(job: ImportJobDto): number {
   if (phase !== 'characters' && phase !== 'finalize') return 0
   return mediaTotal ? mediaCharactersDone / mediaTotal : 0
 }
+
+function jobLabel(job: ImportJobDto): string {
+  const params = job.params
+  switch (params.mode) {
+    case 'top':
+      return t('admin.imports.mode.top', { count: n(params.top, 'integer') })
+    case 'ids':
+      return t(
+        'admin.imports.mode.ids',
+        { count: params.anilistIds.length },
+        params.anilistIds.length,
+      )
+    case 'igdb_top':
+      return t('admin.imports.mode.igdbTop', { count: n(params.top, 'integer') })
+    case 'igdb_ids':
+      return t(
+        'admin.imports.mode.igdbIds',
+        { count: params.igdbIds.length },
+        params.igdbIds.length,
+      )
+  }
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <h1 class="font-display text-3xl font-bold">{{ t('admin.imports.title') }}</h1>
-    <p class="text-sm text-mist-300">{{ t('admin.imports.rateNote') }}</p>
+    <div
+      class="flex w-fit gap-1 rounded-xl border border-night-700 p-1"
+      role="radiogroup"
+      :aria-label="t('admin.imports.source')"
+    >
+      <button
+        v-for="option in ['anilist', 'igdb'] as const"
+        :key="option"
+        type="button"
+        role="radio"
+        :aria-checked="source === option"
+        class="rounded-lg px-3 py-1.5 text-sm font-semibold"
+        :class="source === option ? 'bg-night-800 text-mist-100' : 'text-mist-300'"
+        :data-testid="`import-source-${option}`"
+        @click="source = option"
+      >
+        {{ t(`admin.imports.sources.${option}`) }}
+      </button>
+    </div>
+    <p class="text-sm text-mist-300">{{ t(`admin.imports.rateNotes.${source}`) }}</p>
+    <p v-if="!sourceReady" :class="ui.error" role="alert" data-testid="igdb-not-configured">
+      {{ t('errors.IGDB_NOT_CONFIGURED') }}
+    </p>
     <p v-if="errorMessage" :class="ui.error" role="alert">{{ errorMessage }}</p>
 
     <div class="grid gap-4 lg:grid-cols-2">
       <section :class="[ui.card, 'flex flex-col gap-3']">
-        <h2 class="font-display text-xl font-bold">{{ t('admin.imports.topTitle') }}</h2>
+        <h2 class="font-display text-xl font-bold">{{ t(`admin.imports.topTitles.${source}`) }}</h2>
         <form class="flex flex-col gap-3" @submit.prevent="startTop">
           <label :class="ui.label">
-            {{ t('admin.imports.topLabel') }}
+            {{ t(`admin.imports.topLabels.${source}`) }}
             <input
               v-model.number="top"
               type="number"
               min="1"
-              max="5000"
+              :max="source === 'igdb' ? 2000 : 5000"
               required
               :class="ui.input"
             />
           </label>
-          <label class="flex items-center gap-2 text-sm">
+          <label v-if="source === 'anilist'" class="flex items-center gap-2 text-sm">
             <input v-model="expandFranchise" type="checkbox" class="size-4 accent-sakura-500" />
             {{ t('admin.imports.expandFranchise') }}
           </label>
           <button
             type="submit"
             :class="ui.buttonPrimary"
-            :disabled="isBusy || create.isPending.value"
+            :disabled="isBusy || create.isPending.value || !sourceReady"
           >
             {{ t('admin.imports.start') }}
           </button>
@@ -95,28 +188,34 @@ function percent(job: ImportJobDto): number {
       </section>
 
       <section :class="[ui.card, 'flex flex-col gap-3']">
-        <h2 class="font-display text-xl font-bold">{{ t('admin.imports.searchTitle') }}</h2>
+        <h2 class="font-display text-xl font-bold">
+          {{ t(`admin.imports.searchTitles.${source}`) }}
+        </h2>
         <input
           v-model="search"
           type="search"
-          :placeholder="t('admin.imports.searchPlaceholder')"
-          :aria-label="t('admin.imports.searchTitle')"
+          :placeholder="t(`admin.imports.searchPlaceholders.${source}`)"
+          :aria-label="t(`admin.imports.searchTitles.${source}`)"
+          :disabled="!sourceReady"
           :class="ui.input"
         />
         <p v-if="searchError" :class="ui.error" role="alert">{{ searchError }}</p>
-        <p v-else-if="results.isFetching.value" class="text-sm text-mist-300">
+        <p v-else-if="activeSearch.isFetching.value" class="text-sm text-mist-300">
           {{ t('common.loading') }}
         </p>
-        <p v-else-if="results.data.value?.results.length === 0" class="text-sm text-mist-300">
+        <p
+          v-else-if="activeSearch.data.value && results.length === 0"
+          class="text-sm text-mist-300"
+        >
           {{ t('admin.imports.noResults') }}
         </p>
         <ul class="flex max-h-96 flex-col gap-1 overflow-y-auto">
-          <li v-for="result in results.data.value?.results ?? []" :key="result.anilistId">
+          <li v-for="result in results" :key="result.id">
             <label class="flex cursor-pointer items-center gap-3 rounded-lg p-1 hover:bg-night-800">
               <input
                 v-model="selected"
                 type="checkbox"
-                :value="result.anilistId"
+                :value="result.id"
                 :disabled="result.importedSeriesId !== null"
                 class="size-4 accent-sakura-500"
               />
@@ -130,11 +229,7 @@ function percent(job: ImportJobDto): number {
               <span class="min-w-0 flex-1 text-sm">
                 <span class="block truncate font-semibold">{{ result.title }}</span>
                 <span class="block truncate text-xs text-mist-300">
-                  {{
-                    [result.titleEnglish, result.format, result.seasonYear]
-                      .filter(Boolean)
-                      .join(' · ')
-                  }}
+                  {{ result.details.filter(Boolean).join(' · ') }}
                 </span>
               </span>
               <RouterLink
@@ -178,17 +273,7 @@ function percent(job: ImportJobDto): number {
             >
               {{ t(`admin.imports.status.${job.status}`) }}
             </span>
-            <span class="text-sm text-mist-300">
-              {{
-                job.params.mode === 'top'
-                  ? t('admin.imports.mode.top', { count: n(job.params.top, 'integer') })
-                  : t(
-                      'admin.imports.mode.ids',
-                      { count: job.params.anilistIds.length },
-                      job.params.anilistIds.length,
-                    )
-              }}
-            </span>
+            <span class="text-sm text-mist-300">{{ jobLabel(job) }}</span>
           </div>
           <div class="flex gap-2">
             <button
@@ -223,10 +308,13 @@ function percent(job: ImportJobDto): number {
         <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-mist-300">
           <li>
             {{
-              t('admin.imports.progress.media', {
-                done: n(job.progress.mediaCharactersDone, 'integer'),
-                total: n(job.progress.mediaTotal, 'integer'),
-              })
+              t(
+                `admin.imports.progress.${importSource(job.params) === 'igdb' ? 'games' : 'media'}`,
+                {
+                  done: n(job.progress.mediaCharactersDone, 'integer'),
+                  total: n(job.progress.mediaTotal, 'integer'),
+                },
+              )
             }}
           </li>
           <li>
@@ -252,7 +340,9 @@ function percent(job: ImportJobDto): number {
           </li>
           <li>
             {{
-              t('admin.imports.progress.requests', { count: n(job.progress.requests, 'integer') })
+              t(`admin.imports.progress.requests.${importSource(job.params)}`, {
+                count: n(job.progress.requests, 'integer'),
+              })
             }}
           </li>
         </ul>

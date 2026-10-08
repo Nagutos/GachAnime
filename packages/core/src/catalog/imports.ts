@@ -12,7 +12,9 @@ import { AppError } from '../errors'
 type ImportJobRow = typeof importJobs.$inferSelect
 
 export function toImportJobDto(row: ImportJobRow): ImportJobDto {
-  const progress = importProgressSchema.omit({ mediaAnilistIds: true }).parse(row.progress)
+  const progress = importProgressSchema
+    .omit({ mediaAnilistIds: true, gameIgdbIds: true })
+    .parse(row.progress)
   return {
     id: row.id,
     params: importParamsSchema.parse(row.params),

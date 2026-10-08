@@ -82,14 +82,14 @@ function seriesWithProgress(db: Executor, userId: string) {
       coverUrl: series.coverUrl,
       coverUploadPath: series.coverUploadPath,
       popularity: series.popularity,
-      genres: sql<string[]>`CASE WHEN "series"."source" = 'manual' THEN "series"."genres"
+      // AniList genres live on the primary media; manual and IGDB series hold their own.
+      genres: sql<string[]>`CASE WHEN "series"."source" <> 'anilist' THEN "series"."genres"
         ELSE coalesce((SELECT m.genres FROM media m WHERE m.id = "series"."primary_media_id"), '{}')
         END`.as('wiki_genres'),
-      siteUrl: sql<
-        string | null
-      >`(SELECT m.site_url FROM media m WHERE m.id = "series"."primary_media_id")`.as(
-        'wiki_site_url',
-      ),
+      siteUrl: sql<string | null>`coalesce(
+        (SELECT m.site_url FROM media m WHERE m.id = "series"."primary_media_id"),
+        (SELECT g.site_url FROM igdb_games g WHERE g.series_id = "series"."id"
+          ORDER BY g.rating_count DESC, g.igdb_id LIMIT 1))`.as('wiki_site_url'),
       characterCount: progress.characterCount,
       unlockedCount: progress.unlockedCount,
       ownedCount: progress.ownedCount,
@@ -285,6 +285,7 @@ export async function getWikiCharacter(
       id: characters.id,
       source: characters.source,
       anilistId: characters.anilistId,
+      siteUrl: characters.siteUrl,
       name: characters.nameFull,
       nameNative: characters.nameNative,
       nameAlternatives: characters.nameAlternatives,
@@ -351,7 +352,7 @@ export async function getWikiCharacter(
     description: row.description,
     imageUrl: publicImageUrl(row.imagePath, row.imageUrl),
     source: row.source,
-    anilistUrl: row.anilistId ? `https://anilist.co/character/${row.anilistId}` : null,
+    sourceUrl: row.anilistId ? `https://anilist.co/character/${row.anilistId}` : row.siteUrl,
     appearances,
     quantity: row.quantity ?? 0,
     lockedQuantity: row.lockedQuantity ?? 0,

@@ -8,8 +8,8 @@ export const CONTENT_SECURITY_POLICY = [
   "script-src 'self'",
   // Inline `style` attributes are used by Vue transitions and Reka UI positioning.
   "style-src 'self' 'unsafe-inline'",
-  // AniList pictures and Discord avatars are hotlinked unless the local image cache is enabled.
-  "img-src 'self' data: blob: https://*.anilist.co https://cdn.discordapp.com",
+  // AniList and IGDB pictures and Discord avatars are hotlinked unless the image cache is enabled.
+  "img-src 'self' data: blob: https://*.anilist.co https://images.igdb.com https://cdn.discordapp.com",
   "font-src 'self'",
   "connect-src 'self'",
   "object-src 'none'",

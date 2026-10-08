@@ -22,6 +22,7 @@ export const DEFAULT_RARITIES = [
     name: { en: 'Common', fr: 'Commune' },
     colorToken: 'common',
     favouritesThreshold: 0,
+    gamePopularityThreshold: 0,
   },
   {
     key: 'rare',
@@ -32,6 +33,7 @@ export const DEFAULT_RARITIES = [
     name: { en: 'Rare', fr: 'Rare' },
     colorToken: 'rare',
     favouritesThreshold: 500,
+    gamePopularityThreshold: 150,
   },
   {
     key: 'epic',
@@ -42,6 +44,7 @@ export const DEFAULT_RARITIES = [
     name: { en: 'Epic', fr: 'Épique' },
     colorToken: 'epic',
     favouritesThreshold: 3_000,
+    gamePopularityThreshold: 500,
   },
   {
     key: 'legendary',
@@ -52,6 +55,7 @@ export const DEFAULT_RARITIES = [
     name: { en: 'Legendary', fr: 'Légendaire' },
     colorToken: 'legendary',
     favouritesThreshold: 15_000,
+    gamePopularityThreshold: 1200,
   },
   {
     key: 'mythic',
@@ -62,6 +66,7 @@ export const DEFAULT_RARITIES = [
     name: { en: 'Mythic', fr: 'Mythique' },
     colorToken: 'mythic',
     favouritesThreshold: 50_000,
+    gamePopularityThreshold: 2500,
   },
 ] as const
 
@@ -401,6 +406,29 @@ export const DEFAULT_THEMES = [
     artToken: 'husbandos',
     seal: '男',
     sortOrder: 7,
+  },
+  {
+    key: 'anime',
+    category: 'media_type',
+    name: { en: 'Anime', fr: 'Anime' },
+    description: { en: 'Characters from anime only.', fr: 'Uniquement des personnages d’anime.' },
+    rules: group({ type: 'series_kind', kind: 'anime' }),
+    artToken: 'anime',
+    seal: '動',
+    sortOrder: 8,
+  },
+  {
+    key: 'video-games',
+    category: 'media_type',
+    name: { en: 'Video games', fr: 'Jeux vidéo' },
+    description: {
+      en: 'Characters from video games only.',
+      fr: 'Uniquement des personnages de jeux vidéo.',
+    },
+    rules: group({ type: 'series_kind', kind: 'game' }),
+    artToken: 'games',
+    seal: '遊',
+    sortOrder: 9,
   },
 ] as const
 

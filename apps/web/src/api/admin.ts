@@ -16,6 +16,7 @@ import {
   adminSeriesDetailSchema,
   adminSeriesListSchema,
   anilistSearchResponseSchema,
+  igdbSearchResponseSchema,
   auditLogListSchema,
   idResponseSchema,
   imageUploadResultSchema,
@@ -132,6 +133,18 @@ export function useAniListSearchQuery(search: MaybeRefOrGetter<string>) {
     queryFn: () =>
       apiFetch(`/admin/anilist/search${toQueryString({ q: toValue(search) })}`, {
         schema: anilistSearchResponseSchema,
+      }),
+    enabled: computed(() => toValue(search).trim().length >= 2),
+    staleTime: 5 * 60_000,
+  })
+}
+
+export function useIgdbSearchQuery(search: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => ['admin', 'igdb', toValue(search)]),
+    queryFn: () =>
+      apiFetch(`/admin/igdb/search${toQueryString({ q: toValue(search) })}`, {
+        schema: igdbSearchResponseSchema,
       }),
     enabled: computed(() => toValue(search).trim().length >= 2),
     staleTime: 5 * 60_000,

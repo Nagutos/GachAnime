@@ -11,7 +11,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.boundsPen import BoundsPen
 FONT = sys.argv[1] if len(sys.argv) > 1 else "/usr/share/fonts/noto-cjk/NotoSerifCJK-Bold.ttc"
-GLYPHS = "招少姫青競艶女男"
+GLYPHS = "招少姫青競艶女男動遊"
 coll = TTCollection(FONT)
 font = next(f for f in coll.fonts if 'JP' in f['name'].getDebugName(1))
 cmap = font.getBestCmap(); gs = font.getGlyphSet()

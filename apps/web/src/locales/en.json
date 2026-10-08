@@ -52,7 +52,7 @@
       "dashboard": "Overview",
       "series": "Series",
       "characters": "Characters",
-      "imports": "AniList import",
+      "imports": "Catalog import",
       "audit": "Audit log",
       "boosters": "Boosters",
       "rarities": "Rarities",
@@ -238,14 +238,9 @@
       "create": "Create"
     },
     "imports": {
-      "title": "AniList import",
-      "rateNote": "AniList currently allows about 30 requests per minute: importing the top 500 with their franchises takes a few hours. An interrupted import resumes where it stopped.",
-      "topTitle": "Most popular anime",
-      "topLabel": "Number of anime",
+      "title": "Catalog import",
       "expandFranchise": "Include whole franchises (seasons, movies, OVAs…)",
       "start": "Start import",
-      "searchTitle": "Search AniList",
-      "searchPlaceholder": "Anime title…",
       "imported": "Imported",
       "importSelected": "Import selected ({count})",
       "noResults": "No result.",
@@ -267,20 +262,52 @@
       },
       "mode": {
         "top": "Top {count}",
-        "ids": "{count} anime | {count} anime"
+        "ids": "{count} anime | {count} anime",
+        "igdbTop": "Top {count} games",
+        "igdbIds": "{count} game | {count} games"
       },
       "progress": {
         "media": "{done} / {total} media",
         "characters": "{count} character entries",
         "skipped": "{count} without picture skipped",
         "series": "{count} new series",
-        "requests": "{count} AniList requests"
+        "games": "{done} / {total} games",
+        "requests": {
+          "anilist": "{count} AniList requests",
+          "igdb": "{count} IGDB requests"
+        }
       },
       "cancel": "Cancel",
       "resume": "Resume",
       "startedAt": "Started {date}",
       "finishedAt": "Finished {date}",
-      "requestedByCli": "From the command line"
+      "requestedByCli": "From the command line",
+      "rateNotes": {
+        "anilist": "AniList currently allows about 30 requests per minute: importing the top 500 with their franchises takes a few hours. An interrupted import resumes where it stopped.",
+        "igdb": "IGDB allows 4 requests per second: importing the 200 most rated games takes a few minutes. Games are grouped by IGDB series; only characters with a portrait are imported, and their rarity comes from the popularity of their most popular game."
+      },
+      "topTitles": {
+        "anilist": "Most popular anime",
+        "igdb": "Most rated video games"
+      },
+      "topLabels": {
+        "anilist": "Number of anime",
+        "igdb": "Number of games"
+      },
+      "searchTitles": {
+        "anilist": "Search AniList",
+        "igdb": "Search IGDB"
+      },
+      "searchPlaceholders": {
+        "anilist": "Anime title…",
+        "igdb": "Game title…"
+      },
+      "source": "Source",
+      "sources": {
+        "anilist": "Anime (AniList)",
+        "igdb": "Video games (IGDB)"
+      },
+      "ratings": "{count} ratings"
     },
     "audit": {
       "title": "Audit log",
@@ -321,19 +348,20 @@
     },
     "rarities": {
       "title": "Rarities",
-      "help": "Names, AniList favourites thresholds, recycling values and market price bounds.",
+      "help": "Names, default rarity thresholds (AniList favourites for anime, IGDB ratings of the most popular game for video games), recycling values and market price bounds.",
       "columns": {
         "rarity": "Rarity",
         "nameEn": "Name (en)",
         "nameFr": "Name (fr)",
-        "threshold": "Favourites ≥",
+        "threshold": "AniList favourites ≥",
         "recycle": "Recycle",
         "marketMin": "Market min",
         "marketMax": "Market max",
-        "characters": "Characters"
+        "characters": "Characters",
+        "gameThreshold": "Game ratings ≥"
       },
       "recomputed": "Saved: {count} characters changed rarity.",
-      "thresholdHelp": "Thresholds must increase with the rarity. Changing one re-applies the default rarity of every AniList character, except those set by hand."
+      "thresholdHelp": "Thresholds must increase with the rarity. Changing one re-applies the default rarity of every imported character (AniList and IGDB), except those set by hand."
     },
     "boosters": {
       "title": "Booster tiers",
@@ -584,7 +612,6 @@
     "backShort": "← Back",
     "about": "About",
     "myCards": "My cards from this series",
-    "credit": "Data from AniList",
     "filterLabel": "Show entries",
     "filters": {
       "all": "All",
@@ -609,7 +636,16 @@
     "showSpoiler": "Show spoiler",
     "noDescription": "No description.",
     "source": "Source:",
-    "sourceAniList": "AniList"
+    "credits": {
+      "anilist": "Data from AniList",
+      "igdb": "Data from IGDB",
+      "manual": "Data from AniList"
+    },
+    "sources": {
+      "anilist": "AniList",
+      "igdb": "IGDB",
+      "manual": "AniList"
+    }
   },
   "wishlist": {
     "add": "Add to wishlist",
@@ -832,6 +868,8 @@
     "PRICE_OUT_OF_RANGE": "This price is outside the allowed range for this rarity.",
     "TRADE_NOT_PENDING": "This offer is no longer pending.",
     "INVALID_TRADE": "This trade is not valid.",
-    "PLAYER_BANNED": "This player is banned."
+    "PLAYER_BANNED": "This player is banned.",
+    "IGDB_UNAVAILABLE": "IGDB is not reachable right now. Please retry later.",
+    "IGDB_NOT_CONFIGURED": "IGDB is not configured on this instance: set IGDB_CLIENT_ID and IGDB_CLIENT_SECRET (see the self-hosting guide)."
   }
 }

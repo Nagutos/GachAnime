@@ -26,6 +26,9 @@ import { fetchMediaBatch, fetchMediaCharactersPage, fetchTopMediaIds } from './a
 import { silentLogger, type AniListClient, type ImportLogger } from './anilist/client'
 import { MEDIA_BATCH_SIZE, type AniListCharacterConnection } from './anilist/queries'
 import { assignSeries, groupFranchises } from './franchise'
+import type { IgdbClient } from './igdb/client'
+import { IgdbImportRun } from './igdb/pipeline'
+import { ImportCancelled } from './job'
 import {
   isImportableMedia,
   toCharacterAppearances,
@@ -42,24 +45,21 @@ const MAX_CHARACTER_PAGES = 400
 export interface ImportDependencies {
   db: Database
   client: AniListClient
+  /** Null when the instance has no IGDB credentials: IGDB jobs then fail with a clear error. */
+  igdb?: IgdbClient | null
   logger?: ImportLogger
 }
 
 export type ImportOutcome = 'completed' | 'cancelled' | 'skipped'
 
-class ImportCancelled extends Error {}
+type AniListParams = Extract<ImportParams, { mode: 'top' | 'ids' }>
 
 /** `excluded.<column>` in an `ON CONFLICT DO UPDATE` clause. */
 const excluded = (column: string) => sql.raw(`excluded.${column}`)
 
 /**
- * Runs (or resumes) an AniList import job:
- * 1. discover — seeds (top N or ids), then their franchises through relations; media, tags and the
- *    first page of characters are stored as they arrive;
- * 2. group — franchise components become series (existing assignments are kept);
- * 3. characters — remaining character pages of every media not synced during this job;
- * 4. finalize — series membership and metadata.
- * Data fetched since the job first started is not fetched again when it resumes.
+ * Runs (or resumes) an import job: an AniList import (`ImportRun`) or an IGDB one
+ * (`IgdbImportRun`). The job row tracks status and progress; a cancelled job keeps its progress.
  */
 export async function runImportJob(
   deps: ImportDependencies,
@@ -82,15 +82,11 @@ export async function runImportJob(
     return 'skipped'
   }
 
-  const run = new ImportRun(
-    deps,
-    logger,
-    job.id,
-    importParamsSchema.parse(job.params),
-    job.startedAt!,
-  )
-  run.progress = importProgressSchema.parse(job.progress)
+  const params = importParamsSchema.parse(job.params)
+  let run: ImportRun | IgdbImportRun | null = null
   try {
+    run = createRun(deps, logger, job.id, params, job.startedAt!)
+    run.progress = importProgressSchema.parse(job.progress)
     await run.execute()
     await db
       .update(importJobs)
@@ -99,8 +95,9 @@ export async function runImportJob(
     logger.info({ jobId, ...run.summary() }, 'import completed')
     return 'completed'
   } catch (error) {
+    const progress = run?.progress ?? job.progress
     if (error instanceof ImportCancelled) {
-      await db.update(importJobs).set({ progress: run.progress }).where(eq(importJobs.id, jobId))
+      await db.update(importJobs).set({ progress }).where(eq(importJobs.id, jobId))
       logger.info({ jobId }, 'import cancelled')
       return 'cancelled'
     }
@@ -110,13 +107,38 @@ export async function runImportJob(
         status: 'failed',
         error: error instanceof Error ? error.message : String(error),
         finishedAt: new Date(),
-        progress: run.progress,
+        progress,
       })
       .where(and(eq(importJobs.id, jobId), eq(importJobs.status, 'running')))
     throw error
   }
 }
 
+function createRun(
+  deps: ImportDependencies,
+  logger: ImportLogger,
+  jobId: number,
+  params: ImportParams,
+  startedAt: Date,
+): ImportRun | IgdbImportRun {
+  if (params.mode === 'igdb_top' || params.mode === 'igdb_ids') {
+    if (!deps.igdb) {
+      throw new Error('IGDB is not configured: set IGDB_CLIENT_ID and IGDB_CLIENT_SECRET')
+    }
+    return new IgdbImportRun(deps.db, deps.igdb, logger, jobId, params, startedAt)
+  }
+  return new ImportRun(deps, logger, jobId, params, startedAt)
+}
+
+/**
+ * AniList import:
+ * 1. discover — seeds (top N or ids), then their franchises through relations; media, tags and the
+ *    first page of characters are stored as they arrive;
+ * 2. group — franchise components become series (existing assignments are kept);
+ * 3. characters — remaining character pages of every media not synced during this job;
+ * 4. finalize — series membership and metadata.
+ * Data fetched since the job first started is not fetched again when it resumes.
+ */
 class ImportRun {
   progress: ImportProgress = importProgressSchema.parse({})
   private rarities!: RarityTable
@@ -126,7 +148,7 @@ class ImportRun {
     private readonly deps: ImportDependencies,
     private readonly logger: ImportLogger,
     private readonly jobId: number,
-    private readonly params: ImportParams,
+    private readonly params: AniListParams,
     /** Rows fetched or synced at or after this instant are fresh for this job. */
     private readonly freshSince: Date,
   ) {
@@ -138,7 +160,9 @@ class ImportRun {
   }
 
   summary() {
-    return importProgressSchema.omit({ mediaAnilistIds: true }).parse(this.progress)
+    return importProgressSchema
+      .omit({ mediaAnilistIds: true, gameIgdbIds: true })
+      .parse(this.progress)
   }
 
   async execute(): Promise<void> {

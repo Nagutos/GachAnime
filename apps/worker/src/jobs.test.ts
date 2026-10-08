@@ -8,6 +8,7 @@ const context = {
   db: {} as Database,
   logger: pino({ level: 'silent' }),
   anilist: new AniListClient(),
+  igdb: null,
   uploadsDir: '/tmp/unused',
 }
 
@@ -21,8 +22,8 @@ describe('runJob', () => {
   })
 })
 
-describe('anilist.import', () => {
+describe('catalog.import', () => {
   it('validates its payload', async () => {
-    await expect(runJob('anilist.import', { importJobId: 'x' }, context)).rejects.toThrow()
+    await expect(runJob('catalog.import', { importJobId: 'x' }, context)).rejects.toThrow()
   })
 })

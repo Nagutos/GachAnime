@@ -1,5 +1,6 @@
 import {
   characters,
+  igdbGames,
   media,
   rarities,
   series,
@@ -24,6 +25,7 @@ import { publicImageUrl } from './images'
 import {
   rebuildSeriesCharacters,
   refreshAniListSeries,
+  refreshIgdbSeries,
   uniqueSeriesSlug,
 } from './series-maintenance'
 
@@ -273,6 +275,10 @@ export async function mergeSeries(
     }
 
     await tx.update(media).set({ seriesId: target.id }).where(inArray(media.seriesId, sourceIds))
+    await tx
+      .update(igdbGames)
+      .set({ seriesId: target.id })
+      .where(inArray(igdbGames.seriesId, sourceIds))
     if (target.source === 'manual') {
       await tx.execute(sql`
         INSERT INTO series_characters (series_id, character_id)
@@ -283,6 +289,10 @@ export async function mergeSeries(
     if (target.source === 'anilist') {
       await rebuildSeriesCharacters(tx, [target.id])
       await refreshAniListSeries(tx, [target.id])
+    }
+    if (target.source === 'igdb') {
+      await rebuildSeriesCharacters(tx, [target.id])
+      await refreshIgdbSeries(tx, [target.id])
     }
     await recordAdminAction(tx, {
       ...actor,

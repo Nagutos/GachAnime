@@ -52,7 +52,7 @@
       "dashboard": "Vue d'ensemble",
       "series": "Séries",
       "characters": "Personnages",
-      "imports": "Import AniList",
+      "imports": "Import du catalogue",
       "audit": "Journal d'audit",
       "boosters": "Boosters",
       "rarities": "Raretés",
@@ -238,14 +238,9 @@
       "create": "Créer"
     },
     "imports": {
-      "title": "Import AniList",
-      "rateNote": "AniList autorise actuellement environ 30 requêtes par minute : importer le top 500 avec ses franchises prend quelques heures. Un import interrompu reprend là où il s'est arrêté.",
-      "topTitle": "Anime les plus populaires",
-      "topLabel": "Nombre d'anime",
+      "title": "Import du catalogue",
       "expandFranchise": "Inclure les franchises entières (saisons, films, OVA…)",
       "start": "Lancer l'import",
-      "searchTitle": "Rechercher sur AniList",
-      "searchPlaceholder": "Titre de l'anime…",
       "imported": "Importé",
       "importSelected": "Importer la sélection ({count})",
       "noResults": "Aucun résultat.",
@@ -267,20 +262,52 @@
       },
       "mode": {
         "top": "Top {count}",
-        "ids": "{count} anime | {count} anime"
+        "ids": "{count} anime | {count} anime",
+        "igdbTop": "Top {count} jeux",
+        "igdbIds": "{count} jeu | {count} jeux"
       },
       "progress": {
         "media": "{done} / {total} médias",
         "characters": "{count} entrées de personnages",
         "skipped": "{count} sans image ignoré | {count} sans image ignorés",
         "series": "{count} nouvelle série | {count} nouvelles séries",
-        "requests": "{count} requêtes AniList"
+        "games": "{done} / {total} jeux",
+        "requests": {
+          "anilist": "{count} requêtes AniList",
+          "igdb": "{count} requêtes IGDB"
+        }
       },
       "cancel": "Annuler",
       "resume": "Reprendre",
       "startedAt": "Démarré le {date}",
       "finishedAt": "Terminé le {date}",
-      "requestedByCli": "Depuis la ligne de commande"
+      "requestedByCli": "Depuis la ligne de commande",
+      "rateNotes": {
+        "anilist": "AniList autorise actuellement environ 30 requêtes par minute : importer le top 500 avec ses franchises prend quelques heures. Un import interrompu reprend là où il s'est arrêté.",
+        "igdb": "IGDB autorise 4 requêtes par seconde : importer les 200 jeux les plus notés prend quelques minutes. Les jeux sont regroupés par série IGDB ; seuls les personnages avec un portrait sont importés, et leur rareté dépend de la popularité de leur jeu le plus populaire."
+      },
+      "topTitles": {
+        "anilist": "Anime les plus populaires",
+        "igdb": "Jeux vidéo les plus notés"
+      },
+      "topLabels": {
+        "anilist": "Nombre d'anime",
+        "igdb": "Nombre de jeux"
+      },
+      "searchTitles": {
+        "anilist": "Rechercher sur AniList",
+        "igdb": "Rechercher sur IGDB"
+      },
+      "searchPlaceholders": {
+        "anilist": "Titre de l'anime…",
+        "igdb": "Titre du jeu…"
+      },
+      "source": "Source",
+      "sources": {
+        "anilist": "Animes (AniList)",
+        "igdb": "Jeux vidéo (IGDB)"
+      },
+      "ratings": "{count} avis"
     },
     "audit": {
       "title": "Journal d'audit",
@@ -321,19 +348,20 @@
     },
     "rarities": {
       "title": "Raretés",
-      "help": "Noms, seuils de favoris AniList, valeurs de recyclage et bornes de prix du marché.",
+      "help": "Noms, seuils de rareté par défaut (favoris AniList pour les animes, avis IGDB du jeu le plus populaire pour les jeux vidéo), valeurs de recyclage et bornes de prix du marché.",
       "columns": {
         "rarity": "Rareté",
         "nameEn": "Nom (en)",
         "nameFr": "Nom (fr)",
-        "threshold": "Favoris ≥",
+        "threshold": "Favoris AniList ≥",
         "recycle": "Recyclage",
         "marketMin": "Marché min",
         "marketMax": "Marché max",
-        "characters": "Personnages"
+        "characters": "Personnages",
+        "gameThreshold": "Avis du jeu ≥"
       },
       "recomputed": "Enregistré : {count} personnages ont changé de rareté.",
-      "thresholdHelp": "Les seuils doivent croître avec la rareté. En modifier un réapplique la rareté par défaut de tous les personnages AniList, sauf ceux réglés à la main."
+      "thresholdHelp": "Les seuils doivent croître avec la rareté. En changer un réapplique la rareté par défaut de tous les personnages importés (AniList et IGDB), sauf ceux fixés à la main."
     },
     "boosters": {
       "title": "Paliers de boosters",
@@ -584,7 +612,6 @@
     "backShort": "← Retour",
     "about": "À propos",
     "myCards": "Mes cartes de cette série",
-    "credit": "Données issues d'AniList",
     "filterLabel": "Afficher les fiches",
     "filters": {
       "all": "Toutes",
@@ -609,7 +636,16 @@
     "showSpoiler": "Afficher le spoiler",
     "noDescription": "Pas de description.",
     "source": "Source :",
-    "sourceAniList": "AniList"
+    "credits": {
+      "anilist": "Données issues d'AniList",
+      "igdb": "Données IGDB",
+      "manual": "Données issues d'AniList"
+    },
+    "sources": {
+      "anilist": "AniList",
+      "igdb": "IGDB",
+      "manual": "AniList"
+    }
   },
   "wishlist": {
     "add": "Ajouter à ma wishlist",
@@ -832,6 +868,8 @@
     "PRICE_OUT_OF_RANGE": "Ce prix sort des limites autorisées pour cette rareté.",
     "TRADE_NOT_PENDING": "Cette offre n'est plus en attente.",
     "INVALID_TRADE": "Cet échange n'est pas valide.",
-    "PLAYER_BANNED": "Ce joueur est banni."
+    "PLAYER_BANNED": "Ce joueur est banni.",
+    "IGDB_UNAVAILABLE": "IGDB est injoignable pour le moment. Réessaie plus tard.",
+    "IGDB_NOT_CONFIGURED": "IGDB n'est pas configuré sur cette instance : renseigne IGDB_CLIENT_ID et IGDB_CLIENT_SECRET (voir le guide d'auto-hébergement)."
   }
 }

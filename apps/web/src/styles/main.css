@@ -205,6 +205,12 @@
   .pack-art-husbandos {
     --pack-color: #3fb6e8;
   }
+  .pack-art-anime {
+    --pack-color: #b06bff;
+  }
+  .pack-art-games {
+    --pack-color: #36d1c4;
+  }
 
   /* Heat-sealed bands at the top and bottom of a pack (inside the serrated edges). */
   .pack-crimp {
