@@ -30,12 +30,17 @@ const reduced = useReducedMotion()
 /** Seconds of the tear (see `PACK_TEAR_MS`, which BoosterOpening waits for). */
 const TEAR = PACK_TEAR_MS / 1000
 
-/** Clip-paths ignore box-shadow: the glow is a drop-shadow, which follows the serrated outline. */
-const glowStyle = computed(() => ({
-  filter: props.glowRarity
-    ? `drop-shadow(0 0 22px color-mix(in oklab, var(--color-rarity-${props.glowRarity}) 75%, transparent))`
-    : 'drop-shadow(0 18px 24px rgb(0 0 0 / 0.45))',
-}))
+/**
+ * Shadow and rarity glow are gradients behind the pack, not `filter: drop-shadow`: a filter is
+ * computed again on every frame where the pack content moves (sheen, tear).
+ */
+const glowStyle = computed(() =>
+  props.glowRarity
+    ? {
+        background: `radial-gradient(closest-side, var(--color-rarity-${props.glowRarity}), transparent)`,
+      }
+    : null,
+)
 
 const stripAnimation = {
   rotate: [0, -6, -38],
@@ -57,11 +62,17 @@ const bodyAnimation = {
     :transition="idle ? { duration: 3, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.2 }"
   >
     <!-- Sideways by default, facing the screen with a slight zoom on hover (pack-pose, CSS) -->
-    <div
-      class="pack-pose absolute inset-0"
-      :class="{ 'pack-pose-front': front || torn }"
-      :style="glowStyle"
-    >
+    <div class="pack-pose absolute inset-0" :class="{ 'pack-pose-front': front || torn }">
+      <div
+        v-if="glowStyle"
+        class="absolute -inset-[18%] opacity-70"
+        :style="glowStyle"
+        aria-hidden="true"
+      />
+      <div
+        class="pack-ground-shadow absolute inset-x-[6%] -bottom-[7%] h-[12%]"
+        aria-hidden="true"
+      />
       <!-- In one piece until it is torn: no visible cut line -->
       <div v-if="!torn" class="absolute inset-0" :style="{ clipPath: shape.full }">
         <PackFace :label="label" :cards="cards" :art="art" :seal="seal" />

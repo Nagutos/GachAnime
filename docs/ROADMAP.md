@@ -134,6 +134,15 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] Slot tray showing the cards left to reveal, filled card after card.
 - [x] Stronger background blur, card halo and a drifting light-particle backdrop.
 
+## Phase 11 — Opening scene theme and performance ✅ (2026-10-08)
+
+- [x] Background: the GachAnime seal in colored outlines, a halo at the bottom of the screen and
+      particles rising from the bottom, then fading.
+- [x] Rarity aura spreading out in waves around a card revealed by a click.
+- [x] Performance for small machines (software rendering: ~12 → ~55-60 fps; dealing 50 cards
+      ~8 → ~48 fps): no filters/backdrop-filter, transform/opacity animations only, CSS flips and
+      deals, the page behind the scene hidden, pack sheens only on hovered/selected packs.
+
 ## Later (not scheduled)
 
 - [ ] Upgrades raising the free booster cap per player.

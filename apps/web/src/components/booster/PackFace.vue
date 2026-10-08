@@ -13,7 +13,7 @@ const { t } = useI18n()
     class="pack-foil absolute inset-0 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.15)]"
     :class="`pack-art-${art}`"
   >
-    <div class="pack-sheen absolute inset-0" />
+    <div class="pack-sheen absolute" />
     <!-- Heat-sealed bands, inside the serrated edges -->
     <div class="pack-crimp absolute inset-x-0 top-[2.5%] h-[7%] opacity-70" />
     <div class="pack-crimp absolute inset-x-0 bottom-[2.5%] h-[5%] opacity-70" />

@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { useReducedMotion } from 'motion-v'
-import { computed, ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 
 /**
  * 3D tilt following the pointer (mouse or finger), with a glare where the light hits. Without a
  * pointer, a slow sway keeps the card alive (disabled with reduced motion).
+ *
+ * Cheap on small machines: pointer moves are coalesced to one update per frame, written as CSS
+ * variables straight on the element (no Vue re-render), and only `transform` and `opacity`
+ * change. Perspective is part of the transform and no level preserves 3D: with preserve-3d,
+ * half of a tilted card went behind its parent's plane and clicks landed on the parent.
  */
 const props = withDefaults(defineProps<{ max?: number; sway?: boolean }>(), {
   max: 16,
@@ -13,51 +18,50 @@ const props = withDefaults(defineProps<{ max?: number; sway?: boolean }>(), {
 
 const reduced = useReducedMotion()
 const active = ref(false)
-const tilt = ref({ x: 0, y: 0 })
-const glare = ref({ x: 50, y: 50 })
+const card = ref<HTMLElement | null>(null)
+let frame = 0
+let pending: { nx: number; ny: number } | null = null
+
+function apply(): void {
+  frame = 0
+  const element = card.value
+  if (!element || !pending) return
+  const { nx, ny } = pending
+  element.style.setProperty('--tilt-x', `${((0.5 - ny) * 2 * props.max).toFixed(2)}deg`)
+  element.style.setProperty('--tilt-y', `${((nx - 0.5) * 2 * props.max).toFixed(2)}deg`)
+  element.style.setProperty('--glare-x', `${(nx * 100).toFixed(1)}%`)
+  element.style.setProperty('--glare-y', `${(ny * 100).toFixed(1)}%`)
+}
 
 function onMove(event: PointerEvent): void {
   if (reduced.value) return
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-  const nx = (event.clientX - rect.left) / rect.width
-  const ny = (event.clientY - rect.top) / rect.height
-  active.value = true
-  tilt.value = { x: (0.5 - ny) * 2 * props.max, y: (nx - 0.5) * 2 * props.max }
-  glare.value = { x: nx * 100, y: ny * 100 }
+  pending = {
+    nx: (event.clientX - rect.left) / rect.width,
+    ny: (event.clientY - rect.top) / rect.height,
+  }
+  if (!active.value) active.value = true
+  if (!frame) frame = requestAnimationFrame(apply)
 }
 
 function onLeave(): void {
   active.value = false
-  tilt.value = { x: 0, y: 0 }
+  pending = { nx: 0.5, ny: 0.5 }
+  if (!frame) frame = requestAnimationFrame(apply)
 }
 
-// Perspective is part of the transform and no level preserves 3D: the tilted card stays flat
-// in its own plane. With preserve-3d, half of a tilted card goes behind its parent's plane and
-// clicks land on the parent instead of the card.
-const transform = computed(
-  () =>
-    `perspective(900px) rotateX(${tilt.value.x.toFixed(2)}deg) rotateY(${tilt.value.y.toFixed(2)}deg) scale(${active.value ? 1.03 : 1})`,
-)
+onBeforeUnmount(() => cancelAnimationFrame(frame))
 </script>
 
 <template>
   <div @pointermove="onMove" @pointerleave="onLeave" @pointercancel="onLeave">
     <div :class="{ 'tilt-sway': sway && !active && !reduced }">
-      <div
-        class="relative"
-        :style="{
-          transform,
-          transition: active ? 'transform 90ms ease-out' : 'transform 500ms ease-out',
-        }"
-      >
+      <div ref="card" class="tilt-card relative" :class="{ 'tilt-active': active }">
         <slot />
         <div
           v-if="!reduced"
-          class="pointer-events-none absolute inset-0 rounded-xl mix-blend-overlay transition-opacity duration-300"
-          :class="active ? 'opacity-100' : 'opacity-0'"
-          :style="{
-            background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgb(255 255 255 / 0.55), transparent 55%)`,
-          }"
+          class="tilt-glare pointer-events-none absolute inset-0 rounded-xl"
+          aria-hidden="true"
         />
       </div>
     </div>

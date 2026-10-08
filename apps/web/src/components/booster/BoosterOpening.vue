@@ -9,7 +9,7 @@ import {
   DialogRoot,
   DialogTitle,
 } from 'reka-ui'
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePlayerRarities } from '@/app/rarities'
 import { flushDeferredToasts } from '@/app/toasts'
@@ -69,12 +69,14 @@ const packGlow = computed(() => {
   return key && HIGHLIGHT_RARITIES.has(key) ? key : null
 })
 
-/** Halo behind the inspected card: its rarity once revealed. */
-const haloClass = computed(() => {
+/** Halo behind the inspected card (a gradient, not a blur filter): its rarity once revealed. */
+const haloStyle = computed(() => {
   const card = focusedCard.value
-  return card && revealed.value.has(card.position)
-    ? rarityStyle(card.character.rarityKey).bg
-    : 'bg-sakura-500'
+  const color =
+    card && revealed.value.has(card.position)
+      ? `var(--color-rarity-${card.character.rarityKey}, var(--color-rarity-common))`
+      : 'var(--color-sakura-500)'
+  return { background: `radial-gradient(closest-side, ${color}, transparent)` }
 })
 
 function later(callback: () => void, ms: number): void {
@@ -151,7 +153,12 @@ function dealDelay(index: number): number {
   return reduced.value ? 0 : index * Math.min(0.08, 1.2 / cards.value.length)
 }
 
+// The scene covers the whole screen: the page behind is hidden so that its own animations
+// (floating packs, sweeps) stop costing frames (see `scene-open` in main.css).
+onMounted(() => document.body.classList.add('scene-open'))
+
 onBeforeUnmount(() => {
+  document.body.classList.remove('scene-open')
   timers.forEach(clearTimeout)
   flushDeferredToasts()
 })
@@ -160,7 +167,7 @@ onBeforeUnmount(() => {
 <template>
   <DialogRoot :open="true" @update:open="(open: boolean) => !open && emit('close')">
     <DialogPortal>
-      <DialogOverlay class="fixed inset-0 z-40 bg-night-950/80 backdrop-blur-xl" />
+      <DialogOverlay class="fixed inset-0 z-40 bg-night-950" />
       <DialogContent
         class="fixed inset-0 z-50 flex flex-col overflow-y-auto px-4 py-6 outline-none"
         data-testid="booster-opening"
@@ -239,8 +246,8 @@ onBeforeUnmount(() => {
               <div class="relative aspect-5/7 w-56 sm:w-64">
                 <!-- Soft colored halo around the card -->
                 <div
-                  class="pointer-events-none absolute -inset-12 -z-10 rounded-full opacity-35 blur-3xl transition-colors duration-700"
-                  :class="haloClass"
+                  class="pointer-events-none absolute -inset-16 -z-10 opacity-40"
+                  :style="haloStyle"
                   aria-hidden="true"
                 />
                 <!-- The cards still to come, face down behind the inspected one -->
@@ -285,6 +292,7 @@ onBeforeUnmount(() => {
                         :card="card"
                         :revealed="revealed.has(card.position)"
                         advance
+                        aura
                         @reveal="revealFocused(card.position)"
                         @next="nextFrom(card.position)"
                       />
@@ -375,21 +383,14 @@ onBeforeUnmount(() => {
                 data-testid="opening-summary"
               >
                 <!-- Dealt from the stack: each card flies from the center to its place -->
-                <motion.li
+                <li
                   v-for="(card, index) in cards"
                   :key="card.position"
+                  class="deal-in"
                   :class="compact ? '' : 'w-[29%] max-w-48 sm:w-[18%]'"
-                  :initial="{
-                    opacity: 0,
-                    y: -160,
-                    scale: 0.55,
-                    rotate: ((index % 5) - 2) * 9,
-                  }"
-                  :animate="{ opacity: 1, y: 0, scale: 1, rotate: 0 }"
-                  :transition="{
-                    duration: reduced ? 0 : 0.5,
-                    delay: dealDelay(index),
-                    ease: 'easeOut',
+                  :style="{
+                    animationDelay: `${dealDelay(index)}s`,
+                    '--deal-rotate': `${((index % 5) - 2) * 9}deg`,
                   }"
                 >
                   <TiltCard :max="compact ? 8 : 10">
@@ -397,11 +398,12 @@ onBeforeUnmount(() => {
                       :card="card"
                       :revealed="revealed.has(card.position)"
                       linked
+                      :aura="!compact"
                       @reveal="reveal(card.position)"
                       @navigate="emit('close')"
                     />
                   </TiltCard>
-                </motion.li>
+                </li>
               </ul>
               <div class="flex flex-wrap justify-center gap-3">
                 <button
