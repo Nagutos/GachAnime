@@ -12,7 +12,7 @@ import {
   type Database,
 } from '@gachanime/db'
 import { seededRng } from '@gachanime/game'
-import { collectionQuerySchema, type ThemeRule } from '@gachanime/shared'
+import { collectionQuerySchema, createThemeSchema, type ThemeRule } from '@gachanime/shared'
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { listBoosters, openBoosters } from '../boosters/boosters'
@@ -26,7 +26,7 @@ import {
   setupTestDatabase,
   testDatabaseUrl,
 } from '../test/database'
-import { createTheme, deleteTheme, listAdminThemes, updateTheme } from './admin'
+import { createTheme, deleteTheme, listAdminThemes, reorderThemes, updateTheme } from './admin'
 import { previewTheme, rebuildThemePool } from './pools'
 
 const actor = { actorId: 'admin', ip: null }
@@ -201,7 +201,7 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
         name: { en: 'Sports test' },
         category: 'genre',
         rules: group({ type: 'genre', genre: 'Sports' }),
-        artToken: 'sports',
+        color: '#2fc48d',
         seal: '競',
         isActive: true,
         sortOrder: 0,
@@ -292,7 +292,7 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
           name: { en: 'Again' },
           category: 'custom',
           rules: group(),
-          artToken: 'default',
+          color: '#ff5d8f',
           seal: '招',
           isActive: true,
           sortOrder: 0,
@@ -300,5 +300,34 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
         actor,
       ),
     ).rejects.toMatchObject({ code: 'CONFLICT' })
+  })
+
+  it('appends new packs and reorders every pack at once', async () => {
+    const seeded = await listAdminThemes(db)
+    // As the API parses it: the color is lowercased, no position means last.
+    const input = createThemeSchema.parse({
+      key: 'late-pack',
+      name: { en: 'Late pack' },
+      category: 'custom',
+      rules: group(),
+      color: '#36D1C4',
+      seal: '遅',
+      isActive: true,
+    })
+    const { id } = await createTheme(db, input, actor)
+    const withNew = await listAdminThemes(db)
+    expect(withNew.at(-1)).toMatchObject({ id, color: '#36d1c4' })
+
+    const reversed = withNew.map((theme) => theme.id).reverse()
+    await reorderThemes(db, reversed, actor)
+    expect((await listAdminThemes(db)).map((theme) => theme.id)).toEqual(reversed)
+
+    await expect(reorderThemes(db, reversed.slice(1), actor)).rejects.toMatchObject({
+      code: 'VALIDATION_FAILED',
+    })
+    await expect(
+      reorderThemes(db, [...reversed.slice(1), reversed[1]!], actor),
+    ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' })
+    expect(seeded.length).toBeGreaterThan(0)
   })
 })

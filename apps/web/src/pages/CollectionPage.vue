@@ -12,6 +12,7 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useBoostersQuery, useCollectionQuery } from '@/api/player'
 import { usePlayerRarities } from '@/app/rarities'
+import AppSelect from '@/components/AppSelect.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import LockedCard from '@/components/cards/LockedCard.vue'
 import CollectionTabs from '@/components/collection/CollectionTabs.vue'
@@ -27,7 +28,7 @@ const PAGE_SIZE = 30
 const { t, n, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { rarities, nameOf } = usePlayerRarities()
+const { filterOptions: rarityOptions } = usePlayerRarities()
 
 const ownership = ref<(typeof COLLECTION_OWNERSHIP)[number]>('owned')
 const search = ref('')
@@ -36,6 +37,13 @@ const rarity = ref('')
 const theme = ref('')
 const boosters = useBoostersQuery()
 const themes = computed(() => boosters.data.value?.themes ?? [])
+const themeOptions = computed(() => [
+  { value: '', label: t('collection.allPacks') },
+  ...themes.value.map((item) => ({
+    value: item.key,
+    label: resolveLocalizedText(item.name, locale.value),
+  })),
+])
 const sorts = ref<CollectionSort[]>([{ key: 'recent', direction: 'desc' }])
 const duplicates = ref(false)
 const wishlist = ref(false)
@@ -147,23 +155,17 @@ function clearSeries(): void {
             :placeholder="t('collection.searchPlaceholder')"
             :aria-label="t('collection.searchPlaceholder')"
           />
-          <select v-model="rarity" :class="playerUi.select" :aria-label="t('collection.rarity')">
-            <option value="">{{ t('collection.allRarities') }}</option>
-            <option v-for="item in [...rarities].reverse()" :key="item.key" :value="item.key">
-              {{ nameOf(item.key) }}
-            </option>
-          </select>
-          <select
+          <AppSelect
+            v-model="rarity"
+            :options="rarityOptions"
+            :aria-label="t('collection.rarity')"
+          />
+          <AppSelect
             v-if="themes.length"
             v-model="theme"
-            :class="playerUi.select"
+            :options="themeOptions"
             :aria-label="t('collection.pack')"
-          >
-            <option value="">{{ t('collection.allPacks') }}</option>
-            <option v-for="item in themes" :key="item.key" :value="item.key">
-              {{ resolveLocalizedText(item.name, locale) }}
-            </option>
-          </select>
+          />
         </div>
         <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
           <SortEditor v-model="sorts" />
@@ -196,20 +198,23 @@ function clearSeries(): void {
       <ul v-else-if="data" :class="playerUi.cardGrid" data-testid="collection-grid">
         <li v-for="item in data.items" :key="item.id" class="relative">
           <RouterLink
+            v-if="item.locked"
             :to="{ name: 'wiki-character', params: { id: item.id } }"
             class="block transition hover:-translate-y-1"
           >
-            <LockedCard v-if="item.locked" :rarity-key="item.rarityKey" />
-            <CharacterCard
-              v-else
-              :name="item.name"
-              :image-url="item.imageUrl"
-              :rarity-key="item.rarityKey"
-              :series-title="item.series?.title"
-              :quantity="item.quantity"
-              :class="{ 'opacity-60 grayscale': item.quantity === 0 }"
-            />
+            <LockedCard :rarity-key="item.rarityKey" />
           </RouterLink>
+          <CharacterCard
+            v-else
+            :to="{ name: 'wiki-character', params: { id: item.id } }"
+            :name="item.name"
+            :image-url="item.imageUrl"
+            :rarity-key="item.rarityKey"
+            :series="item.series"
+            :quantity="item.quantity"
+            class="transition hover:-translate-y-1"
+            :class="{ 'opacity-60 grayscale': item.quantity === 0 }"
+          />
           <WishlistButton
             class="absolute right-1.5 bottom-12"
             :character-id="item.id"

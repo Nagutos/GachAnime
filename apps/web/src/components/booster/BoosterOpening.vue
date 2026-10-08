@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { OpenBoostersResponse } from '@gachanime/shared'
-import { AnimatePresence, motion, useReducedMotion } from 'motion-v'
+import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'motion-v'
 import {
   DialogContent,
   DialogDescription,
@@ -9,12 +9,20 @@ import {
   DialogRoot,
   DialogTitle,
 } from 'reka-ui'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePlayerRarities } from '@/app/rarities'
+import {
+  playFlip,
+  playReveal,
+  playSwipe,
+  playTear,
+  setSoundEnabled,
+  soundEnabled,
+} from '@/app/sounds'
 import { flushDeferredToasts } from '@/app/toasts'
 import CardBack from '@/components/cards/CardBack.vue'
-import { HIGHLIGHT_RARITIES, rarityStyle } from '@/components/cards/rarity-styles'
+import { HIGHLIGHT_RARITIES, rarityStyle, SHINY_RARITIES } from '@/components/cards/rarity-styles'
 import BoosterPack from './BoosterPack.vue'
 import FlipCard from './FlipCard.vue'
 import OpeningBackdrop from './OpeningBackdrop.vue'
@@ -26,9 +34,10 @@ const props = withDefaults(
     result: OpenBoostersResponse
     packLabel: string
     packArt?: string
+    packColor?: string | null
     packSeal?: string
   }>(),
-  { packArt: 'free', packSeal: '招' },
+  { packArt: 'free', packColor: null, packSeal: '招' },
 )
 const emit = defineEmits<{ close: [] }>()
 
@@ -87,6 +96,7 @@ function later(callback: () => void, ms: number): void {
 function openPack(): void {
   if (torn.value) return
   torn.value = true
+  playTear()
   later(() => {
     focusIndex.value = 0
     stage.value = 'single'
@@ -97,28 +107,112 @@ function reveal(position: number): void {
   revealed.value = new Set(revealed.value).add(position)
 }
 
+const rankAt = (position: number) =>
+  rankOf(cards.value.find((card) => card.position === position)?.character.rarityKey ?? '')
+
+/** Reveals one card with its sounds: the flip, then a chime of its rarity mid-flip. */
+function revealWithSound(position: number): void {
+  if (revealed.value.has(position)) return
+  reveal(position)
+  playFlip()
+  const key = cards.value.find((card) => card.position === position)?.character.rarityKey ?? ''
+  // FlipCard flips shiny rarities slower: the chime lands when the face shows.
+  later(() => playReveal(rankAt(position)), SHINY_RARITIES.has(key) ? 450 : 250)
+}
+
+/** One chime for many cards at once: the best rarity among them. */
+function chimeBest(positions: number[]): void {
+  const best = Math.max(0, ...positions.map(rankAt))
+  if (best > 0) playReveal(best)
+}
+
 /** Clicks on the card flying away (still under the pointer) must do nothing. */
 function isFocused(position: number): boolean {
   return focusedCard.value?.position === position
 }
 
 function revealFocused(position: number): void {
-  if (isFocused(position)) reveal(position)
+  if (isFocused(position)) revealWithSound(position)
 }
 
 function nextFrom(position: number): void {
-  if (isFocused(position)) nextCard()
+  // The click that ends a swipe: the swipe itself decides (direction, or snap back).
+  if (dragged) return
+  if (isFocused(position)) void nextCard()
 }
+
+/** Where the inspected card flies when it leaves: to the right, or where it was swiped. */
+const DEFAULT_EXIT = { x: 260, y: 40, rotate: 16 }
+const exitTo = ref(DEFAULT_EXIT)
 
 /** The next card comes forward; after the last one, every card is laid out. */
 let advancing = false
-function nextCard(): void {
+async function nextCard(direction?: { x: number; y: number }): Promise<void> {
   // The previous card is still flying away: a second click must not skip a card.
   if (advancing) return
   advancing = true
   later(() => (advancing = false), 320)
+  const length = direction ? Math.hypot(direction.x, direction.y) : 0
+  exitTo.value =
+    direction && length > 0
+      ? {
+          x: (direction.x / length) * 560,
+          y: (direction.y / length) * 560,
+          rotate: direction.x >= 0 ? 22 : -22,
+        }
+      : DEFAULT_EXIT
+  playSwipe()
+  // The leaving card must render with its exit target before it is removed.
+  await nextTick()
   if (focusIndex.value < cards.value.length - 1) focusIndex.value++
   else stage.value = 'grid'
+}
+
+/**
+ * A revealed card swiped far or fast enough leaves in that direction; otherwise it snaps back.
+ * The drag starts by hand (one set of controls per card, no drag listener) so that a face-down
+ * card cannot move: motion reads `drag` only on mount, before the card is revealed.
+ */
+const SWIPE_DISTANCE = 90
+const SWIPE_SPEED = 600
+/** Set while a card is dragged, until its swipe is handled (the click comes before). */
+let dragged = false
+function startSwipe(): void {
+  dragged = true
+}
+
+type DragControls = ReturnType<typeof useDragControls>
+const dragControls = new Map<number, DragControls>()
+function controlsOf(position: number): DragControls {
+  let controls = dragControls.get(position)
+  if (!controls) dragControls.set(position, (controls = useDragControls()))
+  return controls
+}
+function onCardPointerDown(position: number, event: PointerEvent): void {
+  if (isFocused(position) && revealed.value.has(position)) controlsOf(position).start(event)
+}
+function onSwipeEnd(position: number, info: PanInfo): void {
+  dragged = false
+  if (!isFocused(position) || !revealed.value.has(position)) return
+  const { offset, velocity } = info
+  if (Math.hypot(offset.x, offset.y) > SWIPE_DISTANCE) void nextCard(offset)
+  else if (Math.hypot(velocity.x, velocity.y) > SWIPE_SPEED) void nextCard(velocity)
+}
+
+/** Arrow keys: reveal the card, then send it away in the arrow's direction. */
+const ARROWS: Record<string, { x: number; y: number }> = {
+  ArrowRight: { x: 1, y: 0 },
+  ArrowLeft: { x: -1, y: 0 },
+  ArrowUp: { x: 0, y: -1 },
+  ArrowDown: { x: 0, y: 1 },
+}
+function onKeydown(event: KeyboardEvent): void {
+  const direction = ARROWS[event.key]
+  const card = focusedCard.value
+  if (!direction || stage.value !== 'single' || !card) return
+  event.preventDefault()
+  if (revealed.value.has(card.position)) void nextCard(direction)
+  else revealWithSound(card.position)
 }
 
 /** Lays out every card, then flips the ones still face down while they land. */
@@ -127,14 +221,25 @@ function revealAll(): void {
   stage.value = 'grid'
   const hidden = cards.value.filter((card) => !revealed.value.has(card.position))
   const step = Math.min(160, 2400 / Math.max(1, hidden.length))
+  const start = fromSingle ? 450 : 0
   hidden.forEach((card, index) =>
-    later(() => reveal(card.position), (fromSingle ? 450 : 0) + index * step),
+    later(
+      () => {
+        reveal(card.position)
+        playFlip(0.5)
+      },
+      start + index * step,
+    ),
   )
+  if (hidden.length) {
+    later(() => chimeBest(hidden.map((card) => card.position)), start + hidden.length * step)
+  }
 }
 
 /** Skip: everything revealed at once. */
 function skip(): void {
   timers.forEach(clearTimeout)
+  chimeBest(cards.value.filter((card) => !revealed.value.has(card.position)).map((c) => c.position))
   torn.value = true
   revealed.value = new Set(cards.value.map((card) => card.position))
   stage.value = 'grid'
@@ -172,6 +277,7 @@ onBeforeUnmount(() => {
         class="fixed inset-0 z-50 flex flex-col overflow-y-auto px-4 py-6 outline-none"
         data-testid="booster-opening"
         @escape-key-down="onEscape"
+        @keydown="onKeydown"
         @pointer-down-outside.prevent
       >
         <OpeningBackdrop />
@@ -187,15 +293,46 @@ onBeforeUnmount(() => {
               </template>
             </DialogDescription>
           </div>
-          <button
-            v-if="stage !== 'grid'"
-            type="button"
-            class="rounded-lg border border-night-700 bg-night-900/60 px-3 py-2 text-sm text-mist-300 hover:bg-night-800"
-            data-testid="skip"
-            @click="skip"
-          >
-            {{ t('boosters.skip') }}
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="rounded-lg border border-night-700 bg-night-900/60 p-2 text-mist-300 hover:bg-night-800 hover:text-mist-100"
+              :aria-pressed="soundEnabled"
+              :aria-label="t('boosters.sound')"
+              :title="t('boosters.sound')"
+              data-testid="sound-toggle"
+              @click="setSoundEnabled(!soundEnabled)"
+            >
+              <svg viewBox="0 0 20 20" class="size-5" aria-hidden="true">
+                <path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor" />
+                <path
+                  v-if="soundEnabled"
+                  d="M13 7.5a3.5 3.5 0 0 1 0 5M15 5a7 7 0 0 1 0 10"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                />
+                <path
+                  v-else
+                  d="m13 8 4 4m0-4-4 4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+            <button
+              v-if="stage !== 'grid'"
+              type="button"
+              class="rounded-lg border border-night-700 bg-night-900/60 px-3 py-2 text-sm text-mist-300 hover:bg-night-800"
+              data-testid="skip"
+              @click="skip"
+            >
+              {{ t('boosters.skip') }}
+            </button>
+          </div>
         </div>
 
         <div class="flex flex-1 flex-col items-center justify-center gap-8 py-6">
@@ -219,6 +356,7 @@ onBeforeUnmount(() => {
                 <BoosterPack
                   :label="packLabel"
                   :art="packArt"
+                  :color="packColor"
                   :seal="packSeal"
                   :cards="result.cards.length"
                   :torn="torn"
@@ -274,18 +412,28 @@ onBeforeUnmount(() => {
                     v-for="card in [focusedCard]"
                     :key="card.position"
                     class="absolute inset-0"
+                    :class="{ 'cursor-grab active:cursor-grabbing': revealed.has(card.position) }"
                     :initial="{ x: 7, y: 5, rotate: 2.5, scale: 0.98 }"
                     :animate="{ opacity: 1, y: 0, scale: 1, x: 0, rotate: 0 }"
                     :exit="{
                       opacity: 0,
-                      x: 260,
-                      y: 40,
-                      rotate: 16,
+                      ...exitTo,
                       scale: 0.8,
                       zIndex: 10,
                       pointerEvents: 'none',
                     }"
+                    :drag="!reduced"
+                    :drag-controls="controlsOf(card.position)"
+                    :drag-listener="false"
+                    drag-snap-to-origin
+                    :drag-elastic="0.7"
+                    :on-drag-start="startSwipe"
+                    :on-drag-end="
+                      (_event: PointerEvent, info: PanInfo) => onSwipeEnd(card.position, info)
+                    "
                     :transition="{ duration: reduced ? 0 : 0.32, ease: 'easeOut' }"
+                    @pointerdown="onCardPointerDown(card.position, $event)"
+                    @dragstart.prevent
                   >
                     <TiltCard sway>
                       <FlipCard
@@ -300,20 +448,13 @@ onBeforeUnmount(() => {
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <p class="mt-3 h-5 text-sm text-mist-300">
-                {{
-                  revealed.has(focusedCard.position)
-                    ? t('boosters.tiltHint')
-                    : t('boosters.tapToReveal')
-                }}
-              </p>
-              <div class="flex flex-wrap justify-center gap-3">
+              <div class="mt-3 flex flex-wrap justify-center gap-3">
                 <button
                   v-if="revealed.has(focusedCard.position)"
                   type="button"
                   class="rounded-xl bg-sakura-600 px-5 py-3 font-semibold text-white hover:bg-sakura-700"
                   data-testid="next-card"
-                  @click="nextCard"
+                  @click="nextCard()"
                 >
                   {{ t('boosters.nextCard') }}
                 </button>
@@ -399,7 +540,7 @@ onBeforeUnmount(() => {
                       :revealed="revealed.has(card.position)"
                       linked
                       :aura="!compact"
-                      @reveal="reveal(card.position)"
+                      @reveal="revealWithSound(card.position)"
                       @navigate="emit('close')"
                     />
                   </TiltCard>

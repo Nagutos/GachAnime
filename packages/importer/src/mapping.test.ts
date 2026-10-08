@@ -69,6 +69,14 @@ describe('media mapping', () => {
     expect(isImportableMedia({ type: 'MANGA', format: 'MANGA', isAdult: false })).toBe(false)
   })
 
+  it('keeps adult media when the instance allows them', () => {
+    const allowed = { allowAdult: true }
+    expect(isImportableMedia({ type: 'ANIME', format: 'TV', isAdult: true }, allowed)).toBe(true)
+    expect(isImportableMedia({ type: 'ANIME', format: 'MUSIC', isAdult: true }, allowed)).toBe(
+      false,
+    )
+  })
+
   it('maps titles and drops empty genres', () => {
     expect(toMediaRow(mediaFixture())).toMatchObject({
       anilistId: 16498,

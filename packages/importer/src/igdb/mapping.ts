@@ -1,8 +1,9 @@
 import type { GenderClassValue } from '@gachanime/shared'
+import type { AdultFilter } from '../mapping'
 import { igdbImageUrl, type IgdbCharacter, type IgdbGame } from './api'
 
-/** Adult games are never imported (as adult anime with AniList). */
-const EXCLUDED_THEMES = new Set(['Erotic'])
+/** Adult games are skipped unless the `imports.adult` setting allows them (as with AniList). */
+const ADULT_THEMES = new Set(['Erotic'])
 
 /**
  * IGDB genre and theme names stored with AniList's spelling when both mean the same, so that a
@@ -13,8 +14,11 @@ const GENRE_ALIASES: Record<string, string> = {
   'Science fiction': 'Sci-Fi',
 }
 
-export function isImportableGame(game: IgdbGame): boolean {
-  return !(game.themes ?? []).some((theme) => EXCLUDED_THEMES.has(theme.name))
+export function isImportableGame(
+  game: IgdbGame,
+  { allowAdult = false }: AdultFilter = {},
+): boolean {
+  return allowAdult || !(game.themes ?? []).some((theme) => ADULT_THEMES.has(theme.name))
 }
 
 /** The series a game belongs to: its first IGDB collection, else the game alone. */

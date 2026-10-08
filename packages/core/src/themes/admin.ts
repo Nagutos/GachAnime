@@ -30,7 +30,7 @@ export async function listAdminThemes(db: Executor): Promise<AdminTheme[]> {
     description: theme.description ? localizedTextSchema.parse(theme.description) : null,
     category: theme.category,
     rules: themeRuleSchema.parse(theme.rules),
-    artToken: theme.artToken,
+    color: theme.color,
     seal: theme.seal,
     isActive: theme.isActive,
     sortOrder: theme.sortOrder,
@@ -45,9 +45,16 @@ export async function createTheme(
   actor: AdminActor,
 ): Promise<{ id: number }> {
   return database.transaction(async (tx) => {
+    const sortOrder =
+      input.sortOrder ??
+      (
+        await tx
+          .select({ last: sql<number>`coalesce(max(${themes.sortOrder}), 0)::int` })
+          .from(themes)
+      )[0]!.last + 1
     const [created] = await tx
       .insert(themes)
-      .values({ ...input, description: input.description ?? null })
+      .values({ ...input, sortOrder, description: input.description ?? null })
       .onConflictDoNothing()
       .returning()
     if (!created) throw new AppError('CONFLICT', `Pack "${input.key}" already exists`)
@@ -82,6 +89,42 @@ export async function updateTheme(
       targetId: String(id),
       before,
       after: { ...after, poolSize },
+    })
+  })
+}
+
+/** Sets the shop order of the packs: `ids` must list every pack exactly once. */
+export async function reorderThemes(
+  database: Database,
+  ids: readonly number[],
+  actor: AdminActor,
+): Promise<void> {
+  await database.transaction(async (tx) => {
+    const before = await tx
+      .select({ id: themes.id, key: themes.key })
+      .from(themes)
+      .orderBy(asc(themes.sortOrder), asc(themes.id))
+      .for('update')
+    const known = new Set(before.map((theme) => theme.id))
+    if (
+      ids.length !== known.size ||
+      new Set(ids).size !== ids.length ||
+      !ids.every((id) => known.has(id))
+    ) {
+      throw new AppError('VALIDATION_FAILED', 'The new order must list every pack exactly once')
+    }
+    await tx.execute(sql`
+      UPDATE themes SET sort_order = ordered.position, updated_at = now()
+      FROM unnest(${`{${ids.join(',')}}`}::bigint[]) WITH ORDINALITY AS ordered(id, position)
+      WHERE themes.id = ordered.id`)
+    const keyOf = new Map(before.map((theme) => [theme.id, theme.key]))
+    await recordAdminAction(tx, {
+      ...actor,
+      action: 'theme.reorder',
+      targetType: 'theme',
+      targetId: null,
+      before: before.map((theme) => theme.key),
+      after: ids.map((id) => keyOf.get(id)),
     })
   })
 }

@@ -5,9 +5,11 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useRecycleCardsMutation, useWikiCharacterQuery } from '@/api/player'
 import { useErrorMessage } from '@/app/errors'
 import { usePlayerRarities } from '@/app/rarities'
+import BackLink from '@/components/BackLink.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import LockedCard from '@/components/cards/LockedCard.vue'
 import { rarityStyle } from '@/components/cards/rarity-styles'
+import TurnableCard from '@/components/cards/TurnableCard.vue'
 import WishlistButton from '@/components/collection/WishlistButton.vue'
 import SellPanel from '@/components/social/SellPanel.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
@@ -56,13 +58,7 @@ function back(): void {
 <template>
   <main :class="playerUi.page">
     <RequireSignIn>
-      <button
-        type="button"
-        class="self-start text-sm text-mist-300 hover:text-sakura-400"
-        @click="back"
-      >
-        {{ t('wiki.backShort') }}
-      </button>
+      <BackLink :label="t('wiki.backShort')" @click="back" />
 
       <p v-if="query.isPending.value" class="text-mist-300">{{ t('common.loading') }}</p>
       <p v-else-if="errorMessage" :class="playerUi.error" role="alert">{{ errorMessage }}</p>
@@ -70,13 +66,14 @@ function back(): void {
       <article v-else-if="entry" class="flex flex-col gap-8 md:flex-row" data-testid="wiki-entry">
         <div class="mx-auto w-56 shrink-0 md:mx-0 md:w-72">
           <LockedCard v-if="entry.locked" :rarity-key="entry.rarityKey" />
-          <CharacterCard
-            v-else
-            :name="entry.name"
-            :image-url="entry.imageUrl"
-            :rarity-key="entry.rarityKey"
-            :quantity="entry.quantity"
-          />
+          <TurnableCard v-else>
+            <CharacterCard
+              :name="entry.name"
+              :image-url="entry.imageUrl"
+              :rarity-key="entry.rarityKey"
+              :quantity="entry.quantity"
+            />
+          </TurnableCard>
           <WishlistButton
             class="mt-3 w-full"
             :character-id="entry.id"

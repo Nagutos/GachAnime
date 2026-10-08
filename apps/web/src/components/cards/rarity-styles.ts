@@ -46,6 +46,11 @@ const STYLES: Record<string, RarityStyle> = {
   },
 }
 
+/** Color of a card frame (CSS variable read by `.card-frame`), any rarity key. */
+export function frameStyle(key: string): Record<string, string> {
+  return { '--frame': `var(--color-rarity-${key}, var(--color-rarity-common))` }
+}
+
 export function rarityStyle(key: string): RarityStyle {
   return STYLES[key] ?? STYLES.common!
 }

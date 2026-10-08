@@ -3,7 +3,14 @@ import { useI18n } from 'vue-i18n'
 import SealMark from '@/components/SealMark.vue'
 
 /** Printed side of a pack (rendered once per piece when the pack is torn). */
-defineProps<{ label: string; cards: number; art: string; seal: string }>()
+defineProps<{
+  label: string
+  cards: number
+  art: string
+  seal: string
+  /** Pack color (`#rrggbb`), overriding the art token's. */
+  color?: string | null
+}>()
 
 const { t } = useI18n()
 </script>
@@ -12,6 +19,7 @@ const { t } = useI18n()
   <div
     class="pack-foil absolute inset-0 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.15)]"
     :class="`pack-art-${art}`"
+    :style="color ? { '--pack-color': color } : undefined"
   >
     <div class="pack-sheen absolute" />
     <!-- Heat-sealed bands, inside the serrated edges -->

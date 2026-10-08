@@ -44,19 +44,31 @@ test('an admin builds a pack with the rule editor and its live preview', async (
   context,
 }) => {
   await signInNewPlayer(context, 'E2E Admin', e2eDatabaseUrl(), 'admin')
+  const key = `e2e-pack-${Date.now()}`
   await page.goto('/admin/themes/new')
-  await page.getByTestId('theme-key').fill(`e2e-pack-${Date.now()}`)
+  await page.getByTestId('theme-key').fill(key)
   await page.getByLabel('Name (en)').fill('E2E boys')
   await page.getByTestId('add-rule-gender').click()
-  await page.getByLabel('Gender', { exact: true }).selectOption('male')
+  await page.getByRole('combobox', { name: 'Gender', exact: true }).click()
+  await page.getByRole('option', { name: 'Male', exact: true }).click()
   await expect(page.getByTestId('theme-preview')).toContainText('10 characters', {
     timeout: 30_000,
   })
   await page.getByTestId('save-theme').click()
   await expect(page).toHaveURL(/\/admin\/themes\/\d+$/)
 
+  // A new pack comes last in the shop; the admin moves it first.
+  await page.goto('/admin/themes')
+  const rows = page.locator('tbody tr')
+  await expect(rows.last()).toHaveAttribute('data-testid', `theme-row-${key}`)
+  const moveUp = page.getByTestId(`theme-row-${key}`).getByRole('button', { name: /^Move .* up$/ })
+  while (await moveUp.isEnabled()) await moveUp.click()
+  await expect(rows.first()).toHaveAttribute('data-testid', `theme-row-${key}`)
+  await page.getByTestId('save-theme-order').click()
+  await expect(page.getByText('Order saved')).toBeVisible()
+
   await page.goto('/boosters')
-  await expect(page.getByRole('radio', { name: /E2E boys/ }).first()).toBeVisible({
-    timeout: 30_000,
-  })
+  const packs = page.getByTestId('pack-selector').getByRole('radio')
+  // The whole catalog first, then the packs in the admin's order.
+  await expect(packs.nth(1)).toHaveAttribute('data-testid', `pack-${key}`, { timeout: 30_000 })
 })

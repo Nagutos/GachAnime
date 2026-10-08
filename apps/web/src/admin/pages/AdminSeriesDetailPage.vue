@@ -2,13 +2,14 @@
 import type { AdminCharacter } from '@gachanime/shared'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import {
   useCharacterListQuery,
   useSeriesDetailQuery,
   useSplitSeriesMutation,
   useUpdateSeriesMutation,
 } from '@/api/admin'
+import BackLink from '@/components/BackLink.vue'
 import AdminPagination from '../components/AdminPagination.vue'
 import CharacterFormDialog from '../components/CharacterFormDialog.vue'
 import CharacterTable from '../components/CharacterTable.vue'
@@ -61,9 +62,7 @@ function openCharacterForm(character: AdminCharacter | null): void {
 
 <template>
   <div class="flex flex-col gap-6">
-    <RouterLink :to="{ name: 'admin-series' }" class="text-sm text-mist-300 hover:text-sakura-400">
-      {{ t('admin.seriesDetail.back') }}
-    </RouterLink>
+    <BackLink :to="{ name: 'admin-series' }" :label="t('admin.seriesDetail.back')" />
     <p v-if="detailError" :class="ui.error" role="alert">{{ detailError }}</p>
     <p v-else-if="!series" class="text-mist-300">{{ t('common.loading') }}</p>
     <template v-else>

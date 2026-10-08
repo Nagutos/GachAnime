@@ -14,14 +14,24 @@ const props = withDefaults(
     glowRarity?: string | null
     /** Gentle floating while waiting to be opened. */
     idle?: boolean
-    /** Art token (tier or pack): pack colors. */
+    /** Art token of a booster tier: pack colors. */
     art?: string
+    /** Color of a pack (`#rrggbb`), used instead of the art token's. */
+    color?: string | null
     /** Kanji on the seal. */
     seal?: string
     /** Faces the screen instead of standing a bit sideways (selected pack, opening scene). */
     front?: boolean
   }>(),
-  { torn: false, glowRarity: null, idle: false, art: 'free', seal: '招', front: false },
+  {
+    torn: false,
+    glowRarity: null,
+    idle: false,
+    art: 'free',
+    color: null,
+    seal: '招',
+    front: false,
+  },
 )
 
 const shape = packShape()
@@ -75,7 +85,7 @@ const bodyAnimation = {
       />
       <!-- In one piece until it is torn: no visible cut line -->
       <div v-if="!torn" class="absolute inset-0" :style="{ clipPath: shape.full }">
-        <PackFace :label="label" :cards="cards" :art="art" :seal="seal" />
+        <PackFace :label="label" :cards="cards" :art="art" :color="color" :seal="seal" />
       </div>
       <template v-else>
         <!-- Body: everything below the tear line -->
@@ -89,7 +99,7 @@ const bodyAnimation = {
             ease: 'easeIn',
           }"
         >
-          <PackFace :label="label" :cards="cards" :art="art" :seal="seal" />
+          <PackFace :label="label" :cards="cards" :art="art" :color="color" :seal="seal" />
         </motion.div>
 
         <!-- Light escaping from the opening -->
@@ -110,7 +120,7 @@ const bodyAnimation = {
           :transition="{ duration: reduced ? 0 : TEAR, times: [0, 0.3, 1], ease: 'easeOut' }"
           aria-hidden="true"
         >
-          <PackFace :label="label" :cards="cards" :art="art" :seal="seal" />
+          <PackFace :label="label" :cards="cards" :art="art" :color="color" :seal="seal" />
         </motion.div>
       </template>
     </div>

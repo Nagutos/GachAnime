@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAdminMissionsQuery, useSaveMissionMutation } from '@/api/admin'
 import { useErrorMessage } from '@/app/errors'
+import AppSelect from '@/components/AppSelect.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
 import ObjectiveTextFields from '../components/ObjectiveTextFields.vue'
 import { cleanLocalized } from '../text'
@@ -198,16 +199,20 @@ async function submit(): Promise<void> {
         <div class="grid gap-3 sm:grid-cols-3">
           <label :class="ui.label">
             {{ t('admin.missions.kind') }}
-            <select v-model="draft.kind" :class="ui.select">
-              <option value="daily">{{ t('admin.missions.kinds.daily') }}</option>
-              <option value="once">{{ t('admin.missions.kinds.once') }}</option>
-            </select>
+            <AppSelect
+              v-model="draft.kind"
+              :options="[
+                { value: 'daily', label: t('admin.missions.kinds.daily') },
+                { value: 'once', label: t('admin.missions.kinds.once') },
+              ]"
+            />
           </label>
           <label :class="ui.label">
             {{ t('admin.missions.event') }}
-            <select v-model="draft.eventType" :class="ui.select">
-              <option v-for="type in GAME_EVENT_TYPES" :key="type" :value="type">{{ type }}</option>
-            </select>
+            <AppSelect
+              v-model="draft.eventType"
+              :options="GAME_EVENT_TYPES.map((type) => ({ value: type, label: type }))"
+            />
           </label>
           <label :class="ui.label">
             {{ t('admin.objectives.target') }}

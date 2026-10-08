@@ -31,6 +31,13 @@ export const settingsSchemas = {
   'images.cache': z.object({
     enabled: z.boolean().default(false),
   }),
+  /**
+   * Catalog imports skip media flagged as adult (AniList `isAdult`, IGDB "Erotic" theme) unless
+   * allowed. Both flags have false positives, so an instance can turn the filter off.
+   */
+  'imports.adult': z.object({
+    allowed: z.boolean().default(false),
+  }),
 } as const
 
 export type SettingKey = keyof typeof settingsSchemas

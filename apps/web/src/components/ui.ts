@@ -5,8 +5,6 @@ export const playerUi = {
   panel: 'rounded-2xl border border-night-700 bg-night-900/70 p-5',
   input:
     'rounded-lg border border-night-700 bg-night-950 px-3 py-2 text-sm text-mist-100 placeholder:text-mist-300/50 focus:border-sakura-400 focus:outline-none',
-  select:
-    'rounded-lg border border-night-700 bg-night-950 px-2 py-2 text-sm text-mist-100 focus:border-sakura-400 focus:outline-none',
   error:
     'rounded-lg border border-rarity-mythic/50 bg-rarity-mythic/10 px-3 py-2 text-sm text-rarity-mythic',
   cardGrid: 'grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6',

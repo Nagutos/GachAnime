@@ -15,24 +15,22 @@ const { t, n } = useI18n()
     :class="listing.inMyWishlist ? 'bg-sakura-500/15 ring-2 ring-sakura-400/60' : ''"
     :data-testid="`listing-${listing.id}`"
   >
-    <RouterLink
-      :to="{ name: 'wiki-character', params: { id: listing.character.id } }"
-      class="relative"
-    >
+    <div class="relative">
       <CharacterCard
+        :to="{ name: 'wiki-character', params: { id: listing.character.id } }"
         :name="listing.character.name"
         :image-url="listing.character.imageUrl"
         :rarity-key="listing.character.rarityKey"
-        :series-title="listing.character.series?.title"
+        :series="listing.character.series"
         :effects="false"
       />
       <span
         v-if="listing.inMyWishlist"
-        class="absolute right-1.5 bottom-12 rounded-full bg-sakura-600 px-2 py-0.5 text-[10px] font-bold text-white"
+        class="pointer-events-none absolute right-1.5 bottom-14 rounded-full bg-sakura-600 px-2 py-0.5 text-[10px] font-bold text-white"
       >
         {{ t('market.inWishlist') }}
       </span>
-    </RouterLink>
+    </div>
     <div class="flex items-center justify-between gap-1 px-1 text-sm">
       <span class="font-display font-bold text-gold-400 tabular-nums">
         {{ t('nav.gems', { count: n(listing.price, 'integer') }) }}

@@ -39,10 +39,22 @@ test('a new player opens a free booster, then finds the cards in the collection 
   expect(owned).toBeGreaterThanOrEqual(1)
   expect(owned).toBeLessThanOrEqual(5)
 
+  // The series under a card opens the collection of that series.
+  await grid.getByTestId('card-series-link').first().click()
+  await expect(page).toHaveURL(/[?&]series=\d+/)
+  await expect(page.getByRole('button', { name: new RegExp(E2E_SERIES_TITLE) })).toBeVisible()
+  await expect(grid.getByTestId('character-card')).toHaveCount(owned)
+
   // Wiki entry of a drawn character is unlocked.
   await page.goto(`/wiki/characters/${characterId}`)
   await expect(page.getByTestId('wiki-name')).toHaveText(/^Student \d\d$/, { timeout: 30_000 })
   await expect(page.getByRole('button', { name: 'Show spoiler' })).toBeVisible()
+  // The card turns over on click, like in an opening.
+  const turnable = page.getByTestId('turnable-card')
+  await turnable.click()
+  await expect(turnable).toHaveAttribute('aria-pressed', 'true')
+  await turnable.click()
+  await expect(turnable).toHaveAttribute('aria-pressed', 'false')
 
   // The series page shows unlocked entries and masked locked ones.
   await page.getByRole('link', { name: E2E_SERIES_TITLE }).click()
@@ -86,12 +98,40 @@ test('cards are revealed one by one, then all laid out', async ({ page, context 
         box,
       )
       expect(misses).toBe(0)
+
+      // Face down, the card cannot be dragged away: it stays in place under the pointer.
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+      await page.mouse.down()
+      await page.mouse.move(box.x + box.width / 2 - 150, box.y + box.height / 2, { steps: 8 })
+      const dragged = (await opening.getByTestId('flip-card').boundingBox())!
+      expect(Math.abs(dragged.x - box.x)).toBeLessThan(30)
+      await page.mouse.up()
+      await expect(revealed).toHaveCount(0)
     }
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
     await expect(revealed).toHaveCount(1)
     // Each revealed card fills its slot.
     await expect(filledSlots).toHaveCount(index)
-    await opening.getByTestId('next-card').click()
+    if (index === 2) {
+      // The browser must not start its own drag of the picture (save image) instead of the swipe.
+      const pictures = opening.locator('[data-testid="flip-card"][data-revealed="true"] img')
+      for (const draggable of await pictures.evaluateAll((images) =>
+        images.map((image) => (image as HTMLImageElement).draggable),
+      ))
+        expect(draggable).toBe(false)
+      // Swiping the revealed card away (here to the left) brings the next one, once it has
+      // turned (mid-flip, the card is edge-on and the pointer goes through).
+      await page.waitForTimeout(600)
+      const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+      await page.mouse.move(center.x, center.y)
+      await page.mouse.down()
+      await page.mouse.move(center.x - 220, center.y + 30, { steps: 12 })
+      await page.mouse.up()
+    } else if (index === 3) {
+      await page.keyboard.press('ArrowUp')
+    } else {
+      await opening.getByTestId('next-card').click()
+    }
   }
 
   // After the last card, the whole pack is laid out face up, from the most common to the rarest.

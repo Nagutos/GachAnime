@@ -7,6 +7,7 @@ import { RouterLink } from 'vue-router'
 import { useAdminUsersQuery, useUpdateUserMutation } from '@/api/admin'
 import { useErrorMessage } from '@/app/errors'
 import { useSession } from '@/app/session'
+import AppSelect from '@/components/AppSelect.vue'
 import AdminPagination from '../components/AdminPagination.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { ui } from '../ui'
@@ -99,23 +100,23 @@ async function confirmBan(): Promise<void> {
               </p>
             </td>
             <td :class="ui.td">
-              <select
-                :value="user.role"
-                :class="ui.select"
+              <AppSelect
+                :options="[
+                  { value: 'user', label: t('admin.users.roles.user') },
+                  { value: 'admin', label: t('admin.users.roles.admin') },
+                ]"
+                :model-value="user.role"
                 :disabled="user.id === me?.id"
                 :aria-label="t('admin.users.columns.role')"
-                @change="
+                @update:model-value="
                   update.mutate({
                     id: user.id,
                     changes: {
-                      role: ($event.target as HTMLSelectElement).value as 'user' | 'admin',
+                      role: $event as 'user' | 'admin',
                     },
                   })
                 "
-              >
-                <option value="user">{{ t('admin.users.roles.user') }}</option>
-                <option value="admin">{{ t('admin.users.roles.admin') }}</option>
-              </select>
+              />
             </td>
             <td :class="[ui.td, 'text-right tabular-nums']">{{ n(user.gemBalance, 'integer') }}</td>
             <td :class="[ui.td, 'text-right tabular-nums']">{{ n(user.owned, 'integer') }}</td>

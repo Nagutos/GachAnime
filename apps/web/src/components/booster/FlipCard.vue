@@ -115,7 +115,7 @@ const auraStyle = computed(() => ({
             :name="card.character.name"
             :image-url="card.character.imageUrl"
             :rarity-key="rarity"
-            :series-title="card.character.series?.title"
+            :series="card.character.series"
             :is-new="card.isNew"
             :class="highlight ? ['shadow-[0_0_32px_4px]', style.glow] : null"
           />

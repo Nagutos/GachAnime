@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuditLogQuery } from '@/api/admin'
+import AppSelect from '@/components/AppSelect.vue'
 import AdminPagination from '../components/AdminPagination.vue'
 import { ui } from '../ui'
 
@@ -24,10 +25,13 @@ const format = (value: unknown) => JSON.stringify(value, null, 2)
       <h1 class="font-display text-3xl font-bold">{{ t('admin.audit.title') }}</h1>
       <label :class="ui.label">
         {{ t('admin.audit.targetType') }}
-        <select v-model="targetType" :class="ui.select">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option v-for="type in targetTypes" :key="type" :value="type">{{ type }}</option>
-        </select>
+        <AppSelect
+          v-model="targetType"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            ...targetTypes.map((type) => ({ value: type, label: type })),
+          ]"
+        />
       </label>
     </div>
     <div class="overflow-x-auto rounded-2xl border border-night-700">

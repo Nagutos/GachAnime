@@ -4,6 +4,7 @@ import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWikiSeriesListQuery } from '@/api/player'
+import AppSelect from '@/components/AppSelect.vue'
 import CollectionTabs from '@/components/collection/CollectionTabs.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
@@ -68,11 +69,11 @@ const data = computed(() => list.data.value)
           :placeholder="t('wiki.searchPlaceholder')"
           :aria-label="t('wiki.searchPlaceholder')"
         />
-        <select v-model="sort" :class="playerUi.select" :aria-label="t('wiki.sort')">
-          <option v-for="value in SORTS" :key="value" :value="value">
-            {{ t(`wiki.sorts.${value}`) }}
-          </option>
-        </select>
+        <AppSelect
+          v-model="sort"
+          :options="SORTS.map((value) => ({ value, label: t(`wiki.sorts.${value}`) }))"
+          :aria-label="t('wiki.sort')"
+        />
       </div>
 
       <p v-if="list.isPending.value" class="text-mist-300">{{ t('common.loading') }}</p>

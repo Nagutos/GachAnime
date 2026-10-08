@@ -14,6 +14,7 @@ import {
   useSaveAchievementMutation,
 } from '@/api/admin'
 import { useErrorMessage } from '@/app/errors'
+import AppSelect from '@/components/AppSelect.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
 import ObjectiveTextFields from '../components/ObjectiveTextFields.vue'
 import { cleanLocalized } from '../text'
@@ -203,20 +204,26 @@ async function submit(): Promise<void> {
         <div class="grid gap-3 sm:grid-cols-3">
           <label :class="ui.label">
             {{ t('admin.achievements.metric') }}
-            <select v-model="draft.metric" :class="ui.select" @change="draft.param = ''">
-              <option v-for="metric in METRIC_KEYS" :key="metric" :value="metric">
-                {{ t(`admin.achievements.metrics.${metric}`) }}
-              </option>
-            </select>
+            <AppSelect
+              v-model="draft.metric"
+              :options="
+                METRIC_KEYS.map((metric) => ({
+                  value: metric,
+                  label: t(`admin.achievements.metrics.${metric}`),
+                }))
+              "
+              @update:model-value="draft.param = ''"
+            />
           </label>
           <label v-if="paramField" :class="ui.label">
             {{ t(`admin.achievements.params.${paramField.name}`) }}
-            <select v-model="draft.param" :class="ui.select">
-              <option value="">{{ t('admin.achievements.anyParam') }}</option>
-              <option v-for="option in paramOptions" :key="option" :value="option">
-                {{ option }}
-              </option>
-            </select>
+            <AppSelect
+              v-model="draft.param"
+              :options="[
+                { value: '', label: t('admin.achievements.anyParam') },
+                ...paramOptions.map((option) => ({ value: option, label: option })),
+              ]"
+            />
           </label>
           <label :class="ui.label">
             {{

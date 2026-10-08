@@ -12,6 +12,7 @@ import {
 import { useErrorMessage } from '@/app/errors'
 import { usePlayerRarities } from '@/app/rarities'
 import { useSession } from '@/app/session'
+import AppSelect from '@/components/AppSelect.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
@@ -22,7 +23,7 @@ const PAGE_SIZE = 24
 const SORTS = ['recent', 'price_asc', 'price_desc', 'rarity'] as const
 const { t, n } = useI18n()
 const { me } = useSession()
-const { rarities, nameOf } = usePlayerRarities()
+const { filterOptions: rarityOptions } = usePlayerRarities()
 const tab = ref<'browse' | 'active' | 'closed'>('browse')
 const search = ref('')
 const debounced = refDebounced(search, 300)
@@ -111,17 +112,12 @@ async function buy(): Promise<void> {
           :placeholder="t('collection.searchPlaceholder')"
           :aria-label="t('collection.searchPlaceholder')"
         />
-        <select v-model="rarity" :class="playerUi.select" :aria-label="t('collection.rarity')">
-          <option value="">{{ t('collection.allRarities') }}</option>
-          <option v-for="item in [...rarities].reverse()" :key="item.key" :value="item.key">
-            {{ nameOf(item.key) }}
-          </option>
-        </select>
-        <select v-model="sort" :class="playerUi.select" :aria-label="t('collection.sort')">
-          <option v-for="value in SORTS" :key="value" :value="value">
-            {{ t(`market.sorts.${value}`) }}
-          </option>
-        </select>
+        <AppSelect v-model="rarity" :options="rarityOptions" :aria-label="t('collection.rarity')" />
+        <AppSelect
+          v-model="sort"
+          :options="SORTS.map((value) => ({ value, label: t(`market.sorts.${value}`) }))"
+          :aria-label="t('collection.sort')"
+        />
         <label class="flex items-center gap-2 text-sm text-mist-300">
           <input v-model="wishlist" type="checkbox" class="accent-sakura-500" />
           {{ t('collection.wishlistOnly') }}

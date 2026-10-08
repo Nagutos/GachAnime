@@ -207,7 +207,7 @@ describe.skipIf(!testDatabaseUrl)('AniList import pipeline (integration)', () =>
 
     // AniList changes: #2 becomes very popular, #4 leaves Season 1, a new season appears.
     const changed = world()
-    changed[0]!.characters[1]!.character.favourites = 20_000
+    changed[0]!.characters[1]!.character.favourites = 10_000
     changed[0]!.characters = changed[0]!.characters.filter(({ character }) => character.id !== 4)
     changed[1]!.relations!.push({ id: 103, type: 'ANIME', relationType: 'SEQUEL' })
     changed.push({
@@ -320,5 +320,22 @@ describe.skipIf(!testDatabaseUrl)('AniList import pipeline (integration)', () =>
     expect(await runImportJob({ db, client: anilist.client() }, job.id)).toBe('completed')
     const rows = await seriesRows()
     expect(rows.map((row) => row.slug)).toEqual(['titan-season-2'])
+  })
+
+  it('restricts a top import to the most popular anime of a genre or tag', async () => {
+    const media = world().map((item) =>
+      item.id === 200 ? { ...item, genres: ['Romance'], tags: ['Shoujo'] } : item,
+    )
+    const anilist = new FakeAniList(media, [100, 200, 300])
+    const job = await createImportJob(db, {
+      params: importParamsSchema.parse({ mode: 'top', top: 10, tags: ['Shoujo'] }),
+      actorId: null,
+    })
+    expect(await runImportJob({ db, client: anilist.client() }, job.id)).toBe('completed')
+    expect((await seriesRows()).map((row) => row.slug)).toEqual(['solo-show'])
+    expect(anilist.calls.find((call) => call.operation === 'TopMedia')?.variables).toMatchObject({
+      tags: ['Shoujo'],
+    })
+    expect(anilist.calls[0]?.variables).not.toHaveProperty('genres')
   })
 })

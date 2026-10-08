@@ -97,6 +97,62 @@
     will-change: transform;
   }
 
+  /*
+   * Card frame: a metal-like band in the rarity color (`--frame`, see frameStyle), lit from the
+   * top left, around an inset picture window. Static gradients only (no filter, no animation).
+   */
+  .card-frame {
+    background: linear-gradient(
+      150deg,
+      color-mix(in oklab, var(--frame) 45%, white) 0%,
+      var(--frame) 22%,
+      color-mix(in oklab, var(--frame) 55%, black) 52%,
+      var(--frame) 78%,
+      color-mix(in oklab, var(--frame) 60%, white) 100%
+    );
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.28),
+      0 10px 24px -12px rgb(0 0 0 / 0.7);
+  }
+
+  /* Mythic cards: an iridescent frame. */
+  .card-frame-mythic {
+    background: linear-gradient(
+      150deg,
+      #ffd1dc 0%,
+      var(--color-rarity-mythic) 18%,
+      #ffd166 36%,
+      #4fb3ff 56%,
+      #b06bff 76%,
+      #ffd1dc 100%
+    );
+  }
+
+  /* The picture window, set into the frame by a dark hairline. */
+  .card-window {
+    outline: 1px solid rgb(0 0 0 / 0.55);
+  }
+
+  /* Name plate at the bottom of a card, edged with the rarity color, fading into the picture. */
+  .card-plate {
+    background: linear-gradient(
+      to top,
+      var(--color-night-950) 55%,
+      color-mix(in oklab, var(--color-night-950) 85%, transparent)
+    );
+    border-top: 1px solid color-mix(in oklab, var(--frame) 75%, transparent);
+  }
+
+  .card-plate::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 100%;
+    height: 2rem;
+    pointer-events: none;
+    background: linear-gradient(to top, rgb(12 10 29 / 0.6), transparent);
+  }
+
   /* Back of a card: night sky with a sakura pattern. */
   .card-back {
     background-color: var(--color-night-900);
@@ -134,14 +190,15 @@
       rgb(255 255 255 / 0.22) 50%,
       transparent 54%
     );
-    animation: sheen-slide 5s linear infinite;
-    /* Only the hovered or selected pack shines: a shelf of packs stays still (cheap). */
-    animation-play-state: paused;
   }
 
+  /*
+   * Only the hovered or selected pack shines: a shelf of packs stays still (cheap). Without the
+   * animation the band is back outside the pack, so leaving a pack never freezes it mid-sweep.
+   */
   .group\/pack:hover .pack-sheen,
   .pack-pose-front .pack-sheen {
-    animation-play-state: running;
+    animation: sheen-slide 5s linear infinite;
     will-change: transform;
   }
 
@@ -183,35 +240,6 @@
     transform: perspective(1000px) rotateY(0deg) scale(1.04);
   }
 
-  /* Pack colors per themed pack (`artToken`). */
-  .pack-art-shonen {
-    --pack-color: #ff8a3d;
-  }
-  .pack-art-shojo {
-    --pack-color: #ff8fc7;
-  }
-  .pack-art-seinen {
-    --pack-color: #4f7dff;
-  }
-  .pack-art-sports {
-    --pack-color: #2fc48d;
-  }
-  .pack-art-ecchi {
-    --pack-color: #e2487d;
-  }
-  .pack-art-waifus {
-    --pack-color: #ff6fae;
-  }
-  .pack-art-husbandos {
-    --pack-color: #3fb6e8;
-  }
-  .pack-art-anime {
-    --pack-color: #b06bff;
-  }
-  .pack-art-games {
-    --pack-color: #36d1c4;
-  }
-
   /* Heat-sealed bands at the top and bottom of a pack (inside the serrated edges). */
   .pack-crimp {
     background-image: repeating-linear-gradient(
@@ -219,6 +247,18 @@
       rgb(255 255 255 / 0.28) 0 2px,
       transparent 2px 6px
     );
+  }
+}
+
+/* Dropdown list of AppSelect opening below its trigger. */
+.select-pop[data-state='open'] {
+  animation: select-in 140ms ease-out;
+}
+
+@keyframes select-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -4px, 0);
   }
 }
 
@@ -421,7 +461,10 @@ body.scene-open #app {
 @media (prefers-reduced-motion: reduce) {
   .card-shine::after,
   .card-holo::after,
-  .pack-sheen {
+  .select-pop[data-state='open'],
+  .pack-sheen,
+  .group\/pack:hover .pack-sheen,
+  .pack-pose-front .pack-sheen {
     animation: none;
   }
 

@@ -11,11 +11,13 @@ describe('slugify', () => {
 })
 
 describe('importParamsSchema', () => {
-  it('defaults to the top 500 with franchise expansion', () => {
+  it('defaults to the top 500 with franchise expansion and no genre or tag', () => {
     expect(importParamsSchema.parse({ mode: 'top' })).toEqual({
       mode: 'top',
       top: 500,
       expandFranchise: true,
+      genres: [],
+      tags: [],
     })
   })
 

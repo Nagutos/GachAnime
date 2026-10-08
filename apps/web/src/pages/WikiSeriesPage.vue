@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useWikiSeriesCharactersQuery, useWikiSeriesQuery } from '@/api/player'
 import { useErrorMessage } from '@/app/errors'
+import BackLink from '@/components/BackLink.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import LockedCard from '@/components/cards/LockedCard.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
@@ -38,9 +39,7 @@ const series = computed(() => detail.data.value)
 <template>
   <main :class="playerUi.page">
     <RequireSignIn>
-      <RouterLink :to="{ name: 'wiki' }" class="text-sm text-mist-300 hover:text-sakura-400">
-        {{ t('wiki.back') }}
-      </RouterLink>
+      <BackLink :to="{ name: 'wiki' }" :label="t('wiki.back')" />
 
       <p v-if="detail.isPending.value" class="text-mist-300">{{ t('common.loading') }}</p>
       <p v-else-if="errorMessage" :class="playerUi.error" role="alert">{{ errorMessage }}</p>

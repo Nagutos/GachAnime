@@ -22,6 +22,7 @@ const market = ref<AdminSettings['market.limits']>({
 })
 const tradeOffers = ref<AdminSettings['trades.offers']>({ offerTtlDays: 0 })
 const imageCache = ref<AdminSettings['images.cache']>({ enabled: false })
+const adultImports = ref<AdminSettings['imports.adult']>({ allowed: false })
 const marketFields = [
   'maxActiveListings',
   'maxSalesPerDay',
@@ -37,6 +38,7 @@ watch(
     market.value = { ...value['market.limits'] }
     tradeOffers.value = { ...value['trades.offers'] }
     imageCache.value = { ...value['images.cache'] }
+    adultImports.value = { ...value['imports.adult'] }
   },
   { immediate: true },
 )
@@ -180,6 +182,31 @@ async function save<K extends keyof AdminSettings>(key: K, value: AdminSettings[
         </label>
         <div class="flex items-center justify-end gap-3">
           <span v-if="saved === 'images.cache'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+
+      <form
+        :class="[ui.card, 'flex flex-col gap-4']"
+        @submit.prevent="save('imports.adult', adultImports)"
+      >
+        <h2 class="font-display text-xl font-bold">{{ t('admin.settings.adultImports') }}</h2>
+        <p class="text-sm text-mist-300">{{ t('admin.settings.adultImportsHelp') }}</p>
+        <label class="flex items-center gap-2">
+          <input
+            v-model="adultImports.allowed"
+            type="checkbox"
+            data-testid="adult-imports-allowed"
+            class="size-4 accent-sakura-500"
+          />
+          {{ t('admin.settings.adultImportsAllowed') }}
+        </label>
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === 'imports.adult'" class="text-sm text-emerald-400">
             {{ t('admin.common.saved') }}
           </span>
           <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">

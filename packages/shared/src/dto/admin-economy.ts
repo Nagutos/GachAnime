@@ -12,6 +12,7 @@ export const adminSettingsSchema = z.object({
   'market.limits': settingsSchemas['market.limits'],
   'trades.offers': settingsSchemas['trades.offers'],
   'images.cache': settingsSchemas['images.cache'],
+  'imports.adult': settingsSchemas['imports.adult'],
 })
 export type AdminSettings = z.infer<typeof adminSettingsSchema>
 

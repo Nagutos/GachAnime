@@ -66,7 +66,8 @@ export const themes = pgTable(
     name: jsonb().$type<LocalizedText>().notNull(),
     description: jsonb().$type<LocalizedText>(),
     rules: jsonb().$type<ThemeRule>().notNull(),
-    artToken: text().notNull().default('default'),
+    /** Pack color (`#rrggbb`), chosen by the admin; the seal and foil derive from it. */
+    color: text().notNull().default('#ff5d8f'),
     /** Kanji on the pack's seal (one or two characters). */
     seal: text().notNull().default('招'),
     isActive: boolean().notNull().default(true),
@@ -78,7 +79,10 @@ export const themes = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [check('themes_seal_length', sql`char_length(${table.seal}) BETWEEN 1 AND 2`)],
+  (table) => [
+    check('themes_seal_length', sql`char_length(${table.seal}) BETWEEN 1 AND 2`),
+    check('themes_color_hex', sql`${table.color} ~ '^#[0-9a-f]{6}$'`),
+  ],
 )
 
 /** Materialized pack membership, rebuilt on pack save and after catalog changes. */

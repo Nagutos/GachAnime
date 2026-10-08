@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   resolveLocalizedText,
-  THEME_CATEGORIES,
   type BoosterQuantity,
   type BoosterTierDto,
   type OpenBoostersResponse,
@@ -60,6 +59,7 @@ const opening = ref<{
   result: OpenBoostersResponse
   label: string
   art: string
+  color: string | null
   seal: string
 } | null>(null)
 
@@ -71,12 +71,8 @@ const themeKey = ref<string | null>(null)
 const selectedTheme = computed<ThemeDto | null>(
   () => data.value?.themes.find((theme) => theme.key === themeKey.value) ?? null,
 )
-/** Packs ordered by category (demographic, genre, characters…). */
-const themes = computed(() =>
-  THEME_CATEGORIES.flatMap((category) =>
-    (data.value?.themes ?? []).filter((theme) => theme.category === category),
-  ),
-)
+/** Packs in the order set by the admin (Admin → Packs → Reorder). */
+const themes = computed(() => data.value?.themes ?? [])
 
 function tierName(tier: BoosterTierDto): string {
   return resolveLocalizedText(tier.name, locale.value)
@@ -101,8 +97,8 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
     .catch(() => null)
   if (result) {
     opening.value = theme
-      ? { result, label: themeName(theme), art: theme.artToken, seal: theme.seal }
-      : { result, label: tierName(tier), art: tier.artToken, seal: '招' }
+      ? { result, label: themeName(theme), art: 'free', color: theme.color, seal: theme.seal }
+      : { result, label: tierName(tier), art: tier.artToken, color: null, seal: '招' }
   }
 }
 </script>
@@ -205,7 +201,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
             <BoosterPack
               :label="themeName(theme)"
               :cards="data!.cardsPerBooster"
-              :art="theme.artToken"
+              :color="theme.color"
               :seal="theme.seal"
               :front="themeKey === theme.key"
               :idle="themeKey === theme.key"
@@ -311,6 +307,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
         :result="opening.result"
         :pack-label="opening.label"
         :pack-art="opening.art"
+        :pack-color="opening.color"
         :pack-seal="opening.seal"
         @close="opening = null"
       />

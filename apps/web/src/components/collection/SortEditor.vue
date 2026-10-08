@@ -2,7 +2,7 @@
 import { COLLECTION_SORT_KEYS, type CollectionSort } from '@gachanime/shared'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { playerUi } from '@/components/ui'
+import AppSelect from '@/components/AppSelect.vue'
 
 const MAX_KEYS = 3
 const sorts = defineModel<CollectionSort[]>({ required: true })
@@ -34,25 +34,19 @@ function remove(index: number): void {
       :key="sort.key"
       class="flex items-center gap-1 rounded-lg border border-night-700 bg-night-950 pl-1"
     >
-      <select
-        :value="sort.key"
-        :class="[playerUi.select, 'border-0 bg-transparent']"
-        :aria-label="t('collection.sortKey', { index: index + 1 })"
-        @change="
-          update(index, {
-            key: ($event.target as HTMLSelectElement).value as CollectionSort['key'],
-          })
+      <AppSelect
+        ghost
+        :model-value="sort.key"
+        :options="
+          COLLECTION_SORT_KEYS.map((key) => ({
+            value: key,
+            label: t(`collection.sorts.${key}`),
+            disabled: key !== sort.key && !unused.includes(key),
+          }))
         "
-      >
-        <option
-          v-for="key in COLLECTION_SORT_KEYS"
-          :key="key"
-          :value="key"
-          :disabled="key !== sort.key && !unused.includes(key)"
-        >
-          {{ t(`collection.sorts.${key}`) }}
-        </option>
-      </select>
+        :aria-label="t('collection.sortKey', { index: index + 1 })"
+        @update:model-value="update(index, { key: $event as CollectionSort['key'] })"
+      />
       <button
         type="button"
         class="rounded px-2 py-1 text-sm text-mist-300 hover:text-mist-100"

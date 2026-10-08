@@ -10,6 +10,7 @@ import {
 import { useErrorMessage } from '../use-admin-error'
 import { useRarities } from '../use-rarities'
 import { ui } from '../ui'
+import AppSelect from '@/components/AppSelect.vue'
 import AdminDialog from '@/components/BaseDialog.vue'
 
 /** Creates a manual character in `seriesId`, or edits `character` (manual) when given. */
@@ -104,19 +105,19 @@ async function submit(): Promise<void> {
       <div class="grid grid-cols-2 gap-3">
         <label :class="ui.label">
           {{ t('admin.characterForm.gender') }}
-          <select v-model="form.gender" :class="ui.select">
-            <option v-for="gender in genders" :key="gender" :value="gender">
-              {{ t(`admin.genders.${gender}`) }}
-            </option>
-          </select>
+          <AppSelect
+            v-model="form.gender"
+            :options="
+              genders.map((gender) => ({ value: gender, label: t(`admin.genders.${gender}`) }))
+            "
+          />
         </label>
         <label :class="ui.label">
           {{ t('admin.characterForm.rarity') }}
-          <select v-model="form.rarity" :class="ui.select">
-            <option v-for="rarity in rarities" :key="rarity.key" :value="rarity.key">
-              {{ nameOf(rarity.key) }}
-            </option>
-          </select>
+          <AppSelect
+            v-model="form.rarity"
+            :options="rarities.map((rarity) => ({ value: rarity.key, label: nameOf(rarity.key) }))"
+          />
         </label>
       </div>
       <label :class="ui.label">

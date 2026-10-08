@@ -8,6 +8,9 @@ export interface FakeMedia {
   format?: string
   type?: string
   isAdult?: boolean
+  /** Defaults: genre Action, tag Shounen. */
+  genres?: string[]
+  tags?: string[]
   relations?: { id: number; type: string; relationType: string; isAdult?: boolean }[]
   characters: { character: AniListCharacter; role: 'MAIN' | 'SUPPORTING' | 'BACKGROUND' }[]
 }
@@ -26,6 +29,9 @@ export function fakeCharacter(
     ...overrides,
   }
 }
+
+const genresOf = (media: FakeMedia) => media.genres ?? ['Action']
+const tagsOf = (media: FakeMedia) => media.tags ?? ['Shounen']
 
 /**
  * In-memory AniList answering the importer's queries (operation names TopMedia, MediaBatch,
@@ -68,10 +74,18 @@ export class FakeAniList {
       case 'TopMedia': {
         const page = variables.page as number
         const perPage = variables.perPage as number
-        const ids = this.top.slice((page - 1) * perPage, page * perPage)
+        const genres = variables.genres as string[] | undefined
+        const tags = variables.tags as string[] | undefined
+        const top = this.top.filter((id) => {
+          const media = this.media.find((item) => item.id === id)
+          const has = (wanted: string[] | undefined, values: string[]) =>
+            !wanted || wanted.some((value) => values.includes(value))
+          return media && has(genres, genresOf(media)) && has(tags, tagsOf(media))
+        })
+        const ids = top.slice((page - 1) * perPage, page * perPage)
         return {
           Page: {
-            pageInfo: { hasNextPage: page * perPage < this.top.length },
+            pageInfo: { hasNextPage: page * perPage < top.length },
             media: ids.map((id) => ({ id })),
           },
         }
@@ -105,10 +119,16 @@ export class FakeAniList {
       seasonYear: 2020,
       siteUrl: `https://anilist.co/anime/${media.id}`,
       description: `About ${media.title}`,
-      genres: ['Action'],
+      genres: genresOf(media),
       title: { romaji: media.title, english: null, native: null },
       coverImage: { large: `https://img.test/media/${media.id}.jpg` },
-      tags: [{ id: 1, name: 'Shounen', category: 'Demographic', rank: 80, isAdult: false }],
+      tags: tagsOf(media).map((name, index) => ({
+        id: index + 1,
+        name,
+        category: 'Demographic',
+        rank: 80,
+        isAdult: false,
+      })),
       relations: {
         edges: (media.relations ?? []).map((relation) => ({
           relationType: relation.relationType,

@@ -98,10 +98,12 @@ const CHARACTER_FIELDS = `
 `
 
 export const TOP_MEDIA_QUERY = `
-query TopMedia($page: Int!, $perPage: Int!) {
+query TopMedia($page: Int!, $perPage: Int!, $isAdult: Boolean, $genres: [String], $tags: [String]) {
   Page(page: $page, perPage: $perPage) {
     pageInfo { hasNextPage }
-    media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { id }
+    media(
+      type: ANIME, sort: POPULARITY_DESC, isAdult: $isAdult, genre_in: $genres, tag_in: $tags
+    ) { id }
   }
 }`
 
@@ -148,9 +150,9 @@ export const mediaCharactersResponseSchema = z.object({
 })
 
 export const SEARCH_MEDIA_QUERY = `
-query SearchMedia($search: String!, $perPage: Int!) {
+query SearchMedia($search: String!, $perPage: Int!, $isAdult: Boolean) {
   Page(page: 1, perPage: $perPage) {
-    media(search: $search, type: ANIME, isAdult: false, sort: SEARCH_MATCH) {
+    media(search: $search, type: ANIME, isAdult: $isAdult, sort: SEARCH_MATCH) {
       id format seasonYear popularity
       title { romaji english native }
       coverImage { large }
@@ -171,4 +173,21 @@ export const searchMediaResponseSchema = z.object({
       }),
     ),
   }),
+})
+
+export const MEDIA_FILTERS_QUERY = `
+query MediaFilters {
+  GenreCollection
+  MediaTagCollection { name category isAdult }
+}`
+
+export const mediaFiltersResponseSchema = z.object({
+  GenreCollection: z.array(z.string().nullable()),
+  MediaTagCollection: z.array(
+    z.object({
+      name: z.string(),
+      category: z.string().nullable(),
+      isAdult: z.boolean().nullable(),
+    }),
+  ),
 })

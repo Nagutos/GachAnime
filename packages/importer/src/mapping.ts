@@ -21,18 +21,28 @@ interface MediaLike {
   isAdult: boolean | null
 }
 
-export function isImportableMedia(media: MediaLike): boolean {
+/** Adult media are skipped unless the `imports.adult` setting allows them. */
+export interface AdultFilter {
+  allowAdult?: boolean
+}
+
+export function isImportableMedia(
+  media: MediaLike,
+  { allowAdult = false }: AdultFilter = {},
+): boolean {
   return (
-    media.type === 'ANIME' && media.isAdult !== true && !EXCLUDED_FORMATS.has(media.format ?? '')
+    media.type === 'ANIME' &&
+    (allowAdult || media.isAdult !== true) &&
+    !EXCLUDED_FORMATS.has(media.format ?? '')
   )
 }
 
 /** AniList ids of the importable anime linked to `media` by a franchise relation. */
-export function franchiseRelationIds(media: AniListMedia): number[] {
+export function franchiseRelationIds(media: AniListMedia, filter: AdultFilter = {}): number[] {
   const ids = media.relations.edges
     .filter((edge) => edge.node && FRANCHISE_RELATION_TYPES.has(edge.relationType ?? ''))
     .map((edge) => edge.node!)
-    .filter(isImportableMedia)
+    .filter((node) => isImportableMedia(node, filter))
     .map((node) => node.id)
   return [...new Set(ids)].sort((a, b) => a - b)
 }
@@ -54,7 +64,7 @@ export interface MediaRow {
   franchiseRelations: number[]
 }
 
-export function toMediaRow(media: AniListMedia): MediaRow {
+export function toMediaRow(media: AniListMedia, filter: AdultFilter = {}): MediaRow {
   return {
     anilistId: media.id,
     format: media.format,
@@ -70,7 +80,7 @@ export function toMediaRow(media: AniListMedia): MediaRow {
     genres: (media.genres ?? []).filter((genre): genre is string => Boolean(genre)),
     coverUrl: media.coverImage?.large ?? null,
     siteUrl: media.siteUrl,
-    franchiseRelations: franchiseRelationIds(media),
+    franchiseRelations: franchiseRelationIds(media, filter),
   }
 }
 

@@ -24,13 +24,17 @@ is never touched by re-imports).
 
 | Rarity    | Favourites ≥ (default) |
 | --------- | ---------------------- |
-| Mythic    | 50 000                 |
-| Legendary | 15 000                 |
+| Mythic    | 20 000                 |
+| Legendary | 8 000                  |
 | Epic      | 3 000                  |
 | Rare      | 500                    |
 | Common    | < 500                  |
 
 The admin shows the resulting distribution so thresholds can be tuned after the first import.
+
+Calibrated on a top-200 import (October 2026, 11 429 characters): Mythic ≈ 30 characters (Gojou,
+Levi, Luffy, Frieren, Kaguya…), Legendary ≈ 135, Epic ≈ 290, Rare ≈ 890. AniList favourites grow
+over time, so these thresholds may need raising later (Admin → Rarities).
 
 Video game characters (IGDB, §10) have no favourites: their default rarity comes from the IGDB
 rating count of their **most popular game**, with thresholds of their own (ADR-026; defaults
@@ -210,9 +214,12 @@ Days are counted with the same reset hour as daily missions.
 
 ### Packs (themes)
 
-Packs are DB rows managed in the **pack editor** (admin), grouped by **category** for display:
-`demographic` (Shōnen, Shōjo, Seinen, Josei), `genre` (Sports, Ecchi, …), `characters`
-(Waifus, Husbandos), `media_type` (anime, movies, games…), `custom` (hand-picked series).
+Packs are DB rows managed in the **pack editor** (admin), each with a **category**
+(`demographic` (Shōnen, Shōjo, Seinen, Josei), `genre` (Sports, Ecchi, …), `characters`
+(Waifus, Husbandos), `media_type` (anime, movies, games…), `custom` (hand-picked series)), a kanji
+seal and a **color** (`#rrggbb`, presets or free; the editor flags colors other packs use). The
+shop shows packs in the order set by the admin (drag and drop on Admin → Packs); a new pack goes
+last.
 
 Rule types (combined with `all` / `any` groups):
 

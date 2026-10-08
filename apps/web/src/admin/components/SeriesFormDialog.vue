@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router'
 import { useCreateManualSeriesMutation, useUpdateSeriesMutation } from '@/api/admin'
 import { useErrorMessage } from '../use-admin-error'
 import { ui } from '../ui'
+import AppSelect from '@/components/AppSelect.vue'
 import AdminDialog from '@/components/BaseDialog.vue'
 
 /** Creates a manual series, or edits `series` (manual) when given. */
@@ -118,10 +119,13 @@ async function submit(): Promise<void> {
         </label>
         <label :class="ui.label">
           {{ t('admin.seriesForm.kind') }}
-          <select v-model="form.kind" :class="ui.select">
-            <option value="game">{{ t('admin.kinds.game') }}</option>
-            <option value="other">{{ t('admin.kinds.other') }}</option>
-          </select>
+          <AppSelect
+            v-model="form.kind"
+            :options="[
+              { value: 'game', label: t('admin.kinds.game') },
+              { value: 'other', label: t('admin.kinds.other') },
+            ]"
+          />
         </label>
       </div>
       <label :class="ui.label">

@@ -13,6 +13,7 @@
     "previous": "Previous",
     "next": "Next",
     "pageOf": "Page {page} of {pages}",
+    "goToPage": "Page {page}",
     "close": "Close",
     "cancel": "Cancel"
   },
@@ -73,9 +74,6 @@
       "all": "All",
       "active": "Active",
       "inactive": "Inactive",
-      "previous": "Previous",
-      "next": "Next",
-      "pageOf": "Page {page} of {pages}",
       "results": "{count} result | {count} results",
       "empty": "Nothing to show.",
       "edit": "Edit",
@@ -239,6 +237,11 @@
     },
     "imports": {
       "title": "Catalog import",
+      "genres": "Genres",
+      "anyGenre": "Any genre",
+      "tags": "Tags",
+      "anyTag": "Any tag",
+      "filtersHelp": "Restricts the import to the most popular anime having one of the chosen genres and one of the chosen tags. Shōjo, shōnen or seinen are tags (Demographic), not genres.",
       "expandFranchise": "Include whole franchises (seasons, movies, OVAs…)",
       "start": "Start import",
       "imported": "Imported",
@@ -344,7 +347,10 @@
       "offerTtlDays": "Offer lifetime in days (0 = never expires)",
       "imageCache": "Image cache",
       "imageCacheHelp": "The worker downloads catalog pictures (AniList) to this server so that players never load them from AniList. Count about 15 KB per character on disk. Disabling stops new downloads; cached files stay in use.",
-      "imageCacheEnabled": "Cache catalog images locally"
+      "imageCacheEnabled": "Cache catalog images locally",
+      "adultImports": "Adult content in imports",
+      "adultImportsHelp": "By default, imports skip anime flagged as adult on AniList and games with the Erotic theme on IGDB. These flags have false positives (popular games, ecchi series). Applies to the next imports and to the AniList search.",
+      "adultImportsAllowed": "Import adult content"
     },
     "rarities": {
       "title": "Rarities",
@@ -431,11 +437,21 @@
       }
     },
     "themes": {
+      "color": "Color",
+      "customColor": "Custom color",
+      "colorTaken": "Also used by: {packs}",
+      "reorder": "Shop order",
+      "reorderHelp": "Drag the packs (or use the arrows) to set their order in the shop, then save.",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down",
+      "saveOrder": "Save order",
+      "orderSaved": "Order saved",
+      "dragHandle": "Drag to move {name}",
       "title": "Packs",
       "help": "A pack is a free booster that draws only the characters matching its rules (premium boosters always draw from the whole catalog). Its content is updated when you save it and after every catalog change.",
       "new": "New pack",
       "edit": "Edit pack",
-      "back": "← All packs",
+      "back": "All packs",
       "characters": "Characters",
       "category": "Category",
       "preview": "Preview",
@@ -446,6 +462,7 @@
       "rules": {
         "title": "Rules",
         "help": "Series rules (tag, genre, format, type, series) match a character when one of its series matches.",
+        "pickSeries": "Pick series…",
         "mode": "Combine",
         "all": "All of these",
         "any": "Any of these",
@@ -503,6 +520,8 @@
     "skipToContent": "Skip to content"
   },
   "cards": {
+    "turn": "Turn the card over",
+    "seriesLink": "See the {series} series",
     "new": "New",
     "quantity": "×{count}"
   },
@@ -523,6 +542,7 @@
     "revealedCard": "{name}, {rarity}",
     "revealAll": "Reveal all",
     "done": "Done",
+    "sound": "Sound effects",
     "skip": "Skip",
     "summary": "{cards} cards · {new} new",
     "paidTitle": "Premium boosters",
@@ -543,8 +563,6 @@
     },
     "nextCard": "Next card",
     "cardProgress": "Card {current} of {total}",
-    "tapToReveal": "Tap the card to reveal it",
-    "tiltHint": "Move over the card to tilt it",
     "slots": "{revealed} of {total} cards revealed"
   },
   "collection": {
@@ -608,8 +626,8 @@
     "progress": "{owned} / {total} owned",
     "progressLabel": "Series progress",
     "unlocked": "{count} entries unlocked",
-    "back": "← All series",
-    "backShort": "← Back",
+    "back": "All series",
+    "backShort": "Back",
     "about": "About",
     "myCards": "My cards from this series",
     "filterLabel": "Show entries",
@@ -746,7 +764,7 @@
     "title": "Trades",
     "subtitle": "Swap cards with other players. The cards you offer are reserved until the trade ends.",
     "new": "New trade",
-    "back": "← Trades",
+    "back": "Trades",
     "newTitle": "New trade",
     "counterTitle": "Counter offer",
     "pickPlayer": "Choose a player from their profile to start a trade.",

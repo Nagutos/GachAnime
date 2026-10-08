@@ -7,6 +7,7 @@ import {
   rarities,
   series,
   seriesCharacters,
+  settings,
   type Database,
 } from '@gachanime/db'
 import { resetTestDatabase, setupTestDatabase, testDatabaseUrl } from '@gachanime/db/testing'
@@ -121,6 +122,19 @@ describe.skipIf(!testDatabaseUrl)('IGDB import (integration)', () => {
       .from(seriesCharacters)
       .where(eq(seriesCharacters.seriesId, hyrule.id))
     expect(members).toHaveLength(3)
+  })
+
+  it('imports adult games when the instance allows them', async () => {
+    await db
+      .update(settings)
+      .set({ value: { allowed: true } })
+      .where(eq(settings.key, 'imports.adult'))
+    const { outcome } = await runJob({ mode: 'igdb_ids', igdbIds: [12, 13] }, world())
+    expect(outcome).toBe('completed')
+    const games = await db.select({ igdbId: igdbGames.igdbId }).from(igdbGames)
+    expect(games.map((game) => game.igdbId).sort()).toEqual([12, 13])
+    const [adult] = await db.select().from(characters).where(eq(characters.igdbId, 5))
+    expect(adult).toBeDefined()
   })
 
   it('re-imports idempotently and keeps rarities set by hand', async () => {

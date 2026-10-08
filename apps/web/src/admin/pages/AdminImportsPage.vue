@@ -11,12 +11,14 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import {
+  useAniListFiltersQuery,
   useAniListSearchQuery,
   useCreateImportMutation,
   useIgdbSearchQuery,
   useImportActionMutation,
   useImportJobsQuery,
 } from '@/api/admin'
+import AppSelect from '@/components/AppSelect.vue'
 import { useErrorMessage } from '../use-admin-error'
 import { ui } from '../ui'
 
@@ -33,6 +35,19 @@ const sourceReady = computed(() => source.value === 'anilist' || igdbConfigured.
 
 const top = ref(IMPORT_TOP_DEFAULT)
 const expandFranchise = ref(true)
+/** Optional AniList restriction of a top import: the top N of these genres and tags. */
+const genres = ref<string[]>([])
+const tags = ref<string[]>([])
+const filters = useAniListFiltersQuery(computed(() => source.value === 'anilist'))
+const genreOptions = computed(() =>
+  (filters.data.value?.genres ?? []).map((genre) => ({ value: genre, label: genre })),
+)
+const tagOptions = computed(() =>
+  (filters.data.value?.tags ?? []).map((tag) => ({
+    value: tag.name,
+    label: tag.category ? `${tag.name} · ${tag.category}` : tag.name,
+  })),
+)
 watch(source, (value) => {
   top.value = value === 'igdb' ? IGDB_IMPORT_TOP_DEFAULT : IMPORT_TOP_DEFAULT
   selected.value = []
@@ -42,7 +57,13 @@ function startTop(): void {
   create.mutate(
     source.value === 'igdb'
       ? { mode: 'igdb_top', top: top.value }
-      : { mode: 'top', top: top.value, expandFranchise: expandFranchise.value },
+      : {
+          mode: 'top',
+          top: top.value,
+          expandFranchise: expandFranchise.value,
+          genres: genres.value,
+          tags: tags.value,
+        },
   )
 }
 
@@ -110,8 +131,11 @@ function percent(job: ImportJobDto): number {
 function jobLabel(job: ImportJobDto): string {
   const params = job.params
   switch (params.mode) {
-    case 'top':
-      return t('admin.imports.mode.top', { count: n(params.top, 'integer') })
+    case 'top': {
+      const label = t('admin.imports.mode.top', { count: n(params.top, 'integer') })
+      const filter = [...params.genres, ...params.tags].join(', ')
+      return filter ? `${label} · ${filter}` : label
+    }
     case 'ids':
       return t(
         'admin.imports.mode.ids',
@@ -173,6 +197,31 @@ function jobLabel(job: ImportJobDto): string {
               :class="ui.input"
             />
           </label>
+          <template v-if="source === 'anilist'">
+            <label :class="ui.label">
+              {{ t('admin.imports.genres') }}
+              <AppSelect
+                v-model="genres"
+                multiple
+                :options="genreOptions"
+                :placeholder="t('admin.imports.anyGenre')"
+                :disabled="!filters.data.value"
+                data-testid="import-genres"
+              />
+            </label>
+            <label :class="ui.label">
+              {{ t('admin.imports.tags') }}
+              <AppSelect
+                v-model="tags"
+                multiple
+                :options="tagOptions"
+                :placeholder="t('admin.imports.anyTag')"
+                :disabled="!filters.data.value"
+                data-testid="import-tags"
+              />
+            </label>
+            <p class="text-xs text-mist-300">{{ t('admin.imports.filtersHelp') }}</p>
+          </template>
           <label v-if="source === 'anilist'" class="flex items-center gap-2 text-sm">
             <input v-model="expandFranchise" type="checkbox" class="size-4 accent-sakura-500" />
             {{ t('admin.imports.expandFranchise') }}

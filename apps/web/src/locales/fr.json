@@ -13,6 +13,7 @@
     "previous": "Précédent",
     "next": "Suivant",
     "pageOf": "Page {page} sur {pages}",
+    "goToPage": "Page {page}",
     "close": "Fermer",
     "cancel": "Annuler"
   },
@@ -73,9 +74,6 @@
       "all": "Tous",
       "active": "Active",
       "inactive": "Inactive",
-      "previous": "Précédent",
-      "next": "Suivant",
-      "pageOf": "Page {page} sur {pages}",
       "results": "{count} résultat | {count} résultats",
       "empty": "Rien à afficher.",
       "edit": "Modifier",
@@ -239,6 +237,11 @@
     },
     "imports": {
       "title": "Import du catalogue",
+      "genres": "Genres",
+      "anyGenre": "Tous les genres",
+      "tags": "Tags",
+      "anyTag": "Tous les tags",
+      "filtersHelp": "Limite l'import aux anime les plus populaires ayant un des genres choisis et un des tags choisis. Shōjo, shōnen ou seinen sont des tags (Demographic), pas des genres.",
       "expandFranchise": "Inclure les franchises entières (saisons, films, OVA…)",
       "start": "Lancer l'import",
       "imported": "Importé",
@@ -344,7 +347,10 @@
       "offerTtlDays": "Durée d'une offre en jours (0 = n'expire jamais)",
       "imageCache": "Cache d'images",
       "imageCacheHelp": "Le worker télécharge les images du catalogue (AniList) sur ce serveur : les joueurs ne les chargent plus depuis AniList. Comptez environ 15 Ko par personnage sur le disque. Désactiver arrête les nouveaux téléchargements ; les fichiers déjà en cache restent utilisés.",
-      "imageCacheEnabled": "Mettre en cache les images du catalogue"
+      "imageCacheEnabled": "Mettre en cache les images du catalogue",
+      "adultImports": "Contenu adulte dans les imports",
+      "adultImportsHelp": "Par défaut, les imports ignorent les anime marqués adultes sur AniList et les jeux ayant le thème Erotic sur IGDB. Ces marquages ont des faux positifs (jeux populaires, séries ecchi). S'applique aux prochains imports et à la recherche AniList.",
+      "adultImportsAllowed": "Importer le contenu adulte"
     },
     "rarities": {
       "title": "Raretés",
@@ -431,11 +437,21 @@
       }
     },
     "themes": {
+      "color": "Couleur",
+      "customColor": "Couleur personnalisée",
+      "colorTaken": "Déjà utilisée par : {packs}",
+      "reorder": "Ordre dans la boutique",
+      "reorderHelp": "Glisse les packs (ou utilise les flèches) pour définir leur ordre dans la boutique, puis enregistre.",
+      "moveUp": "Monter {name}",
+      "moveDown": "Descendre {name}",
+      "saveOrder": "Enregistrer l'ordre",
+      "orderSaved": "Ordre enregistré",
+      "dragHandle": "Glisser pour déplacer {name}",
       "title": "Packs",
       "help": "Un pack est un booster gratuit qui ne tire que les personnages respectant ses règles (les boosters premium tirent toujours dans tout le catalogue). Son contenu est mis à jour à l'enregistrement et après chaque changement du catalogue.",
       "new": "Nouveau pack",
       "edit": "Modifier le pack",
-      "back": "← Tous les packs",
+      "back": "Tous les packs",
       "characters": "Personnages",
       "category": "Catégorie",
       "preview": "Aperçu",
@@ -446,6 +462,7 @@
       "rules": {
         "title": "Règles",
         "help": "Les règles de série (tag, genre, format, type, séries) retiennent un personnage si l'une de ses séries correspond.",
+        "pickSeries": "Choisir des séries…",
         "mode": "Combinaison",
         "all": "Toutes ces conditions",
         "any": "Au moins une condition",
@@ -503,6 +520,8 @@
     "skipToContent": "Aller au contenu"
   },
   "cards": {
+    "turn": "Retourner la carte",
+    "seriesLink": "Voir la série {series}",
     "new": "Nouveau",
     "quantity": "×{count}"
   },
@@ -523,6 +542,7 @@
     "revealedCard": "{name}, {rarity}",
     "revealAll": "Tout révéler",
     "done": "Terminé",
+    "sound": "Effets sonores",
     "skip": "Passer",
     "summary": "{cards} cartes · {new} nouvelles",
     "paidTitle": "Boosters premium",
@@ -543,8 +563,6 @@
     },
     "nextCard": "Carte suivante",
     "cardProgress": "Carte {current} sur {total}",
-    "tapToReveal": "Touche la carte pour la révéler",
-    "tiltHint": "Survole la carte pour l’incliner",
     "slots": "{revealed} cartes révélées sur {total}"
   },
   "collection": {
@@ -608,8 +626,8 @@
     "progress": "{owned} / {total} possédés",
     "progressLabel": "Progression de la série",
     "unlocked": "{count} fiches débloquées",
-    "back": "← Toutes les séries",
-    "backShort": "← Retour",
+    "back": "Toutes les séries",
+    "backShort": "Retour",
     "about": "À propos",
     "myCards": "Mes cartes de cette série",
     "filterLabel": "Afficher les fiches",
@@ -746,7 +764,7 @@
     "title": "Échanges",
     "subtitle": "Échange des cartes avec les autres joueurs. Les cartes que tu proposes sont réservées jusqu'à la fin de l'échange.",
     "new": "Nouvel échange",
-    "back": "← Échanges",
+    "back": "Échanges",
     "newTitle": "Nouvel échange",
     "counterTitle": "Contre-proposition",
     "pickPlayer": "Choisis un joueur depuis son profil pour commencer un échange.",

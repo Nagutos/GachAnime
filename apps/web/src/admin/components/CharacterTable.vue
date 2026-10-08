@@ -4,9 +4,10 @@ import { SwitchRoot, SwitchThumb } from 'reka-ui'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useUpdateCharacterMutation } from '@/api/admin'
+import AppSelect from '@/components/AppSelect.vue'
 import { useErrorMessage } from '../use-admin-error'
 import { useRarities } from '../use-rarities'
-import { rarityClasses, ui } from '../ui'
+import { raritySelectClasses, ui } from '../ui'
 import ImageUploadButton from './ImageUploadButton.vue'
 
 defineProps<{ items: AdminCharacter[] }>()
@@ -24,6 +25,16 @@ function setRarity(character: AdminCharacter, value: string | null): void {
 
 function setGender(character: AdminCharacter, value: string): void {
   update.mutate({ id: character.id, genderOverride: value ? (value as GenderClassValue) : null })
+}
+
+/** AniList characters: "imported value" ('') then the overrides; manual characters: the class. */
+function genderOptions(character: AdminCharacter) {
+  const options = genders.map((gender) => ({ value: gender, label: t(`admin.genders.${gender}`) }))
+  if (character.source !== 'anilist') return options
+  const imported = t('admin.characters.imported', {
+    gender: t(`admin.genders.${character.genderClass}`),
+  })
+  return [{ value: '', label: imported }, ...options]
 }
 
 /** AniList characters: the select shows the override ('' = AniList value); manual: the class. */
@@ -115,17 +126,16 @@ function genderValue(character: AdminCharacter): string {
             </td>
             <td :class="ui.td">
               <div class="flex flex-col gap-1">
-                <select
-                  :value="character.rarityKey"
-                  :class="[ui.select, 'border', rarityClasses[character.rarityKey]]"
+                <AppSelect
+                  :options="
+                    rarities.map((rarity) => ({ value: rarity.key, label: nameOf(rarity.key) }))
+                  "
+                  :model-value="character.rarityKey"
+                  :class="raritySelectClasses[character.rarityKey]"
                   :aria-label="t('admin.characters.columns.rarity')"
                   data-testid="rarity-select"
-                  @change="setRarity(character, ($event.target as HTMLSelectElement).value)"
-                >
-                  <option v-for="rarity in rarities" :key="rarity.key" :value="rarity.key">
-                    {{ nameOf(rarity.key) }}
-                  </option>
-                </select>
+                  @update:model-value="setRarity(character, $event)"
+                />
                 <span
                   v-if="character.rarityOverridden && character.defaultRarityKey"
                   class="flex items-center gap-1 text-[11px] text-gold-400"
@@ -142,23 +152,12 @@ function genderValue(character: AdminCharacter): string {
               </div>
             </td>
             <td :class="ui.td">
-              <select
-                :value="genderValue(character)"
-                :class="ui.select"
+              <AppSelect
+                :model-value="genderValue(character)"
+                :options="genderOptions(character)"
                 :aria-label="t('admin.characters.columns.gender')"
-                @change="setGender(character, ($event.target as HTMLSelectElement).value)"
-              >
-                <option v-if="character.source === 'anilist'" value="">
-                  {{
-                    t('admin.characters.imported', {
-                      gender: t(`admin.genders.${character.genderClass}`),
-                    })
-                  }}
-                </option>
-                <option v-for="gender in genders" :key="gender" :value="gender">
-                  {{ t(`admin.genders.${gender}`) }}
-                </option>
-              </select>
+                @update:model-value="setGender(character, $event)"
+              />
             </td>
             <td :class="[ui.td, 'text-right tabular-nums']">
               {{ character.favourites === null ? '-' : n(character.favourites, 'integer') }}

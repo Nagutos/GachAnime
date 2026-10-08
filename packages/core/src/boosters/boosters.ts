@@ -118,7 +118,7 @@ export async function listBoosters(
         name: localizedTextSchema.parse(theme.name),
         description: theme.description ? localizedTextSchema.parse(theme.description) : null,
         category: theme.category,
-        artToken: theme.artToken,
+        color: theme.color,
         seal: theme.seal,
         characterCount,
       })),

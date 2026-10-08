@@ -5,6 +5,8 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePlayerCardsQuery } from '@/api/social'
 import { usePlayerRarities } from '@/app/rarities'
+import AppSelect from '@/components/AppSelect.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import { rarityStyle } from '@/components/cards/rarity-styles'
 import { playerUi } from '@/components/ui'
 
@@ -12,10 +14,11 @@ import { playerUi } from '@/components/ui'
  * Picks tradable cards of a player. `wishedLabel` names the badge for cards in the viewer's
  * wishlist (the API reports the wishlist of the viewer = the other side of the trade).
  */
+const PAGE_SIZE = 24
 const props = defineProps<{ username: string; wishedLabel: string; testId: string }>()
 const emit = defineEmits<{ pick: [card: PlayerCard] }>()
 const { t } = useI18n()
-const { rarities, nameOf } = usePlayerRarities()
+const { filterOptions: rarityOptions } = usePlayerRarities()
 const search = ref('')
 const debounced = refDebounced(search, 300)
 const rarity = ref('')
@@ -26,7 +29,7 @@ const cards = usePlayerCardsQuery(
   () => props.username,
   computed(() => ({
     page: page.value,
-    pageSize: 24,
+    pageSize: PAGE_SIZE,
     tradable: 'true' as const,
     search: debounced.value || undefined,
     rarity: rarity.value || undefined,
@@ -34,7 +37,6 @@ const cards = usePlayerCardsQuery(
   })),
 )
 const data = computed(() => cards.data.value)
-const pages = computed(() => (data.value ? Math.max(1, Math.ceil(data.value.total / 24)) : 1))
 </script>
 
 <template>
@@ -47,12 +49,7 @@ const pages = computed(() => (data.value ? Math.max(1, Math.ceil(data.value.tota
         :placeholder="t('collection.searchPlaceholder')"
         :aria-label="t('collection.searchPlaceholder')"
       />
-      <select v-model="rarity" :class="playerUi.select" :aria-label="t('collection.rarity')">
-        <option value="">{{ t('collection.allRarities') }}</option>
-        <option v-for="item in [...rarities].reverse()" :key="item.key" :value="item.key">
-          {{ nameOf(item.key) }}
-        </option>
-      </select>
+      <AppSelect v-model="rarity" :options="rarityOptions" :aria-label="t('collection.rarity')" />
       <label class="flex items-center gap-1 text-sm text-mist-300">
         <input v-model="wishedOnly" type="checkbox" class="accent-sakura-500" />
         {{ wishedLabel }}
@@ -98,19 +95,6 @@ const pages = computed(() => (data.value ? Math.max(1, Math.ceil(data.value.tota
     <p v-if="data && data.items.length === 0" class="text-sm text-mist-300">
       {{ t('trades.noTradable') }}
     </p>
-    <div v-if="pages > 1" class="flex items-center justify-center gap-2 text-sm">
-      <button type="button" class="px-2 disabled:opacity-40" :disabled="page <= 1" @click="page--">
-        ←
-      </button>
-      <span class="text-mist-300">{{ t('common.pageOf', { page, pages }) }}</span>
-      <button
-        type="button"
-        class="px-2 disabled:opacity-40"
-        :disabled="page >= pages"
-        @click="page++"
-      >
-        →
-      </button>
-    </div>
+    <PaginationBar v-model:page="page" :page-size="PAGE_SIZE" :total="data?.total ?? 0" />
   </div>
 </template>

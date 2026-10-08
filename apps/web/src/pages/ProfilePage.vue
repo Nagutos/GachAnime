@@ -7,6 +7,7 @@ import { RouterLink } from 'vue-router'
 import { usePlayerCardsQuery, usePlayerProfileQuery } from '@/api/social'
 import { useErrorMessage } from '@/app/errors'
 import { usePlayerRarities } from '@/app/rarities'
+import AppSelect from '@/components/AppSelect.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
@@ -16,7 +17,7 @@ import { playerUi } from '@/components/ui'
 const PAGE_SIZE = 30
 const props = defineProps<{ username: string }>()
 const { t, n, d, locale } = useI18n()
-const { rarities, nameOf } = usePlayerRarities()
+const { filterOptions: rarityOptions } = usePlayerRarities()
 const tab = ref<'cards' | 'achievements'>('cards')
 const search = ref('')
 const debounced = refDebounced(search, 300)
@@ -119,24 +120,23 @@ const stats = computed(() =>
               :placeholder="t('collection.searchPlaceholder')"
               :aria-label="t('collection.searchPlaceholder')"
             />
-            <select v-model="rarity" :class="playerUi.select" :aria-label="t('collection.rarity')">
-              <option value="">{{ t('collection.allRarities') }}</option>
-              <option v-for="item in [...rarities].reverse()" :key="item.key" :value="item.key">
-                {{ nameOf(item.key) }}
-              </option>
-            </select>
+            <AppSelect
+              v-model="rarity"
+              :options="rarityOptions"
+              :aria-label="t('collection.rarity')"
+            />
           </div>
           <ul v-if="cards.data.value" :class="playerUi.cardGrid" data-testid="profile-cards">
             <li v-for="card in cards.data.value.items" :key="card.id" class="relative">
-              <RouterLink :to="{ name: 'wiki-character', params: { id: card.id } }">
-                <CharacterCard
-                  :name="card.name"
-                  :image-url="card.imageUrl"
-                  :rarity-key="card.rarityKey"
-                  :series-title="card.series?.title"
-                  :quantity="card.quantity"
-                />
-              </RouterLink>
+              <CharacterCard
+                :to="{ name: 'wiki-character', params: { id: card.id } }"
+                :name="card.name"
+                :image-url="card.imageUrl"
+                :rarity-key="card.rarityKey"
+                :series="card.series"
+                :quantity="card.quantity"
+                class="transition hover:-translate-y-1"
+              />
               <span
                 v-if="card.inViewerWishlist && !data.isMe"
                 class="absolute right-1.5 bottom-12 rounded-full bg-sakura-600 px-2 py-0.5 text-[10px] font-bold text-white"

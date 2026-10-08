@@ -10,6 +10,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useCharacterListQuery } from '@/api/admin'
+import AppSelect from '@/components/AppSelect.vue'
 import AdminPagination from '../components/AdminPagination.vue'
 import CharacterFormDialog from '../components/CharacterFormDialog.vue'
 import CharacterTable from '../components/CharacterTable.vue'
@@ -82,58 +83,75 @@ function edit(character: AdminCharacter): void {
       </label>
       <label :class="ui.label">
         {{ t('admin.characters.rarity') }}
-        <select v-model="rarity" :class="ui.select" data-testid="filter-rarity">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option v-for="item in rarities" :key="item.key" :value="item.key">
-            {{ nameOf(item.key) }}
-          </option>
-        </select>
+        <AppSelect
+          v-model="rarity"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            ...rarities.map((item) => ({ value: item.key, label: nameOf(item.key) })),
+          ]"
+          data-testid="filter-rarity"
+        />
       </label>
       <label :class="ui.label">
         {{ t('admin.characters.gender') }}
-        <select v-model="gender" :class="ui.select" data-testid="filter-gender">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option v-for="value in genderClassSchema.options" :key="value" :value="value">
-            {{ t(`admin.genders.${value}`) }}
-          </option>
-        </select>
+        <AppSelect
+          v-model="gender"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            ...genderClassSchema.options.map((value) => ({
+              value,
+              label: t(`admin.genders.${value}`),
+            })),
+          ]"
+          data-testid="filter-gender"
+        />
       </label>
       <label :class="ui.label">
         {{ t('admin.characters.source') }}
-        <select v-model="source" :class="ui.select">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option v-for="value in ['anilist', 'manual'] as const" :key="value" :value="value">
-            {{ t(`admin.sources.${value}`) }}
-          </option>
-        </select>
+        <AppSelect
+          v-model="source"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            ...(['anilist', 'manual'] as const).map((value) => ({
+              value,
+              label: t(`admin.sources.${value}`),
+            })),
+          ]"
+        />
       </label>
       <label :class="ui.label">
         {{ t('admin.characters.override') }}
-        <select v-model="overridden" :class="ui.select">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option value="true">{{ t('admin.characters.overrideOptions.true') }}</option>
-          <option value="false">{{ t('admin.characters.overrideOptions.false') }}</option>
-        </select>
+        <AppSelect
+          v-model="overridden"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            { value: 'true', label: t('admin.characters.overrideOptions.true') },
+            { value: 'false', label: t('admin.characters.overrideOptions.false') },
+          ]"
+        />
       </label>
       <label :class="ui.label">
         {{ t('admin.characters.status') }}
-        <select v-model="status" :class="ui.select">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option value="true">{{ t('admin.common.active') }}</option>
-          <option value="false">{{ t('admin.common.inactive') }}</option>
-        </select>
+        <AppSelect
+          v-model="status"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            { value: 'true', label: t('admin.common.active') },
+            { value: 'false', label: t('admin.common.inactive') },
+          ]"
+        />
       </label>
       <label :class="ui.label">
         {{ t('admin.characters.sort') }}
-        <select v-model="sort" :class="ui.select">
-          <option
-            v-for="value in ['favourites', 'name', 'recent'] as const"
-            :key="value"
-            :value="value"
-          >
-            {{ t(`admin.characters.sorts.${value}`) }}
-          </option>
-        </select>
+        <AppSelect
+          v-model="sort"
+          :options="
+            (['favourites', 'name', 'recent'] as const).map((value) => ({
+              value,
+              label: t(`admin.characters.sorts.${value}`),
+            }))
+          "
+        />
       </label>
     </div>
     <CharacterTable :items="items" @edit="edit" />

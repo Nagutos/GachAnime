@@ -1,5 +1,6 @@
 import {
   RarityTable,
+  getSetting,
   rebuildSeriesCharacters,
   recomputeDefaultRarities,
   refreshIgdbSeries,
@@ -27,6 +28,7 @@ import {
   type IgdbGame,
 } from './api'
 import type { IgdbClient } from './client'
+import type { AdultFilter } from '../mapping'
 import { isImportableGame, seriesOfGame, toCharacterRow, toGameRow } from './mapping'
 
 /** Safety net against a game with an endless character list. */
@@ -49,6 +51,7 @@ export class IgdbImportRun {
   progress: ImportProgress = importProgressSchema.parse({})
   private readonly requestsAtStart: number
   private baseRequests = 0
+  private adultFilter: AdultFilter = {}
 
   constructor(
     private readonly db: Database,
@@ -70,6 +73,7 @@ export class IgdbImportRun {
 
   async execute(): Promise<void> {
     this.baseRequests = this.progress.requests
+    this.adultFilter = { allowAdult: (await getSetting(this.db, 'imports.adult')).allowed }
     if (this.progress.phase === 'discover' || this.progress.phase === 'group') {
       await this.discover()
       this.progress.phase = 'characters'
@@ -106,7 +110,7 @@ export class IgdbImportRun {
       await this.assertNotCancelled()
       const games = await fetchGames(this.client, seeds.slice(start, start + IGDB_PAGE_SIZE))
       this.countRequests()
-      for (const game of games.filter(isImportableGame)) {
+      for (const game of games.filter((item) => isImportableGame(item, this.adultFilter))) {
         await this.db.transaction((tx) => this.storeGame(tx, game))
         imported.push(game.id)
       }

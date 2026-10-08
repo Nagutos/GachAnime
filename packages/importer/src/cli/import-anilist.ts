@@ -8,6 +8,7 @@ import { runImportJob } from '../pipeline'
 
 const usage = `Usage:
   pnpm import:anilist -- [--top 500]          import the N most popular anime and their franchises
+      [--genre Romance] [--tag Shoujo]        only anime with one of these genres / tags (repeatable)
   pnpm import:anilist -- --ids 16498,1535     import given AniList anime ids (and their franchises)
   pnpm import:anilist -- --resume <jobId>     resume a failed, cancelled or interrupted import
 Options: --no-franchise (do not follow relations)`
@@ -16,6 +17,8 @@ const { values } = parseArgs({
   args: cliArgs(),
   options: {
     top: { type: 'string' },
+    genre: { type: 'string', multiple: true },
+    tag: { type: 'string', multiple: true },
     ids: { type: 'string' },
     resume: { type: 'string' },
     'no-franchise': { type: 'boolean', default: false },
@@ -61,6 +64,8 @@ try {
             mode: 'top',
             top: values.top ? Number(values.top) : IMPORT_TOP_DEFAULT,
             expandFranchise: !values['no-franchise'],
+            genres: values.genre ?? [],
+            tags: values.tag ?? [],
           },
     )
     jobId = (await createImportJob(db, { params, actorId: null })).id

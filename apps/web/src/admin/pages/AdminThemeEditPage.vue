@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import { THEME_CATEGORIES, type AdminTheme, type ThemeRule } from '@gachanime/shared'
+import {
+  resolveLocalizedText,
+  THEME_CATEGORIES,
+  type AdminTheme,
+  type ThemeRule,
+} from '@gachanime/shared'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import {
   useAdminThemesQuery,
   useDeleteThemeMutation,
@@ -11,11 +16,17 @@ import {
   useThemePreviewQuery,
   useThemeRuleOptionsQuery,
 } from '@/api/admin'
+import { useBoostersQuery } from '@/api/player'
 import { useErrorMessage } from '@/app/errors'
+import AppSelect from '@/components/AppSelect.vue'
+import BackLink from '@/components/BackLink.vue'
+import BoosterPack from '@/components/booster/BoosterPack.vue'
 import { rarityStyle } from '@/components/cards/rarity-styles'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import ObjectiveTextFields from '../components/ObjectiveTextFields.vue'
+import PackColorPicker from '../components/PackColorPicker.vue'
 import RuleEditor from '../components/RuleEditor.vue'
+import { firstFreePackColor } from '../pack-colors'
 import { cleanLocalized } from '../text'
 import SealMark from '@/components/SealMark.vue'
 import { ui } from '../ui'
@@ -27,14 +38,13 @@ interface Draft {
   category: AdminTheme['category']
   rules: ThemeRule
   seal: string
-  artToken: string
+  color: string
   isActive: boolean
-  sortOrder: number
 }
 
 /** Undefined id: a new pack. */
 const props = defineProps<{ id?: number }>()
-const { t, n } = useI18n()
+const { t, n, locale } = useI18n()
 const router = useRouter()
 const themes = useAdminThemesQuery()
 const options = useThemeRuleOptionsQuery()
@@ -47,12 +57,26 @@ const saved = ref(false)
 const existing = computed(() =>
   props.id ? themes.data.value?.themes.find((theme) => theme.id === props.id) : undefined,
 )
+/** Colors of the other packs, so the admin can tell packs apart in the shop. */
+const usedColors = computed(() => {
+  const used = new Map<string, string[]>()
+  for (const theme of themes.data.value?.themes ?? []) {
+    if (theme.id === props.id) continue
+    used.set(theme.color, [
+      ...(used.get(theme.color) ?? []),
+      resolveLocalizedText(theme.name, locale.value),
+    ])
+  }
+  return used
+})
+const boosters = useBoostersQuery()
 const draft = ref<Draft | null>(null)
 watch(
-  [existing, () => props.id],
+  [existing, () => props.id, () => themes.data.value],
   ([theme]) => {
-    if (props.id && !theme) return
-    if (draft.value && theme && draft.value.key === theme.key) return
+    // Wait for the packs: an existing one to edit, or the colors a new one should avoid.
+    if (!themes.data.value || (props.id && !theme)) return
+    if (draft.value && (theme ? draft.value.key === theme.key : !props.id)) return
     draft.value = theme
       ? {
           key: theme.key,
@@ -61,9 +85,8 @@ watch(
           category: theme.category,
           rules: JSON.parse(JSON.stringify(theme.rules)) as ThemeRule,
           seal: theme.seal,
-          artToken: theme.artToken,
+          color: theme.color,
           isActive: theme.isActive,
-          sortOrder: theme.sortOrder,
         }
       : {
           key: '',
@@ -72,9 +95,8 @@ watch(
           category: 'custom',
           rules: { type: 'group', mode: 'all', rules: [] },
           seal: '招',
-          artToken: 'default',
+          color: firstFreePackColor(new Set(usedColors.value.keys())),
           isActive: true,
-          sortOrder: 0,
         }
   },
   { immediate: true },
@@ -95,9 +117,8 @@ async function submit(): Promise<void> {
     category: value.category,
     rules: value.rules,
     seal: value.seal,
-    artToken: value.artToken,
+    color: value.color,
     isActive: value.isActive,
-    sortOrder: value.sortOrder,
   }
   const id = await save.mutateAsync(
     props.id ? { id: props.id, changes: fields } : { create: { ...fields, key: value.key } },
@@ -115,9 +136,7 @@ async function deleteTheme(): Promise<void> {
 
 <template>
   <div class="flex flex-col gap-6">
-    <RouterLink :to="{ name: 'admin-themes' }" class="text-sm text-mist-300 hover:text-sakura-400">
-      {{ t('admin.themes.back') }}
-    </RouterLink>
+    <BackLink :to="{ name: 'admin-themes' }" :label="t('admin.themes.back')" />
     <h1 class="font-display text-3xl font-bold">
       {{ id ? t('admin.themes.edit') : t('admin.themes.new') }}
     </h1>
@@ -138,11 +157,15 @@ async function deleteTheme(): Promise<void> {
         <div class="grid gap-3 sm:grid-cols-3">
           <label :class="ui.label">
             {{ t('admin.themes.category') }}
-            <select v-model="draft.category" :class="ui.select">
-              <option v-for="category in THEME_CATEGORIES" :key="category" :value="category">
-                {{ t(`boosters.packs.categories.${category}`) }}
-              </option>
-            </select>
+            <AppSelect
+              v-model="draft.category"
+              :options="
+                THEME_CATEGORIES.map((category) => ({
+                  value: category,
+                  label: t(`boosters.packs.categories.${category}`),
+                }))
+              "
+            />
           </label>
           <label :class="ui.label">
             {{ t('admin.themes.seal') }}
@@ -154,13 +177,17 @@ async function deleteTheme(): Promise<void> {
                 :class="[ui.input, 'w-20 text-center text-lg']"
                 data-testid="theme-seal"
               />
-              <SealMark :glyph="draft.seal || '招'" class="size-9 text-sakura-600" />
+              <SealMark
+                :glyph="draft.seal || '招'"
+                class="size-9"
+                :style="{ color: draft.color }"
+              />
             </span>
           </label>
-          <label :class="ui.label">
-            {{ t('admin.boosters.sortOrder') }}
-            <input v-model.number="draft.sortOrder" type="number" min="0" :class="ui.input" />
-          </label>
+        </div>
+        <div :class="ui.label">
+          {{ t('admin.themes.color') }}
+          <PackColorPicker v-model="draft.color" :used="usedColors" />
         </div>
         <div class="flex flex-wrap gap-4 text-sm">
           <label class="flex items-center gap-2">
@@ -195,6 +222,15 @@ async function deleteTheme(): Promise<void> {
 
       <aside :class="[ui.card, 'flex flex-col gap-4 self-start']" data-testid="theme-preview">
         <h2 class="font-display text-lg font-bold">{{ t('admin.themes.preview') }}</h2>
+        <div class="mx-auto w-36">
+          <BoosterPack
+            :label="draft.name.en || t('admin.themes.new')"
+            :cards="boosters.data.value?.cardsPerBooster ?? 5"
+            :color="draft.color"
+            :seal="draft.seal || '招'"
+            front
+          />
+        </div>
         <template v-if="preview.data.value">
           <p class="font-display text-3xl font-bold tabular-nums">
             {{ t('admin.themes.previewTotal', { count: n(preview.data.value.total, 'integer') }) }}

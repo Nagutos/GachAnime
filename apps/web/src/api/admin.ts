@@ -15,6 +15,7 @@ import {
   adminRarityStatsSchema,
   adminSeriesDetailSchema,
   adminSeriesListSchema,
+  anilistFiltersSchema,
   anilistSearchResponseSchema,
   igdbSearchResponseSchema,
   auditLogListSchema,
@@ -136,6 +137,16 @@ export function useAniListSearchQuery(search: MaybeRefOrGetter<string>) {
       }),
     enabled: computed(() => toValue(search).trim().length >= 2),
     staleTime: 5 * 60_000,
+  })
+}
+
+/** AniList genres and tags for a filtered top import (they rarely change). */
+export function useAniListFiltersQuery(enabled: MaybeRefOrGetter<boolean>) {
+  return useQuery({
+    queryKey: ['admin', 'anilist', 'filters'],
+    queryFn: () => apiFetch('/admin/anilist/filters', { schema: anilistFiltersSchema }),
+    enabled: computed(() => toValue(enabled)),
+    staleTime: 60 * 60_000,
   })
 }
 
@@ -462,6 +473,20 @@ export function useDeleteThemeMutation() {
       apiFetch(`/admin/themes/${id}`, { method: 'DELETE', schema: z.null() }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.themes })
+      void queryClient.invalidateQueries({ queryKey: ['boosters'] })
+    },
+  })
+}
+
+/** Shop order of the packs: every pack id, in order. */
+export function useReorderThemesMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: number[]) =>
+      apiFetch('/admin/themes/order', { method: 'PUT', body: { ids }, schema: z.null() }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.themes })
+      void queryClient.invalidateQueries({ queryKey: adminKeys.audit })
       void queryClient.invalidateQueries({ queryKey: ['boosters'] })
     },
   })

@@ -10,6 +10,7 @@ import {
   useSeriesListQuery,
   useUpdateSeriesMutation,
 } from '@/api/admin'
+import AppSelect from '@/components/AppSelect.vue'
 import AdminDialog from '@/components/BaseDialog.vue'
 import AdminPagination from '../components/AdminPagination.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
@@ -109,29 +110,40 @@ const rosterOpen = ref(false)
       </label>
       <label :class="ui.label">
         {{ t('admin.series.kind') }}
-        <select v-model="kind" :class="ui.select">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option v-for="value in ['anime', 'game', 'other'] as const" :key="value" :value="value">
-            {{ t(`admin.kinds.${value}`) }}
-          </option>
-        </select>
+        <AppSelect
+          v-model="kind"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            ...(['anime', 'game', 'other'] as const).map((value) => ({
+              value,
+              label: t(`admin.kinds.${value}`),
+            })),
+          ]"
+        />
       </label>
       <label :class="ui.label">
         {{ t('admin.series.source') }}
-        <select v-model="source" :class="ui.select">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option v-for="value in ['anilist', 'manual'] as const" :key="value" :value="value">
-            {{ t(`admin.sources.${value}`) }}
-          </option>
-        </select>
+        <AppSelect
+          v-model="source"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            ...(['anilist', 'manual'] as const).map((value) => ({
+              value,
+              label: t(`admin.sources.${value}`),
+            })),
+          ]"
+        />
       </label>
       <label :class="ui.label">
         {{ t('admin.series.status') }}
-        <select v-model="status" :class="ui.select">
-          <option value="">{{ t('admin.common.all') }}</option>
-          <option value="true">{{ t('admin.common.active') }}</option>
-          <option value="false">{{ t('admin.common.inactive') }}</option>
-        </select>
+        <AppSelect
+          v-model="status"
+          :options="[
+            { value: '', label: t('admin.common.all') },
+            { value: 'true', label: t('admin.common.active') },
+            { value: 'false', label: t('admin.common.inactive') },
+          ]"
+        />
       </label>
     </div>
 

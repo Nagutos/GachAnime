@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { THEME_RULE_TYPES, type ThemeRule, type ThemeRuleOptions } from '@gachanime/shared'
 import { useI18n } from 'vue-i18n'
+import AppSelect from '@/components/AppSelect.vue'
 import { ui } from '../ui'
 
 defineOptions({ name: 'RuleEditor' })
@@ -69,15 +70,15 @@ const childTypes = (depth: number) =>
     :data-testid="`rule-group-${depth}`"
   >
     <div class="flex flex-wrap items-center gap-2">
-      <select
-        :value="rule.mode"
-        :class="ui.select"
+      <AppSelect
+        :options="[
+          { value: 'all', label: t('admin.themes.rules.all') },
+          { value: 'any', label: t('admin.themes.rules.any') },
+        ]"
+        :model-value="rule.mode"
         :aria-label="t('admin.themes.rules.mode')"
-        @change="patch({ mode: ($event.target as HTMLSelectElement).value as 'all' | 'any' })"
-      >
-        <option value="all">{{ t('admin.themes.rules.all') }}</option>
-        <option value="any">{{ t('admin.themes.rules.any') }}</option>
-      </select>
+        @update:model-value="patch({ mode: $event as 'all' | 'any' })"
+      />
       <span class="flex-1" />
       <button v-if="removable" type="button" :class="ui.button" @click="emit('remove')">
         {{ t('admin.common.delete') }}
@@ -138,67 +139,52 @@ const childTypes = (depth: number) =>
         />
       </label>
     </template>
-    <select
+    <AppSelect
       v-else-if="rule.type === 'genre'"
-      :value="rule.genre"
-      :class="ui.select"
+      :options="options.genres.map((genre) => ({ value: genre, label: genre }))"
+      :model-value="rule.genre"
       :aria-label="t('admin.themes.rules.types.genre')"
-      @change="patch({ genre: ($event.target as HTMLSelectElement).value })"
-    >
-      <option v-for="genre in options.genres" :key="genre" :value="genre">{{ genre }}</option>
-    </select>
-    <select
+      @update:model-value="patch({ genre: $event })"
+    />
+    <AppSelect
       v-else-if="rule.type === 'gender'"
-      :value="rule.gender"
-      :class="ui.select"
+      :options="[
+        { value: 'female', label: t('admin.genders.female') },
+        { value: 'male', label: t('admin.genders.male') },
+        { value: 'unclassified', label: t('admin.genders.unclassified') },
+      ]"
+      :model-value="rule.gender"
       :aria-label="t('admin.themes.rules.types.gender')"
-      @change="patch({ gender: ($event.target as HTMLSelectElement).value as 'female' | 'male' })"
-    >
-      <option value="female">{{ t('admin.genders.female') }}</option>
-      <option value="male">{{ t('admin.genders.male') }}</option>
-      <option value="unclassified">{{ t('admin.genders.unclassified') }}</option>
-    </select>
-    <select
+      @update:model-value="patch({ gender: $event as 'female' | 'male' })"
+    />
+    <AppSelect
       v-else-if="rule.type === 'series_kind'"
-      :value="rule.kind"
-      :class="ui.select"
+      :options="[
+        { value: 'anime', label: t('admin.kinds.anime') },
+        { value: 'game', label: t('admin.kinds.game') },
+        { value: 'other', label: t('admin.kinds.other') },
+      ]"
+      :model-value="rule.kind"
       :aria-label="t('admin.themes.rules.types.series_kind')"
-      @change="
-        patch({ kind: ($event.target as HTMLSelectElement).value as 'anime' | 'game' | 'other' })
-      "
-    >
-      <option value="anime">{{ t('admin.kinds.anime') }}</option>
-      <option value="game">{{ t('admin.kinds.game') }}</option>
-      <option value="other">{{ t('admin.kinds.other') }}</option>
-    </select>
-    <select
+      @update:model-value="patch({ kind: $event as 'anime' | 'game' | 'other' })"
+    />
+    <AppSelect
       v-else-if="rule.type === 'media_format'"
-      :value="rule.format"
-      :class="ui.select"
+      :options="options.formats.map((format) => ({ value: format, label: format }))"
+      :model-value="rule.format"
       :aria-label="t('admin.themes.rules.types.media_format')"
-      @change="patch({ format: ($event.target as HTMLSelectElement).value })"
-    >
-      <option v-for="format in options.formats" :key="format" :value="format">{{ format }}</option>
-    </select>
-    <select
+      @update:model-value="patch({ format: $event })"
+    />
+    <AppSelect
       v-else-if="rule.type === 'series'"
-      :value="rule.seriesIds.map(String)"
       multiple
-      size="5"
-      :class="[ui.select, 'min-w-64']"
+      :model-value="rule.seriesIds.map(String)"
+      :options="options.series.map((item) => ({ value: String(item.id), label: item.title }))"
+      :placeholder="t('admin.themes.rules.pickSeries')"
+      class="max-w-md min-w-64"
       :aria-label="t('admin.themes.rules.types.series')"
-      @change="
-        patch({
-          seriesIds: Array.from(($event.target as HTMLSelectElement).selectedOptions).map((o) =>
-            Number(o.value),
-          ),
-        })
-      "
-    >
-      <option v-for="item in options.series" :key="item.id" :value="String(item.id)">
-        {{ item.title }}
-      </option>
-    </select>
+      @update:model-value="patch({ seriesIds: $event.map(Number) })"
+    />
     <span class="flex-1" />
     <button type="button" :class="ui.button" @click="emit('remove')">
       {{ t('admin.common.delete') }}

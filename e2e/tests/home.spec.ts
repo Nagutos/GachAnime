@@ -11,11 +11,9 @@ test.describe('home page (signed out)', () => {
 
   test('switches language and remembers it', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByTestId('locale-switcher').locator('option')).toHaveText([
-      'English',
-      'Français',
-    ])
-    await page.getByTestId('locale-switcher').selectOption('fr')
+    await page.getByTestId('locale-switcher').click()
+    await expect(page.getByRole('option')).toHaveText(['English', 'Français'])
+    await page.getByRole('option', { name: 'Français' }).click()
     await expect(page.getByRole('button', { name: 'Se connecter avec Discord' })).toBeVisible()
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
 

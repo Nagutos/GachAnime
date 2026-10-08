@@ -2,10 +2,11 @@
 import type { CharacterCard, PlayerCard } from '@gachanime/shared'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { usePlayerProfileQuery, useProposeTradeMutation, useTradeQuery } from '@/api/social'
 import { useErrorMessage } from '@/app/errors'
 import { useSession } from '@/app/session'
+import BackLink from '@/components/BackLink.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
 import CardPicker from '@/components/social/CardPicker.vue'
 import MiniCard from '@/components/social/MiniCard.vue'
@@ -115,9 +116,7 @@ async function submit(): Promise<void> {
   <main :class="playerUi.page">
     <RequireSignIn>
       <header class="flex flex-wrap items-center gap-4">
-        <RouterLink :to="{ name: 'trades' }" class="text-sm text-mist-300 hover:text-sakura-400">
-          {{ t('trades.back') }}
-        </RouterLink>
+        <BackLink :to="{ name: 'trades' }" :label="t('trades.back')" />
         <h1 :class="[playerUi.title, 'flex-1']">
           {{ counterId ? t('trades.counterTitle') : t('trades.newTitle') }}
         </h1>

@@ -37,6 +37,9 @@ export const IMPORT_TOP_DEFAULT = 500
 
 export const IGDB_IMPORT_TOP_DEFAULT = 200
 
+/** AniList genre or tag names (`Romance`, `Shoujo`…) restricting a top import. */
+const anilistFilterSchema = z.array(z.string().trim().min(1).max(64)).max(20).default([])
+
 /** AniList modes: `top`, `ids`. IGDB (video games, ADR-025) modes: `igdb_top`, `igdb_ids`. */
 export const importParamsSchema = z.discriminatedUnion('mode', [
   z.object({
@@ -44,6 +47,9 @@ export const importParamsSchema = z.discriminatedUnion('mode', [
     /** The N most popular anime (AniList popularity). */
     top: z.number().int().min(1).max(5000).default(IMPORT_TOP_DEFAULT),
     expandFranchise: z.boolean().default(true),
+    /** Only anime with one of these genres, and one of these tags (empty = no restriction). */
+    genres: anilistFilterSchema,
+    tags: anilistFilterSchema,
   }),
   z.object({
     mode: z.literal('ids'),
@@ -61,6 +67,13 @@ export const importParamsSchema = z.discriminatedUnion('mode', [
   }),
 ])
 export type ImportParams = z.infer<typeof importParamsSchema>
+
+/** Genres and tags a top import can be restricted to (from AniList). */
+export const anilistFiltersSchema = z.object({
+  genres: z.array(z.string()),
+  tags: z.array(z.object({ name: z.string(), category: z.string() })),
+})
+export type AniListFilters = z.infer<typeof anilistFiltersSchema>
 
 export type ImportSource = 'anilist' | 'igdb'
 

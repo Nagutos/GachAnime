@@ -1,5 +1,6 @@
 import {
   RarityTable,
+  getSetting,
   rebuildSeriesCharacters,
   refreshAniListSeries,
   uniqueSeriesSlug,
@@ -34,6 +35,7 @@ import {
   toCharacterAppearances,
   toMediaRow,
   toTagRows,
+  type AdultFilter,
   type CharacterAppearance,
 } from './mapping'
 
@@ -142,6 +144,7 @@ function createRun(
 class ImportRun {
   progress: ImportProgress = importProgressSchema.parse({})
   private rarities!: RarityTable
+  private adultFilter: AdultFilter = {}
   private readonly requestsAtStart: number
 
   constructor(
@@ -167,6 +170,7 @@ class ImportRun {
 
   async execute(): Promise<void> {
     this.rarities = await RarityTable.load(this.db)
+    this.adultFilter = { allowAdult: (await getSetting(this.db, 'imports.adult')).allowed }
     const baseRequests = this.progress.requests
     const countRequests = () => {
       this.progress.requests = baseRequests + this.deps.client.requestCount - this.requestsAtStart
@@ -198,7 +202,11 @@ class ImportRun {
   private async discover(countRequests: () => void): Promise<void> {
     const seeds =
       this.params.mode === 'top'
-        ? await fetchTopMediaIds(this.deps.client, this.params.top)
+        ? await fetchTopMediaIds(this.deps.client, this.params.top, {
+            ...this.adultFilter,
+            genres: this.params.genres,
+            tags: this.params.tags,
+          })
         : [...new Set(this.params.anilistIds)]
     this.progress.seedCount = seeds.length
     countRequests()
@@ -223,8 +231,8 @@ class ImportRun {
       const fetched = await fetchMediaBatch(this.deps.client, toFetch)
       countRequests()
       for (const item of fetched) {
-        if (!isImportableMedia(item)) continue
-        const row = toMediaRow(item)
+        if (!isImportableMedia(item, this.adultFilter)) continue
+        const row = toMediaRow(item, this.adultFilter)
         await this.db.transaction(async (tx) => {
           const mediaId = await upsertMedia(tx, row)
           await replaceMediaTags(tx, mediaId, toTagRows(item))

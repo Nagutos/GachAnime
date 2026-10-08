@@ -73,6 +73,14 @@ export const themeKeySchema = z
   .string()
   .regex(/^[a-z][a-z0-9_-]{1,63}$/, 'Use lowercase letters, digits, dashes and underscores')
 
+export const DEFAULT_THEME_COLOR = '#ff5d8f'
+
+/** A pack color: `#rrggbb` (lowercased, as the DB check expects). */
+export const themeColorSchema = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'Use a #rrggbb color')
+  .transform((value) => value.toLowerCase())
+
 /** One or two characters (a kanji, usually): pack seals are small. */
 export const themeSealSchema = z
   .string()
@@ -87,7 +95,8 @@ export const themeDtoSchema = z.object({
   name: localizedTextSchema,
   description: localizedTextSchema.nullable(),
   category: z.enum(THEME_CATEGORIES),
-  artToken: z.string(),
+  /** Pack color, `#rrggbb`. */
+  color: z.string(),
   /** Kanji on the pack's seal. */
   seal: z.string(),
   /** Drawable characters in the pack. */
@@ -113,12 +122,10 @@ const themeFields = {
   category: z.enum(THEME_CATEGORIES),
   rules: themeRootRuleSchema,
   seal: themeSealSchema,
-  artToken: z
-    .string()
-    .regex(/^[a-z][a-z0-9-]{0,31}$/)
-    .default('default'),
+  color: themeColorSchema.default(DEFAULT_THEME_COLOR),
   isActive: z.boolean(),
-  sortOrder: z.number().int().min(0).max(1000).default(0),
+  /** Position in the shop; a new pack without one goes last. */
+  sortOrder: z.number().int().min(0).max(1000).optional(),
 }
 
 export const createThemeSchema = z.object({ key: themeKeySchema, ...themeFields })
@@ -128,6 +135,12 @@ export const updateThemeSchema = z
   .partial()
   .refine((value) => Object.keys(value).length > 0, { message: 'Nothing to update' })
 export type UpdateThemeRequest = z.infer<typeof updateThemeSchema>
+
+/** Every pack id, in the new shop order. */
+export const reorderThemesSchema = z.object({
+  ids: z.array(z.number().int().positive()).min(1).max(1000),
+})
+export type ReorderThemesRequest = z.infer<typeof reorderThemesSchema>
 
 export const themePreviewRequestSchema = z.object({ rules: themeRootRuleSchema })
 
