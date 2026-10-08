@@ -182,10 +182,10 @@
 @keyframes tilt-sway {
   0%,
   100% {
-    transform: rotateY(-7deg) rotateX(3deg);
+    transform: perspective(900px) rotateY(-7deg) rotateX(3deg);
   }
   50% {
-    transform: rotateY(7deg) rotateX(-2deg);
+    transform: perspective(900px) rotateY(7deg) rotateX(-2deg);
   }
 }
 

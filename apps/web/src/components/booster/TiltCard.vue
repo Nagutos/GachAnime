@@ -31,22 +31,20 @@ function onLeave(): void {
   tilt.value = { x: 0, y: 0 }
 }
 
+// Perspective is part of the transform and no level preserves 3D: the tilted card stays flat
+// in its own plane. With preserve-3d, half of a tilted card goes behind its parent's plane and
+// clicks land on the parent instead of the card.
 const transform = computed(
   () =>
-    `rotateX(${tilt.value.x.toFixed(2)}deg) rotateY(${tilt.value.y.toFixed(2)}deg) scale(${active.value ? 1.03 : 1})`,
+    `perspective(900px) rotateX(${tilt.value.x.toFixed(2)}deg) rotateY(${tilt.value.y.toFixed(2)}deg) scale(${active.value ? 1.03 : 1})`,
 )
 </script>
 
 <template>
-  <div
-    class="perspective-[900px]"
-    @pointermove="onMove"
-    @pointerleave="onLeave"
-    @pointercancel="onLeave"
-  >
-    <div :class="{ 'tilt-sway': sway && !active && !reduced }" class="transform-3d">
+  <div @pointermove="onMove" @pointerleave="onLeave" @pointercancel="onLeave">
+    <div :class="{ 'tilt-sway': sway && !active && !reduced }">
       <div
-        class="relative transform-3d"
+        class="relative"
         :style="{
           transform,
           transition: active ? 'transform 90ms ease-out' : 'transform 500ms ease-out',

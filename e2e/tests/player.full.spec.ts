@@ -66,8 +66,26 @@ test('cards are revealed one by one, then all laid out', async ({ page, context 
     // Wait until the previous card has flown away and the next one is face down.
     await expect(revealed).toHaveCount(0)
     await expect(opening.getByTestId('flip-card')).toHaveCount(1)
-    // The inspected card sways continuously: Playwright never sees it "stable".
-    await opening.getByTestId('flip-card').click({ force: true })
+    // A real mouse click at the card center (the card sways, so Playwright never sees it
+    // "stable"; a forced click would skip the hit testing that once sent clicks elsewhere).
+    const box = (await opening.getByTestId('flip-card').boundingBox())!
+    if (index === 1) {
+      // Fully tilted (pointer near a corner), every point of the card must still hit the card.
+      await page.mouse.move(box.x + box.width * 0.9, box.y + box.height * 0.1)
+      await page.waitForTimeout(300)
+      const misses = await page.evaluate(
+        ({ x, y, width, height }) =>
+          [0.3, 0.5, 0.7]
+            .flatMap((fx) => [0.3, 0.5, 0.7].map((fy) => [x + width * fx, y + height * fy]))
+            .filter(
+              ([px, py]) =>
+                !document.elementFromPoint(px!, py!)?.closest('[data-testid="flip-card"]'),
+            ).length,
+        box,
+      )
+      expect(misses).toBe(0)
+    }
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
     await expect(revealed).toHaveCount(1)
     await opening.getByTestId('next-card').click()
   }
