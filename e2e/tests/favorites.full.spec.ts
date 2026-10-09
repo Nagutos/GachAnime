@@ -40,8 +40,16 @@ test('a player stars cards, filters them and arranges the favorites', async ({ p
   await page.getByTestId('favorites-arrange').click()
   await page.getByTestId(`favorite-${a}`).getByTestId('favorite-later').click()
   expect(await order(page)).toEqual([`favorite-${b}`, `favorite-${a}`, `favorite-${c}`])
-  await page.getByTestId(`favorite-${c}`).dragTo(page.getByTestId(`favorite-${b}`))
-  expect(await order(page)).toEqual([`favorite-${c}`, `favorite-${b}`, `favorite-${a}`])
+  // Picked up and carried over the first card (once the arrow move has settled): the others
+  // slide out of its way.
+  await expect(page.getByTestId(`favorite-${b}`)).toHaveCSS('transform', 'none')
+  const from = (await page.getByTestId(`favorite-${c}`).boundingBox())!
+  const to = (await page.getByTestId(`favorite-${b}`).boundingBox())!
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 3)
+  await page.mouse.down()
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 3, { steps: 30 })
+  await expect.poll(() => order(page)).toEqual([`favorite-${c}`, `favorite-${b}`, `favorite-${a}`])
+  await page.mouse.up()
   await page.getByTestId('favorites-save').click()
   await expect(page.getByTestId('favorites-arrange')).toBeVisible()
   await page.reload()

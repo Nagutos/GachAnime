@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
+import { ReorderGroup, ReorderItem, useReducedMotion } from 'motion-v'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useFavoritesQuery, useReorderFavoritesMutation } from '@/api/player'
 import { useErrorMessage } from '@/app/errors'
+import { playFlip } from '@/app/sounds'
+import TiltCard from '@/components/booster/TiltCard.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import ChevronIcon from '@/components/ChevronIcon.vue'
 import CollectionTabs from '@/components/collection/CollectionTabs.vue'
@@ -49,12 +52,24 @@ function move(from: number, to: number): void {
   order.value = next
 }
 
-/** Drag and drop with a mouse; the arrows do the same on a phone or from the keyboard. */
-const dragged = ref<number | null>(null)
-function onDragOver(index: number): void {
-  if (dragged.value === null || dragged.value === index) return
-  move(dragged.value, index)
-  dragged.value = index
+/**
+ * Drag and drop as in the booster opening: the card is picked up (3D tilt, lifted), the others
+ * slide out of its way (layout animations) and it settles in its slot when released. Works with
+ * a finger too; the page scrolls when the card nears the edge. The arrows do the same from the
+ * keyboard.
+ */
+const reduced = useReducedMotion()
+const dragging = ref<number | null>(null)
+const transition = computed(() =>
+  reduced.value ? { duration: 0 } : { type: 'spring' as const, stiffness: 520, damping: 38 },
+)
+function pickUp(id: number): void {
+  dragging.value = id
+  playFlip(0.6)
+}
+function drop(): void {
+  dragging.value = null
+  playFlip(0.4)
 }
 
 function cancel(): void {
@@ -157,33 +172,45 @@ async function save(): Promise<void> {
           {{ t('favorites.browseCollection') }}
         </RouterLink>
       </div>
-      <ol v-else-if="data" :class="gridClass" data-testid="favorites-grid">
-        <li
+      <ReorderGroup
+        v-else-if="data"
+        v-model:values="order"
+        as="ol"
+        :class="gridClass"
+        data-testid="favorites-grid"
+      >
+        <ReorderItem
           v-for="(item, index) in items"
           :key="item.id"
-          class="relative transition-opacity"
-          :class="{ 'opacity-50': arranging && dragged === index }"
-          :draggable="arranging"
+          :value="item.id"
+          layout="position"
+          class="relative"
+          :class="{ 'cursor-grab touch-none active:cursor-grabbing': arranging }"
+          :drag="arranging"
+          :drag-elastic="0.7"
+          :while-drag="{ scale: 1.08 }"
+          :transition="transition"
           :data-testid="`favorite-${item.id}`"
-          @dragstart="dragged = index"
-          @dragend="dragged = null"
-          @dragover.prevent="arranging && onDragOver(index)"
-          @drop.prevent="dragged = null"
+          :on-drag-start="() => pickUp(item.id)"
+          :on-drag-end="drop"
+          @dragstart.prevent
         >
-          <CharacterCard
-            :to="arranging ? undefined : { name: 'wiki-character', params: { id: item.id } }"
-            :name="item.name"
-            :image-url="item.imageUrl"
-            :rarity-key="item.rarityKey"
-            :series="item.series"
-            :quantity="item.quantity"
-            :class="[
-              arranging ? 'cursor-grab' : 'transition hover:-translate-y-1',
-              { 'opacity-60 grayscale': item.quantity === 0 },
-            ]"
-          />
+          <component :is="arranging ? TiltCard : 'div'">
+            <CharacterCard
+              :to="arranging ? undefined : { name: 'wiki-character', params: { id: item.id } }"
+              :name="item.name"
+              :image-url="item.imageUrl"
+              :rarity-key="item.rarityKey"
+              :series="item.series"
+              :quantity="item.quantity"
+              :class="[
+                { 'transition hover:-translate-y-1': !arranging },
+                { 'opacity-60 grayscale': item.quantity === 0 },
+              ]"
+            />
+          </component>
           <div
-            v-if="arranging"
+            v-if="arranging && dragging === null"
             class="absolute inset-x-1.5 top-1/2 flex -translate-y-1/2 justify-between"
           >
             <button
@@ -192,6 +219,7 @@ async function save(): Promise<void> {
               :disabled="index === 0"
               :aria-label="t('favorites.moveEarlier', { name: item.name })"
               data-testid="favorite-earlier"
+              @pointerdown.stop
               @click="move(index, index - 1)"
             >
               <ChevronIcon direction="left" />
@@ -202,6 +230,7 @@ async function save(): Promise<void> {
               :disabled="index === items.length - 1"
               :aria-label="t('favorites.moveLater', { name: item.name })"
               data-testid="favorite-later"
+              @pointerdown.stop
               @click="move(index, index + 1)"
             >
               <ChevronIcon direction="right" />
@@ -219,8 +248,8 @@ async function save(): Promise<void> {
             :character-id="item.id"
             :favorite="true"
           />
-        </li>
-      </ol>
+        </ReorderItem>
+      </ReorderGroup>
     </RequireSignIn>
   </main>
 </template>

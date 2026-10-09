@@ -331,3 +331,7 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   (`featured`); bulk recycle skips favorites' duplicates unless `includeFavorites`; stronger
   last-copy warning for favorites (sell panel, trade composer via `ownerFavorite`); collection
   sort key `favorite`.
+- 2026-10-09 — Favorites reordering rebuilt on motion-v `ReorderGroup`/`ReorderItem` (grid axis
+  `xy`, auto-scroll): the picked card tilts (`TiltCard`) and lifts, the others slide away (layout
+  animations), it springs into its slot on release; works with a finger (`touch-none` while
+  arranging). The order moves one slot per pointer move (e2e: move in steps, after layouts settle).

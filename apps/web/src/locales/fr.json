@@ -939,7 +939,7 @@
     },
     "arrange": "Réorganiser",
     "saveOrder": "Enregistrer l'ordre",
-    "arrangeHelp": "Fais glisser les cartes à la souris, ou utilise les flèches, puis enregistre.",
+    "arrangeHelp": "Attrape une carte et dépose-la où tu veux (souris ou doigt), ou utilise les flèches, puis enregistre.",
     "moveEarlier": "Avancer {name}",
     "moveLater": "Reculer {name}",
     "empty": "Aucun favori pour l'instant. Ajoute tes persos préférés avec l'étoile sur leur carte.",

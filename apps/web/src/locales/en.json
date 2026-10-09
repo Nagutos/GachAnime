@@ -939,7 +939,7 @@
     },
     "arrange": "Arrange",
     "saveOrder": "Save the order",
-    "arrangeHelp": "Drag the cards with the mouse, or use the arrows, then save.",
+    "arrangeHelp": "Pick up a card and drop it where you want it (mouse or finger), or use the arrows, then save.",
     "moveEarlier": "Move {name} earlier",
     "moveLater": "Move {name} later",
     "empty": "No favorite yet. Add the characters you prefer with the star on their card.",
