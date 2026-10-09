@@ -44,7 +44,11 @@ const themeOptions = computed(() => [
     label: resolveLocalizedText(item.name, locale.value),
   })),
 ])
-const sorts = ref<CollectionSort[]>([{ key: 'recent', direction: 'desc' }])
+/** Rarest cards first by default, then by name. */
+const sorts = ref<CollectionSort[]>([
+  { key: 'rarity', direction: 'desc' },
+  { key: 'name', direction: 'asc' },
+])
 const duplicates = ref(false)
 const wishlist = ref(false)
 const page = ref(1)
