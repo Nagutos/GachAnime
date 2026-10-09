@@ -195,6 +195,14 @@ export const wishlistResponseSchema = z.object({
   progression: progressionUpdateSchema,
 })
 
+/** The player's wishlist, newest first, with its limit and the booster boost it gives. */
+export const wishlistListResponseSchema = z.object({
+  items: z.array(collectionItemSchema),
+  maxItems: z.number().int().positive(),
+  boostPercent: z.number().min(0).max(100),
+})
+export type WishlistListResponse = z.infer<typeof wishlistListResponseSchema>
+
 // ─── Gems and recycling ──────────────────────────────────────────────────────
 
 export const GEM_TRANSACTION_REASONS = [

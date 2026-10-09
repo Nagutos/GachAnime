@@ -1,4 +1,4 @@
-import { userCards, type Database } from '@gachanime/db'
+import { settings, userCards, type Database } from '@gachanime/db'
 import {
   collectionQuerySchema,
   type CollectionItem,
@@ -14,7 +14,7 @@ import {
   testDatabaseUrl,
 } from '../test/database'
 import { listCollection } from './collection'
-import { setWishlisted } from './wishlist'
+import { listWishlist, setWishlisted } from './wishlist'
 import { ensurePlayerProfile } from './profile'
 import { getWikiCharacter, getWikiSeries, listWikiSeries, listWikiSeriesCharacters } from './wiki'
 
@@ -142,6 +142,32 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
       await expect(setWishlisted(db, 'p1', ids['Retired']!, true)).rejects.toMatchObject({
         code: 'NOT_FOUND',
       })
+    })
+
+    it('limits the wishlist and lists it newest first', async () => {
+      await db
+        .update(settings)
+        .set({ value: { maxItems: 2, boostPercent: 5 } })
+        .where(eq(settings.key, 'wishlist'))
+      await setWishlisted(db, 'p1', ids['Chloe']!, true)
+      await setWishlisted(db, 'p1', ids['Dana']!, true)
+      await expect(setWishlisted(db, 'p1', ids['Ben']!, true)).rejects.toMatchObject({
+        code: 'WISHLIST_FULL',
+        details: { max: 2 },
+      })
+      // Already wished: not an addition, so a full list accepts it.
+      await expect(setWishlisted(db, 'p1', ids['Dana']!, true)).resolves.toMatchObject({
+        wishlisted: true,
+      })
+
+      const list = await listWishlist(db, 'p1')
+      expect(list).toMatchObject({ maxItems: 2, boostPercent: 5 })
+      expect(names(list.items)).toEqual(['Dana', '?rare'])
+      expect(list.items[0]).toMatchObject({ locked: false, quantity: 2, wishlisted: true })
+
+      await setWishlisted(db, 'p1', ids['Chloe']!, false)
+      await setWishlisted(db, 'p1', ids['Ben']!, true)
+      expect(names((await listWishlist(db, 'p1')).items)).toEqual(['Ben', 'Dana'])
     })
   })
 

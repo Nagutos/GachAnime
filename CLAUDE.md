@@ -302,3 +302,10 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   80 → 230 gems/day (new `daily_open_10_boosters` 50, `daily_open_25_boosters` 80; open 1 and
   recycle 30), welcome 300; recycle values 2/5/25/100/500 (market minimum follows). Migration 0017
   only updates rows still at the old defaults. Simulation: ≈ 650 gems/day after 3 months.
+- 2026-10-09 — Wishlist rework: at most 20 characters (`wishlist.maxItems`, `WISHLIST_FULL`),
+  its own page (Collection → Wishlist, `GET /api/v1/wishlist`), and a **boost** in every booster
+  and pack: rarity drawn as usual, then 5 % (`wishlist.boostPercent`) that the card is a wished,
+  not owned character of that rarity in the pool (`drawCards` `wished`/`wishChance`; no extra
+  random number without wished characters). `daily_wishlist` replaced by `daily_recycle_10`
+  (migration 0018). Error toasts (`notifyError`) for actions with no inline error. Opening scene:
+  flying cards clipped (`overflow-clip`) so phones no longer scroll/zoom out.

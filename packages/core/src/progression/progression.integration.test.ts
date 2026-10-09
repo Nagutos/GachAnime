@@ -107,7 +107,7 @@ describe.skipIf(!testDatabaseUrl)('progression (integration)', () => {
         'daily_open_10_boosters',
         'daily_open_25_boosters',
         'daily_recycle',
-        'daily_wishlist',
+        'daily_recycle_10',
         'daily_wiki',
       ])
       expect(list).toMatchObject({
@@ -146,6 +146,20 @@ describe.skipIf(!testDatabaseUrl)('progression (integration)', () => {
     })
 
     it('counts a wishlisted character once per day', async () => {
+      await createMission(
+        db,
+        {
+          key: 'daily_wishlist',
+          name: { en: 'Add 3 characters to your wishlist' },
+          kind: 'daily',
+          eventType: 'wishlist_added',
+          target: 3,
+          rewardGems: 20,
+          isActive: true,
+          sortOrder: 9,
+        },
+        actor,
+      )
       await setWishlisted(db, 'p1', ids['Common A']!, true)
       await setWishlisted(db, 'p1', ids['Common A']!, false)
       await setWishlisted(db, 'p1', ids['Common A']!, true)

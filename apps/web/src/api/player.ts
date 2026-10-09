@@ -4,6 +4,7 @@ import {
   gemHistoryResponseSchema,
   recyclePreviewSchema,
   recycleResultSchema,
+  wishlistListResponseSchema,
   wishlistResponseSchema,
   openBoostersResponseSchema,
   raritiesResponseSchema,
@@ -20,10 +21,10 @@ import {
 } from '@gachanime/shared'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { notifyProgression } from '@/app/toasts'
+import { notifyError, notifyProgression } from '@/app/toasts'
 import { meQueryKey } from './me'
 import { invalidateProgression } from './progression'
-import { apiFetch, toQueryString } from './client'
+import { ApiError, apiFetch, toQueryString } from './client'
 
 /** Query-string form of the collection filters (`sort` as `rarity:desc,name:asc`). */
 export type CollectionFilters = CollectionQueryInput
@@ -102,6 +103,14 @@ export function useCollectionQuery(filters: MaybeRefOrGetter<CollectionFilters>)
         schema: collectionResponseSchema,
       }),
     placeholderData: keepPreviousData,
+  })
+}
+
+/** Under the collection key: anything that changes cards or the wishlist refreshes it. */
+export function useWishlistQuery() {
+  return useQuery({
+    queryKey: [...playerKeys.collection, 'wishlist'],
+    queryFn: () => apiFetch('/wishlist', { schema: wishlistListResponseSchema }),
   })
 }
 
@@ -230,5 +239,12 @@ export function useWishlistMutation() {
       void queryClient.invalidateQueries({ queryKey: playerKeys.wiki })
       invalidateProgression(queryClient)
     },
+    onError: (error) =>
+      notifyError(
+        error,
+        error instanceof ApiError && error.code === 'WISHLIST_FULL'
+          ? { name: 'collection-wishlist', label: 'wishlist.manage' }
+          : undefined,
+      ),
   })
 }

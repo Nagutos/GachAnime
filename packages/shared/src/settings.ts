@@ -20,6 +20,14 @@ export const settingsSchemas = {
     maxPurchasesPerDay: z.number().int().min(0).max(10_000).default(20),
     listingTtlDays: z.number().int().min(0).max(365).default(7),
   }),
+  /**
+   * Wishlist (GAME_DESIGN §6): at most `maxItems` characters; a drawn card has `boostPercent` %
+   * chance to be a wished, not owned character of its rarity when the pool has one.
+   */
+  wishlist: z.object({
+    maxItems: z.number().int().min(1).max(200).default(20),
+    boostPercent: z.number().min(0).max(100).default(5),
+  }),
   /** Trade offers expire after this many days; 0 = never. */
   'trades.offers': z.object({
     offerTtlDays: z.number().int().min(0).max(365).default(0),

@@ -16,6 +16,7 @@ import {
   freeChargeState,
   type FreeChargeRules,
   type Rng,
+  wishChance,
 } from '@gachanime/game'
 import {
   localizedTextSchema,
@@ -32,6 +33,7 @@ import { AppError } from '../errors'
 import { loadCharacterCards } from '../players/cards'
 import { changeGems, lockPlayer } from '../players/gems'
 import { cryptoRng } from '../random'
+import { loadWishedInPool } from '../players/wishlist'
 import { emitEvents } from '../progression/engine'
 import { ensureThemePools, rebuildThemePool } from '../themes/pools'
 import { getSetting } from '../settings'
@@ -180,16 +182,21 @@ export async function openBoosters(
       throw new AppError('NOT_ENOUGH_GEMS', 'Not enough gems', { required: gemsSpent })
     }
 
-    const [rarityRows, pool] = await Promise.all([
-      loadRarities(tx),
-      loadDrawablePool(tx, theme?.id ?? null),
-    ])
+    const rarityRows = await loadRarities(tx)
+    const pool = await loadDrawablePool(tx, theme?.id ?? null)
+    const { boostPercent } = await getSetting(tx, 'wishlist')
+    const wishedPool = await loadWishedInPool(tx, userId, pool)
     const keyById = new Map(rarityRows.map((rarity) => [rarity.id, rarity.key]))
     const idByKey = new Map(rarityRows.map((rarity) => [rarity.key, rarity.id]))
     const poolSizes: Record<string, number> = {}
     for (const [rarityId, ids] of pool) {
       const key = keyById.get(rarityId)
       if (key) poolSizes[key] = ids.length
+    }
+    const wishedSizes: Record<string, number> = {}
+    for (const [rarityId, ids] of wishedPool) {
+      const key = keyById.get(rarityId)
+      if (key) wishedSizes[key] = ids.length
     }
     if (Object.keys(poolSizes).length === 0) {
       throw new AppError('EMPTY_POOL', 'There is no character to draw yet')
@@ -201,10 +208,13 @@ export async function openBoosters(
       poolSizes,
       count: input.quantity * CARDS_PER_BOOSTER,
       rng,
+      wished: wishedSizes,
+      wishChance: wishChance(boostPercent),
     })
     const cards = drawn.map((card) => {
       const rarityId = idByKey.get(card.rarityKey)!
-      return { rarityId, characterId: pool.get(rarityId)![card.index]! }
+      const source = card.wished ? wishedPool : pool
+      return { rarityId, characterId: source.get(rarityId)![card.index]! }
     })
 
     // A card is new when the player never had this character, only for its first occurrence.

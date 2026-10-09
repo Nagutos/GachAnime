@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { drawCards, drawRarity, fallbackRarity } from './draw'
+import { drawCards, drawRarity, fallbackRarity, wishChance, WISH_CHANCE_TOTAL } from './draw'
 import { CARDS_PER_BOOSTER, RATE_TOTAL, weightsFromBoosterTargets } from './rates'
 import { seededRng, type Rng } from './rng'
 
@@ -101,6 +101,69 @@ describe('drawCards', () => {
     const base = { rarityOrder: ORDER, poolSizes: FULL_POOL, count: 1, rng: seededRng(1) }
     expect(() => drawCards({ ...base, weights: { common: 10 } })).toThrow(/Invalid rate table/)
     expect(() => drawCards({ ...base, weights: FREE_WEIGHTS, poolSizes: {} })).toThrow(/empty/)
+  })
+})
+
+describe('wishlist boost', () => {
+  it('converts a boost percentage into a chance', () => {
+    expect(wishChance(5)).toBe(500)
+    expect(wishChance(0.25)).toBe(25)
+    expect(wishChance(-1)).toBe(0)
+    expect(wishChance(150)).toBe(WISH_CHANCE_TOTAL)
+  })
+
+  it('picks a wished character of the drawn rarity, below the chance only', () => {
+    const base = {
+      rarityOrder: ORDER,
+      weights: { common: RATE_TOTAL, rare: 0, epic: 0, legendary: 0, mythic: 0 },
+      poolSizes: FULL_POOL,
+      count: 1,
+      wished: { common: 3 },
+      wishChance: 500,
+    }
+    // Rarity roll, wish roll (499 < 500), index among the 3 wished characters.
+    expect(drawCards({ ...base, rng: scriptedRng([0, 499, 2]) })).toEqual([
+      { rarityKey: 'common', wished: true, index: 2 },
+    ])
+    expect(drawCards({ ...base, rng: scriptedRng([0, 500, 7]) })).toEqual([
+      { rarityKey: 'common', wished: false, index: 7 },
+    ])
+  })
+
+  it('uses no extra random number without wished characters of that rarity', () => {
+    const draw = (wished?: Partial<Record<Key, number>>) =>
+      drawCards({
+        rarityOrder: ORDER,
+        weights: FREE_WEIGHTS,
+        poolSizes: FULL_POOL,
+        count: 50,
+        rng: seededRng(42),
+        wished,
+        wishChance: 500,
+      })
+    expect(draw({ mythic: 0 })).toEqual(draw())
+  })
+
+  it('keeps the rarity rates and gives the boosted share (statistical)', () => {
+    const trials = 200_000
+    const cards = drawCards({
+      rarityOrder: ORDER,
+      weights: FREE_WEIGHTS,
+      poolSizes: FULL_POOL,
+      count: trials,
+      rng: seededRng(9),
+      wished: { common: 2, rare: 1 },
+      wishChance: 500,
+    })
+    const commons = cards.filter((card) => card.rarityKey === 'common')
+    const share = commons.length / trials
+    const expectedShare = FREE_WEIGHTS.common! / RATE_TOTAL
+    expect(Math.abs(share - expectedShare)).toBeLessThan(
+      5 * Math.sqrt((expectedShare * (1 - expectedShare)) / trials),
+    )
+    const wished = commons.filter((card) => card.wished).length / commons.length
+    expect(Math.abs(wished - 0.05)).toBeLessThan(5 * Math.sqrt((0.05 * 0.95) / commons.length))
+    expect(cards.some((card) => card.wished && card.rarityKey === 'epic')).toBe(false)
   })
 })
 

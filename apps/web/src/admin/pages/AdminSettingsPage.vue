@@ -21,6 +21,7 @@ const market = ref<AdminSettings['market.limits']>({
   listingTtlDays: 7,
 })
 const tradeOffers = ref<AdminSettings['trades.offers']>({ offerTtlDays: 0 })
+const wishlist = ref<AdminSettings['wishlist']>({ maxItems: 20, boostPercent: 5 })
 const imageCache = ref<AdminSettings['images.cache']>({ enabled: false })
 const adultImports = ref<AdminSettings['imports.adult']>({ allowed: false })
 const marketFields = [
@@ -37,6 +38,7 @@ watch(
     reset.value = { ...value['missions.reset'] }
     market.value = { ...value['market.limits'] }
     tradeOffers.value = { ...value['trades.offers'] }
+    wishlist.value = { ...value.wishlist }
     imageCache.value = { ...value['images.cache'] }
     adultImports.value = { ...value['imports.adult'] }
   },
@@ -86,6 +88,44 @@ async function save<K extends keyof AdminSettings>(key: K, value: AdminSettings[
         </div>
         <div class="flex items-center justify-end gap-3">
           <span v-if="saved === 'boosters.free'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+
+      <form :class="[ui.card, 'flex flex-col gap-4']" @submit.prevent="save('wishlist', wishlist)">
+        <h2 class="font-display text-xl font-bold">{{ t('admin.settings.wishlist') }}</h2>
+        <p class="text-sm text-mist-300">{{ t('admin.settings.wishlistHelp') }}</p>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label :class="ui.label">
+            {{ t('admin.settings.wishlistMaxItems') }}
+            <input
+              v-model.number="wishlist.maxItems"
+              type="number"
+              min="1"
+              max="200"
+              :class="ui.input"
+              data-testid="setting-wishlist-max"
+            />
+          </label>
+          <label :class="ui.label">
+            {{ t('admin.settings.wishlistBoostPercent') }}
+            <input
+              v-model.number="wishlist.boostPercent"
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              :class="ui.input"
+              data-testid="setting-wishlist-boost"
+            />
+          </label>
+        </div>
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === 'wishlist'" class="text-sm text-emerald-400">
             {{ t('admin.common.saved') }}
           </span>
           <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">

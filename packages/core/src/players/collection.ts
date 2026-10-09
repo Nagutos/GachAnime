@@ -8,8 +8,47 @@ import type {
 } from '@gachanime/shared'
 import { and, count, eq, gt, ilike, or, sql, type SQL } from 'drizzle-orm'
 import { containsPattern } from '../catalog/admin-series'
-import { characterCardColumns, toCharacterCard } from './cards'
+import { characterCardColumns, toCharacterCard, type CharacterCardRow } from './cards'
 import { loadDrawableIds } from '../catalog/drawable-pool'
+
+/** Player card columns selected with `characterCardColumns` to build a collection item. */
+export const collectionItemColumns = {
+  ...characterCardColumns,
+  ownerId: userCards.userId,
+  quantity: userCards.quantity,
+  lockedQuantity: userCards.lockedQuantity,
+  firstObtainedAt: userCards.firstObtainedAt,
+  lastObtainedAt: userCards.lastObtainedAt,
+  wishlisted: sql<boolean>`${wishlistItems.userId} IS NOT NULL`,
+}
+
+interface CollectionRow extends CharacterCardRow {
+  ownerId: string | null
+  quantity: number | null
+  lockedQuantity: number | null
+  firstObtainedAt: Date | null
+  lastObtainedAt: Date | null
+  wishlisted: boolean
+}
+
+/** Never-obtained characters are masked like locked wiki entries. */
+export function toCollectionItem(row: CollectionRow): CollectionItem {
+  if (!row.ownerId || !row.firstObtainedAt || !row.lastObtainedAt) {
+    return { locked: true, id: row.id, rarityKey: row.rarityKey, wishlisted: row.wishlisted }
+  }
+  const quantity = row.quantity ?? 0
+  const lockedQuantity = row.lockedQuantity ?? 0
+  return {
+    ...toCharacterCard(row),
+    locked: false,
+    quantity,
+    lockedQuantity,
+    recyclable: recyclableCopies(quantity, lockedQuantity),
+    wishlisted: row.wishlisted,
+    firstObtainedAt: row.firstObtainedAt.toISOString(),
+    lastObtainedAt: row.lastObtainedAt.toISOString(),
+  }
+}
 
 const isDrawable = sql`EXISTS (SELECT 1 FROM drawable_characters d
   WHERE d.character_id = "characters"."id")`
@@ -82,15 +121,7 @@ export async function listCollection(
 
   const [rows, [filtered], [summary], [catalog]] = await Promise.all([
     db
-      .select({
-        ...characterCardColumns,
-        ownerId: userCards.userId,
-        quantity: userCards.quantity,
-        lockedQuantity: userCards.lockedQuantity,
-        firstObtainedAt: userCards.firstObtainedAt,
-        lastObtainedAt: userCards.lastObtainedAt,
-        wishlisted: sql<boolean>`${wishlistItems.userId} IS NOT NULL`,
-      })
+      .select(collectionItemColumns)
       .from(characters)
       .innerJoin(rarities, eq(rarities.id, characters.rarityId))
       .leftJoin(userCards, playerCard)
@@ -117,23 +148,7 @@ export async function listCollection(
   ])
 
   return {
-    items: rows.map((row): CollectionItem => {
-      if (!row.ownerId || !row.firstObtainedAt || !row.lastObtainedAt) {
-        return { locked: true, id: row.id, rarityKey: row.rarityKey, wishlisted: row.wishlisted }
-      }
-      const quantity = row.quantity ?? 0
-      const lockedQuantity = row.lockedQuantity ?? 0
-      return {
-        ...toCharacterCard(row),
-        locked: false,
-        quantity,
-        lockedQuantity,
-        recyclable: recyclableCopies(quantity, lockedQuantity),
-        wishlisted: row.wishlisted,
-        firstObtainedAt: row.firstObtainedAt.toISOString(),
-        lastObtainedAt: row.lastObtainedAt.toISOString(),
-      }
-    }),
+    items: rows.map(toCollectionItem),
     total: filtered?.value ?? 0,
     page: query.page,
     pageSize: query.pageSize,

@@ -6,6 +6,7 @@ const { t } = useI18n()
 const tabs = [
   { name: 'collection', label: 'collection.tabs.cards' },
   { name: 'collection-series', label: 'collection.tabs.series' },
+  { name: 'collection-wishlist', label: 'collection.tabs.wishlist' },
 ] as const
 </script>
 

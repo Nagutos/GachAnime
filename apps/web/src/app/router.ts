@@ -15,6 +15,11 @@ export const router = createRouter({
       name: 'collection-series',
       component: () => import('@/pages/CollectionSeriesPage.vue'),
     },
+    {
+      path: '/collection/wishlist',
+      name: 'collection-wishlist',
+      component: () => import('@/pages/WishlistPage.vue'),
+    },
     { path: '/market', name: 'market', component: () => import('@/pages/MarketPage.vue') },
     { path: '/trades', name: 'trades', component: () => import('@/pages/TradesPage.vue') },
     {

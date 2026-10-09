@@ -350,7 +350,11 @@
       "imageCacheEnabled": "Mettre en cache les images du catalogue",
       "adultImports": "Contenu adulte dans les imports",
       "adultImportsHelp": "Par défaut, les imports ignorent les anime marqués adultes sur AniList et les jeux ayant le thème Erotic sur IGDB. Ces marquages ont des faux positifs (jeux populaires, séries ecchi). S'applique aux prochains imports et à la recherche AniList.",
-      "adultImportsAllowed": "Importer le contenu adulte"
+      "adultImportsAllowed": "Importer le contenu adulte",
+      "wishlist": "Wishlist",
+      "wishlistHelp": "Chance qu'une carte tirée soit l'un des persos wishlistés du joueur de sa rareté, s'il ne le possède pas et qu'il est dans le pool du booster. Les taux par rareté ne changent pas.",
+      "wishlistMaxItems": "Nombre maximum de persos par joueur",
+      "wishlistBoostPercent": "Boost par carte (%)"
     },
     "rarities": {
       "title": "Raretés",
@@ -599,7 +603,8 @@
     "wishlistOnly": "Wishlist uniquement",
     "tabs": {
       "cards": "Cartes",
-      "series": "Progression par série"
+      "series": "Progression par série",
+      "wishlist": "Wishlist"
     },
     "seriesSubtitle": "Complète une série en possédant tous ses personnages.",
     "seriesStatus": {
@@ -668,7 +673,16 @@
   "wishlist": {
     "add": "Ajouter à ma wishlist",
     "remove": "Retirer de ma wishlist",
-    "inWishlist": "Dans ma wishlist"
+    "inWishlist": "Dans ma wishlist",
+    "manage": "Gérer ma wishlist",
+    "title": "Ma wishlist",
+    "count": "{count} / {max} personnages",
+    "boostHelp": "Chaque carte tirée a {percent} de chances d'être l'un de tes persos wishlistés de sa rareté, dans tous les boosters et packs qui les contiennent. Les persos que tu possèdes déjà ne sont pas boostés.",
+    "full": "Ta wishlist est pleine : retire un perso pour en ajouter un autre.",
+    "empty": "Ta wishlist est vide. Ajoute des persos avec le cœur sur leur carte, dans la collection ou le wiki.",
+    "browseWiki": "Parcourir le wiki",
+    "boosted": "Boosté",
+    "owned": "Obtenu"
   },
   "recycle": {
     "open": "Recycler les doublons",
@@ -888,6 +902,7 @@
     "INVALID_TRADE": "Cet échange n'est pas valide.",
     "PLAYER_BANNED": "Ce joueur est banni.",
     "IGDB_UNAVAILABLE": "IGDB est injoignable pour le moment. Réessaie plus tard.",
-    "IGDB_NOT_CONFIGURED": "IGDB n'est pas configuré sur cette instance : renseigne IGDB_CLIENT_ID et IGDB_CLIENT_SECRET (voir le guide d'auto-hébergement)."
+    "IGDB_NOT_CONFIGURED": "IGDB n'est pas configuré sur cette instance : renseigne IGDB_CLIENT_ID et IGDB_CLIENT_SECRET (voir le guide d'auto-hébergement).",
+    "WISHLIST_FULL": "Ta wishlist est pleine ({max} personnages)."
   }
 }

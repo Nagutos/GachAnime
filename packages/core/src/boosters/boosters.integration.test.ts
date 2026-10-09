@@ -11,6 +11,7 @@ import { eq, sql } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { AppError } from '../errors'
 import { ensurePlayerProfile } from '../players/profile'
+import { setWishlisted } from '../players/wishlist'
 import { insertSeriesWithCharacters } from '../test/catalog-fixture'
 import {
   insertDiscordUser,
@@ -206,5 +207,51 @@ describe.skipIf(!testDatabaseUrl)('booster openings (integration)', () => {
     // Every rarity falls back to the only drawable character.
     expect(new Set(result.cards.map((card) => card.character.id))).toEqual(new Set([ids['Rare A']]))
     expect(result.cards.every((card) => card.character.rarityKey === 'rare')).toBe(true)
+  })
+
+  describe('wishlist boost', () => {
+    async function setBoost(boostPercent: number): Promise<void> {
+      await db
+        .update(settings)
+        .set({ value: { maxItems: 20, boostPercent } })
+        .where(eq(settings.key, 'wishlist'))
+    }
+    const open = () =>
+      openBoosters(db, 'p1', { tier: 'free', quantity: 10 }, { now: NOW, rng: seededRng(3) })
+
+    it('turns cards of a wished rarity into the wished character', async () => {
+      await setBoost(100)
+      await setWishlisted(db, 'p1', ids['Common B']!, true)
+
+      const boosted = await open()
+      const commons = boosted.cards.filter((card) => card.character.rarityKey === 'common')
+      expect(commons.length).toBeGreaterThan(0)
+      expect(commons.every((card) => card.character.id === ids['Common B'])).toBe(true)
+      const rares = new Set(
+        boosted.cards
+          .filter((card) => card.character.rarityKey === 'rare')
+          .map((card) => card.character.id),
+      )
+      expect(rares.size).toBeGreaterThan(1)
+    })
+
+    it('does not boost a wished character the player owns', async () => {
+      await setBoost(100)
+      await setWishlisted(db, 'p1', ids['Common B']!, true)
+      await db.insert(userCards).values({
+        userId: 'p1',
+        characterId: ids['Common B']!,
+        quantity: 1,
+        firstObtainedAt: NOW,
+        lastObtainedAt: NOW,
+      })
+      const result = await open()
+      const commons = new Set(
+        result.cards
+          .filter((card) => card.character.rarityKey === 'common')
+          .map((card) => card.character.id),
+      )
+      expect(commons.size).toBeGreaterThan(1)
+    })
   })
 })

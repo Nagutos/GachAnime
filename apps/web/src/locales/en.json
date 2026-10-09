@@ -350,7 +350,11 @@
       "imageCacheEnabled": "Cache catalog images locally",
       "adultImports": "Adult content in imports",
       "adultImportsHelp": "By default, imports skip anime flagged as adult on AniList and games with the Erotic theme on IGDB. These flags have false positives (popular games, ecchi series). Applies to the next imports and to the AniList search.",
-      "adultImportsAllowed": "Import adult content"
+      "adultImportsAllowed": "Import adult content",
+      "wishlist": "Wishlist",
+      "wishlistHelp": "Chance that a drawn card is one of the player's wished characters of its rarity, if they do not own it and it is in the booster's pool. Rarity rates do not change.",
+      "wishlistMaxItems": "Maximum characters per player",
+      "wishlistBoostPercent": "Boost per card (%)"
     },
     "rarities": {
       "title": "Rarities",
@@ -599,7 +603,8 @@
     "wishlistOnly": "Wishlist only",
     "tabs": {
       "cards": "Cards",
-      "series": "Series progress"
+      "series": "Series progress",
+      "wishlist": "Wishlist"
     },
     "seriesSubtitle": "Complete a series by owning all of its characters.",
     "seriesStatus": {
@@ -668,7 +673,16 @@
   "wishlist": {
     "add": "Add to wishlist",
     "remove": "Remove from wishlist",
-    "inWishlist": "In my wishlist"
+    "inWishlist": "In my wishlist",
+    "manage": "Manage my wishlist",
+    "title": "My wishlist",
+    "count": "{count} / {max} characters",
+    "boostHelp": "Each card you draw has a {percent} chance to be one of your wished characters of its rarity, in every booster and pack that contains them. Characters you already own are not boosted.",
+    "full": "Your wishlist is full: remove a character to add another one.",
+    "empty": "Your wishlist is empty. Add characters with the heart on their card, in the collection or the wiki.",
+    "browseWiki": "Browse the wiki",
+    "boosted": "Boosted",
+    "owned": "Owned"
   },
   "recycle": {
     "open": "Recycle duplicates",
@@ -888,6 +902,7 @@
     "INVALID_TRADE": "This trade is not valid.",
     "PLAYER_BANNED": "This player is banned.",
     "IGDB_UNAVAILABLE": "IGDB is not reachable right now. Please retry later.",
-    "IGDB_NOT_CONFIGURED": "IGDB is not configured on this instance: set IGDB_CLIENT_ID and IGDB_CLIENT_SECRET (see the self-hosting guide)."
+    "IGDB_NOT_CONFIGURED": "IGDB is not configured on this instance: set IGDB_CLIENT_ID and IGDB_CLIENT_SECRET (see the self-hosting guide).",
+    "WISHLIST_FULL": "Your wishlist is full ({max} characters)."
   }
 }

@@ -23,6 +23,7 @@ export async function getAdminSettings(db: Executor): Promise<AdminSettings> {
     'boosters.free': await getSetting(db, 'boosters.free'),
     'missions.reset': await getSetting(db, 'missions.reset'),
     'market.limits': await getSetting(db, 'market.limits'),
+    wishlist: await getSetting(db, 'wishlist'),
     'trades.offers': await getSetting(db, 'trades.offers'),
     'images.cache': await getSetting(db, 'images.cache'),
     'imports.adult': await getSetting(db, 'imports.adult'),

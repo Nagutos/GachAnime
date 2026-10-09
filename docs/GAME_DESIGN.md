@@ -271,8 +271,16 @@ Starting packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos.
 - Wiki entry unlocks when the character is first obtained and **stays unlocked** even if the card is
   later traded or sold. Locked entries show a silhouette and "???". Source (AniList)
   is credited on every entry.
-- Wishlist: any character (owned or not); used as a collection filter, highlighted in the market and
-  in trade proposals ("in their wishlist").
+- Wishlist: any character (owned or not), **at most 20** per player (setting `wishlist.maxItems`);
+  used as a collection filter, highlighted in the market and in trade proposals ("in their
+  wishlist"), and managed from its own page (Collection → Wishlist). Existing lists above the limit
+  are kept, only additions are refused (`WISHLIST_FULL`).
+- **Wishlist boost** (decided 2026-10-09), in every booster and pack: the card's rarity is drawn
+  as usual (published rates unchanged); then, if the booster's pool holds wished characters of
+  that rarity that the player does not own now (quantity 0), the card is one of them (uniformly)
+  with a **5 %** chance (setting `wishlist.boostPercent`), otherwise a uniform character of the
+  rarity. A wished character the player owns stays listed ("owned") but is not boosted. A pack
+  only boosts the wished characters it contains.
 
 ## 7. Trades
 
@@ -301,21 +309,23 @@ A mission = `event_type` + optional `filter` (JSON, e.g. `{ "rateTable": "divine
   current period computed from the reset hour/timezone (default 00:00 Europe/Paris), or `once`.
   Rewards are claimed manually. No cron: a new day simply means a new period key.
 
-| Key                      | EN                                | FR                            | Event             | Target | Reward |
-| ------------------------ | --------------------------------- | ----------------------------- | ----------------- | ------ | ------ |
-| `daily_open_booster`     | Open your first booster           | Ouvre ton premier booster     | booster_opened    | 1      | 30     |
-| `daily_open_10_boosters` | Open 10 boosters                  | Ouvre 10 boosters             | booster_opened    | 10     | 50     |
-| `daily_open_25_boosters` | Open 25 boosters                  | Ouvre 25 boosters             | booster_opened    | 25     | 80     |
-| `daily_recycle`          | Recycle a duplicate               | Recycle un doublon            | card_recycled     | 1      | 30     |
-| `daily_wishlist`         | Add 3 characters to your wishlist | Ajoute 3 persos à ta wishlist | wishlist_added    | 3      | 20     |
-| `daily_wiki`             | Open a wiki entry                 | Ouvre une fiche du wiki       | wiki_entry_viewed | 1      | 20     |
-| `welcome` (once)         | Create your account               | Crée ton compte               | account_created   | 1      | 300    |
+| Key                      | EN                      | FR                        | Event             | Target | Reward |
+| ------------------------ | ----------------------- | ------------------------- | ----------------- | ------ | ------ |
+| `daily_open_booster`     | Open your first booster | Ouvre ton premier booster | booster_opened    | 1      | 30     |
+| `daily_open_10_boosters` | Open 10 boosters        | Ouvre 10 boosters         | booster_opened    | 10     | 50     |
+| `daily_open_25_boosters` | Open 25 boosters        | Ouvre 25 boosters         | booster_opened    | 25     | 80     |
+| `daily_recycle`          | Recycle a duplicate     | Recycle un doublon        | card_recycled     | 1      | 30     |
+| `daily_recycle_10`       | Recycle 10 duplicates   | Recycle 10 doublons       | card_recycled     | 10     | 20     |
+| `daily_wiki`             | Open a wiki entry       | Ouvre une fiche du wiki   | wiki_entry_viewed | 1      | 20     |
+| `welcome` (once)         | Create your account     | Crée ton compte           | account_created   | 1      | 300    |
 
 Daily total: 230 gems (revised 2026-10-09, was 80; welcome was 30). `booster_opened` advances by
-the number of boosters opened, free or paid.
+the number of boosters opened, free or paid. `daily_wishlist` (add 3 characters to your wishlist)
+was replaced by `daily_recycle_10` when wishlists got their limit (kept inactive).
 
-`wiki_entry_viewed` only counts unlocked entries; `wishlist_added` counts additions (removing and
-re-adding the same character on the same day counts once — dedup per character per period).
+`wiki_entry_viewed` only counts unlocked entries; `wishlist_added` (no default mission) counts
+additions (removing and re-adding the same character on the same day counts once — dedup per
+character per period).
 
 ### Achievements
 
