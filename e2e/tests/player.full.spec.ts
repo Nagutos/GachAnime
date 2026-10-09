@@ -44,6 +44,12 @@ test('a new player opens a free booster, then finds the cards in the collection 
   await expect(page).toHaveURL(/[?&]series=\d+/)
   await expect(page.getByRole('button', { name: new RegExp(E2E_SERIES_TITLE) })).toBeVisible()
   await expect(grid.getByTestId('character-card')).toHaveCount(owned)
+  // The whole card opens its wiki entry, not only its name.
+  await grid
+    .getByTestId('character-card')
+    .first()
+    .click({ position: { x: 40, y: 40 } })
+  await expect(page).toHaveURL(/\/wiki\/characters\/\d+/)
 
   // Wiki entry of a drawn character is unlocked.
   await page.goto(`/wiki/characters/${characterId}`)

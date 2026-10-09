@@ -39,7 +39,7 @@ const effectClass = computed(() => {
 
 <template>
   <div
-    class="card-frame relative aspect-5/7 w-full overflow-hidden rounded-xl p-[5px] shadow-lg has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-sakura-400"
+    class="card-frame relative isolate aspect-5/7 w-full overflow-hidden rounded-xl p-[5px] shadow-lg has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-sakura-400"
     :class="[style.glow, effectClass, { 'card-frame-mythic': rarityKey === 'mythic' }]"
     :style="frameStyle(rarityKey)"
     data-testid="character-card"
@@ -63,17 +63,7 @@ const effectClass = computed(() => {
       </div>
       <!-- Name plate, edged with the rarity color -->
       <div class="card-plate absolute inset-x-0 bottom-0 px-2 pt-1.5 pb-2">
-        <p class="truncate text-sm leading-tight font-bold" :title="name">
-          <!-- Stretched link: its ::after covers the card, the series link sits above it -->
-          <RouterLink
-            v-if="to"
-            :to="to"
-            class="outline-none after:absolute after:inset-0 after:content-['']"
-          >
-            {{ name }}
-          </RouterLink>
-          <template v-else>{{ name }}</template>
-        </p>
+        <p class="truncate text-sm leading-tight font-bold" :title="name">{{ name }}</p>
         <template v-if="series">
           <RouterLink
             v-if="to"
@@ -89,6 +79,17 @@ const effectClass = computed(() => {
           </p>
         </template>
       </div>
+      <!--
+        The whole card links to `to`; the series link sits above it. Not a stretched ::after on
+        the name: the absolute name plate would be its containing block (only the plate clicked).
+      -->
+      <RouterLink
+        v-if="to"
+        :to="to"
+        class="absolute inset-0 z-1 outline-none"
+        :aria-label="name"
+        data-testid="card-link"
+      />
       <!-- Badges stack on the left so they never overlap, even on small cards -->
       <div
         class="pointer-events-none absolute top-1.5 left-1.5 flex max-w-[calc(100%-0.75rem)] flex-col items-start gap-1"
