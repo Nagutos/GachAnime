@@ -274,7 +274,7 @@ onBeforeUnmount(() => {
     <DialogPortal>
       <DialogOverlay class="fixed inset-0 z-40 bg-night-950" />
       <DialogContent
-        class="fixed inset-0 z-50 flex flex-col overflow-y-auto px-4 py-6 outline-none"
+        class="fixed inset-0 z-50 flex flex-col overflow-x-hidden overflow-y-auto overscroll-contain px-4 py-6 outline-none"
         data-testid="booster-opening"
         @escape-key-down="onEscape"
         @keydown="onKeydown"
@@ -335,7 +335,11 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <div class="flex flex-1 flex-col items-center justify-center gap-8 py-6">
+        <!--
+          Clipped: a card swiped away or dealt into the grid flies past the screen edges, which
+          would otherwise grow the scroll area (and zoom out the page on phones).
+        -->
+        <div class="flex flex-1 flex-col items-center justify-center gap-8 overflow-clip py-6">
           <AnimatePresence mode="wait">
             <motion.div
               v-if="stage === 'pack'"
@@ -411,7 +415,7 @@ onBeforeUnmount(() => {
                   <motion.div
                     v-for="card in [focusedCard]"
                     :key="card.position"
-                    class="absolute inset-0"
+                    class="absolute inset-0 touch-none"
                     :class="{ 'cursor-grab active:cursor-grabbing': revealed.has(card.position) }"
                     :initial="{ x: 7, y: 5, rotate: 2.5, scale: 0.98 }"
                     :animate="{ opacity: 1, y: 0, scale: 1, x: 0, rotate: 0 }"
