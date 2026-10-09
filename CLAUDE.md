@@ -312,3 +312,6 @@ before an answer. Ask the maintainer (in French) before any architecture or game
 - 2026-10-09 — Locked characters are no longer masked: wiki, collection and wishlist show them
   greyed with a lock (`LockedCard` wraps `CharacterCard`), name + picture + series only; the rest
   of the wiki entry unlocks with the card. Wiki series grid has the wishlist heart again.
+- 2026-10-09 — Wishlists are public: profile tab "Wishlist" (`GET /players/:username/wishlist`,
+  `getPlayerWishlist`: owner owns it or not, copies the viewer could trade), "My wishlist" in the
+  user menu; the management page stays Collection → Wishlist.

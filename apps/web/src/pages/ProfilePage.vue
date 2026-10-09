@@ -4,7 +4,7 @@ import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
-import { usePlayerCardsQuery, usePlayerProfileQuery } from '@/api/social'
+import { usePlayerCardsQuery, usePlayerProfileQuery, usePlayerWishlistQuery } from '@/api/social'
 import { useErrorMessage } from '@/app/errors'
 import { usePlayerRarities } from '@/app/rarities'
 import AppSelect from '@/components/AppSelect.vue'
@@ -18,7 +18,8 @@ const PAGE_SIZE = 30
 const props = defineProps<{ username: string }>()
 const { t, n, d, locale } = useI18n()
 const { filterOptions: rarityOptions } = usePlayerRarities()
-const tab = ref<'cards' | 'achievements'>('cards')
+const TABS = ['cards', 'wishlist', 'achievements'] as const
+const tab = ref<(typeof TABS)[number]>('cards')
 const search = ref('')
 const debounced = refDebounced(search, 300)
 const rarity = ref('')
@@ -37,6 +38,7 @@ const cards = usePlayerCardsQuery(
   })),
 )
 const data = computed(() => profile.data.value)
+const wishlist = usePlayerWishlistQuery(() => props.username)
 const stats = computed(() =>
   data.value
     ? ([
@@ -94,11 +96,12 @@ const stats = computed(() =>
 
         <div class="flex gap-1 border-b border-night-700" role="tablist">
           <button
-            v-for="value in ['cards', 'achievements'] as const"
+            v-for="value in TABS"
             :key="value"
             type="button"
             role="tab"
             :aria-selected="tab === value"
+            :data-testid="`profile-tab-${value}`"
             class="-mb-px border-b-2 px-4 py-2 text-sm font-medium"
             :class="
               tab === value
@@ -152,6 +155,67 @@ const stats = computed(() =>
             :total="cards.data.value.total"
             @update:page="(value: number) => (page = value)"
           />
+        </template>
+        <template v-else-if="tab === 'wishlist'">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <p
+              v-if="wishlist.data.value"
+              class="text-mist-300"
+              data-testid="profile-wishlist-count"
+            >
+              {{
+                t('wishlist.count', {
+                  count: n(wishlist.data.value.items.length, 'integer'),
+                  max: n(wishlist.data.value.maxItems, 'integer'),
+                })
+              }}
+            </p>
+            <RouterLink
+              v-if="data.isMe"
+              :to="{ name: 'collection-wishlist' }"
+              class="rounded-xl border border-night-700 bg-night-800 px-4 py-2 text-sm font-semibold hover:bg-night-700"
+            >
+              {{ t('wishlist.manage') }}
+            </RouterLink>
+            <p v-else class="text-sm text-mist-300">{{ t('profile.wishlistHelp') }}</p>
+          </div>
+          <p v-if="wishlist.isPending.value" class="text-mist-300">{{ t('common.loading') }}</p>
+          <p v-else-if="wishlist.data.value?.items.length === 0" class="text-mist-300">
+            {{ t('profile.noWishlist') }}
+          </p>
+          <ul
+            v-else-if="wishlist.data.value"
+            :class="playerUi.cardGrid"
+            data-testid="profile-wishlist"
+          >
+            <li v-for="item in wishlist.data.value.items" :key="item.id" class="relative">
+              <CharacterCard
+                :to="{ name: 'wiki-character', params: { id: item.id } }"
+                :name="item.name"
+                :image-url="item.imageUrl"
+                :rarity-key="item.rarityKey"
+                :series="item.series"
+                class="transition hover:-translate-y-1"
+              />
+              <div
+                class="pointer-events-none absolute bottom-12 left-1.5 flex flex-col items-start gap-1"
+              >
+                <span
+                  v-if="item.ownerOwns"
+                  class="rounded-full border border-night-500 bg-night-950/85 px-2 py-0.5 text-[10px] font-bold text-mist-300 uppercase"
+                >
+                  {{ t('wishlist.owned') }}
+                </span>
+                <span
+                  v-if="!data.isMe && item.viewerTradable > 0"
+                  class="rounded-full bg-sakura-600 px-2 py-0.5 text-[10px] font-bold text-white"
+                  data-testid="viewer-has-it"
+                >
+                  {{ t('profile.youHaveIt', { count: item.viewerTradable }) }}
+                </span>
+              </div>
+            </li>
+          </ul>
         </template>
         <ul v-else class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           <li

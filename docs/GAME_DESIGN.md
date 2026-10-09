@@ -275,8 +275,10 @@ Starting packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos.
   name. Source (AniList) is credited on every entry.
 - Wishlist: any character (owned or not), **at most 20** per player (setting `wishlist.maxItems`);
   used as a collection filter, highlighted in the market and in trade proposals ("in their
-  wishlist"), and managed from its own page (Collection → Wishlist). Existing lists above the limit
-  are kept, only additions are refused (`WISHLIST_FULL`).
+  wishlist"), and managed from its own page (Collection → Wishlist, also in the user menu). It is
+  public: the player profile has a Wishlist tab showing, for the viewer, the copies they could
+  offer in a trade. Existing lists above the limit are kept, only additions are refused
+  (`WISHLIST_FULL`).
 - **Wishlist boost** (decided 2026-10-09), in every booster and pack: the card's rarity is drawn
   as usual (published rates unchanged); then, if the booster's pool holds wished characters of
   that rarity that the player does not own now (quantity 0), the card is one of them (uniformly)

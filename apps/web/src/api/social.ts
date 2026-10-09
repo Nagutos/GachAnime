@@ -6,6 +6,7 @@ import {
   playerCardsResponseSchema,
   playerProfileSchema,
   playersListSchema,
+  playerWishlistResponseSchema,
   tradeActionResultSchema,
   tradeSchema,
   tradesListSchema,
@@ -82,6 +83,16 @@ export function usePlayerCardsQuery(
       ),
     enabled: computed(() => Boolean(toValue(username))),
     placeholderData: keepPreviousData,
+  })
+}
+
+export function usePlayerWishlistQuery(username: MaybeRefOrGetter<string>) {
+  return useQuery({
+    queryKey: computed(() => [...socialKeys.players, 'wishlist', toValue(username)]),
+    queryFn: () =>
+      apiFetch(`/players/${encodeURIComponent(toValue(username))}/wishlist`, {
+        schema: playerWishlistResponseSchema,
+      }),
   })
 }
 

@@ -521,7 +521,8 @@
     "trades": "Échanges",
     "myProfile": "Mon profil",
     "players": "Joueurs",
-    "skipToContent": "Aller au contenu"
+    "skipToContent": "Aller au contenu",
+    "myWishlist": "Ma wishlist"
   },
   "cards": {
     "turn": "Retourner la carte",
@@ -770,8 +771,12 @@
     },
     "tabs": {
       "cards": "Cartes",
-      "achievements": "Succès"
-    }
+      "achievements": "Succès",
+      "wishlist": "Wishlist"
+    },
+    "wishlistHelp": "Les persos que ce joueur recherche : propose-les-lui en échange.",
+    "noWishlist": "Ce joueur n'a aucun perso dans sa wishlist.",
+    "youHaveIt": "Tu l'as ×{count}"
   },
   "trades": {
     "title": "Échanges",

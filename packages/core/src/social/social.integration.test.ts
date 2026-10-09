@@ -32,7 +32,7 @@ import {
   myListings,
   withdrawListing,
 } from './market'
-import { getPlayerProfile, listPlayerCards, listPlayers } from './players'
+import { getPlayerProfile, getPlayerWishlist, listPlayerCards, listPlayers } from './players'
 import {
   acceptTrade,
   cancelTrade,
@@ -437,6 +437,24 @@ describe.skipIf(!testDatabaseUrl)('social: market, trades, profiles (integration
   })
 
   describe('profiles', () => {
+    it("shows a player's wishlist with what each side owns", async () => {
+      await setWishlisted(db, 'alice', ids['Legendary A']!, true)
+      await setWishlisted(db, 'alice', ids['Rare A']!, true)
+      await give('alice', 'Rare A', 1)
+      await db.insert(userCards).values({
+        userId: 'bob',
+        characterId: ids['Legendary A']!,
+        quantity: 3,
+        lockedQuantity: 1,
+      })
+      const seen = await getPlayerWishlist(db, 'alice', 'bob')
+      expect(seen.maxItems).toBe(20)
+      expect(seen.items.map((item) => [item.name, item.ownerOwns, item.viewerTradable])).toEqual([
+        ['Rare A', true, 0],
+        ['Legendary A', false, 2],
+      ])
+    })
+
     it('shows public stats and cards with wishlist highlights', async () => {
       await give('alice', 'Epic A', 3)
       await give('alice', 'Rare A', 1)

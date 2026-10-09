@@ -40,6 +40,13 @@ const router = useRouter()
         </DropdownMenuItem>
         <DropdownMenuItem
           class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
+          data-testid="wishlist-link"
+          @select="router.push({ name: 'collection-wishlist' })"
+        >
+          {{ t('nav.myWishlist') }}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          class="cursor-pointer rounded-lg px-3 py-2 outline-none data-highlighted:bg-night-800"
           @select="router.push({ name: 'players' })"
         >
           {{ t('nav.players') }}

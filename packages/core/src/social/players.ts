@@ -17,12 +17,14 @@ import {
   type PlayerCardsQuery,
   type PlayerProfile,
   type PlayerSummary,
+  type PlayerWishlistResponse,
 } from '@gachanime/shared'
 import { and, asc, count, desc, eq, gt, ilike, isNotNull, or, sql, type SQL } from 'drizzle-orm'
 import { containsPattern } from '../catalog/admin-series'
 import { AppError } from '../errors'
 import { characterCardColumns, toCharacterCard } from '../players/cards'
 import { loadDrawableIds } from '../catalog/drawable-pool'
+import { getSetting } from '../settings'
 
 export interface PlayerRecord extends PlayerSummary {
   userId: string
@@ -216,5 +218,49 @@ export async function listPlayerCards(
     total: total?.value ?? 0,
     page: query.page,
     pageSize: query.pageSize,
+  }
+}
+
+/**
+ * A player's wishlist, public like the profile (newest first): whether the owner has each
+ * character, and how many copies the viewer could offer in a trade.
+ */
+export async function getPlayerWishlist(
+  db: Executor,
+  ownerId: string,
+  viewerId: string,
+): Promise<PlayerWishlistResponse> {
+  const ownerCard = alias(userCards, 'owner_card')
+  const viewerCard = alias(userCards, 'viewer_card')
+  const [rows, { maxItems }] = await Promise.all([
+    db
+      .select({
+        ...characterCardColumns,
+        ownerQuantity: ownerCard.quantity,
+        viewerQuantity: viewerCard.quantity,
+        viewerLocked: viewerCard.lockedQuantity,
+      })
+      .from(wishlistItems)
+      .innerJoin(characters, eq(characters.id, wishlistItems.characterId))
+      .innerJoin(rarities, eq(rarities.id, characters.rarityId))
+      .leftJoin(
+        ownerCard,
+        and(eq(ownerCard.characterId, characters.id), eq(ownerCard.userId, ownerId)),
+      )
+      .leftJoin(
+        viewerCard,
+        and(eq(viewerCard.characterId, characters.id), eq(viewerCard.userId, viewerId)),
+      )
+      .where(eq(wishlistItems.userId, ownerId))
+      .orderBy(desc(wishlistItems.createdAt), desc(characters.id)),
+    getSetting(db, 'wishlist'),
+  ])
+  return {
+    items: rows.map((row) => ({
+      ...toCharacterCard(row),
+      ownerOwns: (row.ownerQuantity ?? 0) > 0,
+      viewerTradable: Math.max(0, (row.viewerQuantity ?? 0) - (row.viewerLocked ?? 0)),
+    })),
+    maxItems,
   }
 }

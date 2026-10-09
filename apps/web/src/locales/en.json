@@ -521,7 +521,8 @@
     "trades": "Trades",
     "myProfile": "My profile",
     "players": "Players",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "myWishlist": "My wishlist"
   },
   "cards": {
     "turn": "Turn the card over",
@@ -770,8 +771,12 @@
     },
     "tabs": {
       "cards": "Cards",
-      "achievements": "Achievements"
-    }
+      "achievements": "Achievements",
+      "wishlist": "Wishlist"
+    },
+    "wishlistHelp": "Characters this player is looking for: offer them in a trade.",
+    "noWishlist": "This player has no character in their wishlist.",
+    "youHaveIt": "You have it ×{count}"
   },
   "trades": {
     "title": "Trades",

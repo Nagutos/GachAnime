@@ -237,6 +237,8 @@ export function useWishlistMutation() {
       notifyProgression(result.progression)
       void queryClient.invalidateQueries({ queryKey: playerKeys.collection })
       void queryClient.invalidateQueries({ queryKey: playerKeys.wiki })
+      // Public wishlists shown on profiles.
+      void queryClient.invalidateQueries({ queryKey: ['players'] })
       invalidateProgression(queryClient)
     },
     onError: (error) =>

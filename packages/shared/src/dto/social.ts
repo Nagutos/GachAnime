@@ -69,6 +69,20 @@ export const playerCardSchema = characterCardSchema.extend({
 export type PlayerCard = z.infer<typeof playerCardSchema>
 export const playerCardsResponseSchema = paginatedSchema(playerCardSchema)
 
+/** A player's wishlist as seen by another one (profile): who owns each character. */
+export const playerWishlistItemSchema = characterCardSchema.extend({
+  /** The wishlist owner has a copy now (no boost for it). */
+  ownerOwns: z.boolean(),
+  /** Copies the viewer could trade now (not locked by a listing or a trade). */
+  viewerTradable: z.number().int().nonnegative(),
+})
+export type PlayerWishlistItem = z.infer<typeof playerWishlistItemSchema>
+export const playerWishlistResponseSchema = z.object({
+  items: z.array(playerWishlistItemSchema),
+  maxItems: z.number().int().positive(),
+})
+export type PlayerWishlistResponse = z.infer<typeof playerWishlistResponseSchema>
+
 // ─── Trades ──────────────────────────────────────────────────────────────────
 
 export const TRADE_STATUSES = [
