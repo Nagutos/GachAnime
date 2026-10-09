@@ -269,8 +269,10 @@ Starting packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos.
 - Series progress `owned active characters / active characters`. A series is **complete** when all
   its active characters are owned (quantity ≥ 1).
 - Wiki entry unlocks when the character is first obtained and **stays unlocked** even if the card is
-  later traded or sold. Locked entries show a silhouette and "???". Source (AniList)
-  is credited on every entry.
+  later traded or sold. Locked entries show the character greyed (name, picture, rarity, series,
+  revised 2026-10-09): description, alternative names, appearances and copies stay locked. Never
+  obtained characters appear the same way in the collection ("missing") and can be searched by
+  name. Source (AniList) is credited on every entry.
 - Wishlist: any character (owned or not), **at most 20** per player (setting `wishlist.maxItems`);
   used as a collection filter, highlighted in the market and in trade proposals ("in their
   wishlist"), and managed from its own page (Collection → Wishlist). Existing lists above the limit

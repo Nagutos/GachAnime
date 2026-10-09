@@ -184,7 +184,7 @@ src/
   features/
     boosters/   shop, timer, opening scene (Motion), reveal
     collection/ grid, filters, sort, series progress
-    wiki/       character pages (masked when locked)
+    wiki/       character pages (greyed when locked)
     trades/  market/  missions/  achievements/  profile/
   admin/        lazy-loaded admin routes (guarded, server enforces anyway)
   components/   shared UI built on Reka UI + Tailwind tokens

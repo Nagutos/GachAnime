@@ -1,39 +1,41 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import type { SeriesRef } from '@gachanime/shared'
 import { useI18n } from 'vue-i18n'
-import { usePlayerRarities } from '@/app/rarities'
-import { rarityStyle } from './rarity-styles'
+import type { RouteLocationRaw } from 'vue-router'
+import CharacterCard from './CharacterCard.vue'
 
-const props = defineProps<{ rarityKey: string }>()
+/** A character not obtained yet: its card, greyed, with a lock (the wiki entry stays locked). */
+defineProps<{
+  name: string
+  imageUrl: string | null
+  rarityKey: string
+  series?: SeriesRef | null
+  to?: RouteLocationRaw
+}>()
 const { t } = useI18n()
-const { nameOf } = usePlayerRarities()
-const style = computed(() => rarityStyle(props.rarityKey))
 </script>
 
 <template>
-  <!-- Same frame as a character card, in a neutral metal: the rarity shows on the dashed edge -->
-  <div
-    class="card-frame relative aspect-5/7 w-full overflow-hidden rounded-xl p-[5px]"
-    style="--frame: var(--color-night-500)"
-    data-testid="locked-card"
-  >
-    <div
-      class="card-window relative flex size-full flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed bg-night-900"
-      :class="style.frame"
+  <div class="relative" data-testid="locked-card">
+    <CharacterCard
+      :name="name"
+      :image-url="imageUrl"
+      :rarity-key="rarityKey"
+      :series="series"
+      :to="to"
+      :effects="false"
+      class="opacity-60 grayscale"
+    />
+    <span
+      class="pointer-events-none absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-night-950/85 text-mist-300"
+      :title="t('wiki.lockedTitle')"
     >
-      <svg viewBox="0 0 100 120" class="w-2/3 fill-night-700" aria-hidden="true">
-        <circle cx="50" cy="38" r="22" />
-        <path d="M8 120c0-30 18-48 42-48s42 18 42 48z" />
+      <svg viewBox="0 0 24 24" class="size-3.5 fill-current" aria-hidden="true">
+        <path
+          d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3Z"
+        />
       </svg>
-      <p class="mt-2 font-display text-2xl font-bold text-mist-300/60">
-        {{ t('wiki.unknownName') }}
-      </p>
-      <span
-        class="absolute top-1.5 left-1.5 rounded-full bg-night-950/85 px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase opacity-70"
-        :class="style.text"
-      >
-        {{ nameOf(rarityKey) }}
-      </span>
-    </div>
+      <span class="sr-only">{{ t('wiki.lockedTitle') }}</span>
+    </span>
   </div>
 </template>

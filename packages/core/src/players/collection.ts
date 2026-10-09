@@ -31,10 +31,10 @@ interface CollectionRow extends CharacterCardRow {
   wishlisted: boolean
 }
 
-/** Never-obtained characters are masked like locked wiki entries. */
+/** Never-obtained characters are shown greyed, like locked wiki entries. */
 export function toCollectionItem(row: CollectionRow): CollectionItem {
   if (!row.ownerId || !row.firstObtainedAt || !row.lastObtainedAt) {
-    return { locked: true, id: row.id, rarityKey: row.rarityKey, wishlisted: row.wishlisted }
+    return { ...toCharacterCard(row), locked: true, wishlisted: row.wishlisted }
   }
   const quantity = row.quantity ?? 0
   const lockedQuantity = row.lockedQuantity ?? 0
@@ -58,8 +58,7 @@ const isUnlocked = sql`${userCards.userId} IS NOT NULL`
 const SORT_COLUMNS: Record<CollectionSortKey, SQL> = {
   recent: sql`${userCards.lastObtainedAt}`,
   rarity: sql`${rarities.sortOrder}`,
-  // Locked entries never reveal their name: they sort after unlocked ones.
-  name: sql`CASE WHEN ${isUnlocked} THEN ${characters.nameFull} END`,
+  name: sql`${characters.nameFull}`,
   count: ownedQuantity,
   series: sql`(SELECT s.title FROM series_characters sc JOIN series s ON s.id = sc.series_id
     WHERE sc.character_id = "characters"."id" AND s.is_active
@@ -68,8 +67,7 @@ const SORT_COLUMNS: Record<CollectionSortKey, SQL> = {
 
 /**
  * The player's collection: characters owned now (default), missing ones (never obtained, or no
- * copy left), or both. Missing never-obtained characters are masked like locked wiki entries,
- * and the name search only matches unlocked entries (it would otherwise reveal locked names).
+ * copy left), or both. Never-obtained characters are returned as locked (shown greyed).
  */
 export async function listCollection(
   db: Executor,
@@ -87,12 +85,7 @@ export async function listCollection(
   }
   if (query.search) {
     const pattern = containsPattern(query.search)
-    conditions.push(
-      and(
-        isUnlocked,
-        or(ilike(characters.nameFull, pattern), ilike(characters.nameNative, pattern)),
-      )!,
-    )
+    conditions.push(or(ilike(characters.nameFull, pattern), ilike(characters.nameNative, pattern))!)
   }
   if (query.rarity) conditions.push(eq(rarities.key, query.rarity))
   if (query.seriesId) {

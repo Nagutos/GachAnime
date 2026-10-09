@@ -154,12 +154,10 @@ export const collectionQuerySchema = paginationQuerySchema.extend({
 export type CollectionQuery = z.infer<typeof collectionQuerySchema>
 export type CollectionQueryInput = z.input<typeof collectionQuerySchema>
 
-/** Never-obtained characters stay masked like locked wiki entries. */
+/** Never-obtained characters are shown (name, picture, series) greyed, like locked wiki entries. */
 export const collectionItemSchema = z.discriminatedUnion('locked', [
-  z.object({
+  characterCardSchema.extend({
     locked: z.literal(true),
-    id: idSchema,
-    rarityKey: rarityKeySchema,
     wishlisted: z.boolean(),
   }),
   characterCardSchema.extend({
@@ -318,9 +316,16 @@ export const wikiCharactersQuerySchema = paginationQuerySchema.extend({
 })
 export type WikiCharactersQuery = z.infer<typeof wikiCharactersQuerySchema>
 
-/** Locked entries reveal nothing but their rarity: no name, no picture (silhouette + "???"). */
+/** Locked entries show the character (name, picture) greyed; the rest of the entry stays locked. */
 export const wikiEntrySummarySchema = z.discriminatedUnion('locked', [
-  z.object({ locked: z.literal(true), id: idSchema, rarityKey: rarityKeySchema }),
+  z.object({
+    locked: z.literal(true),
+    id: idSchema,
+    rarityKey: rarityKeySchema,
+    name: z.string(),
+    imageUrl: z.string().nullable(),
+    wishlisted: z.boolean(),
+  }),
   z.object({
     locked: z.literal(false),
     id: idSchema,
@@ -329,6 +334,7 @@ export const wikiEntrySummarySchema = z.discriminatedUnion('locked', [
     imageUrl: z.string().nullable(),
     /** Copies currently owned (0 after a trade or sale: the entry stays unlocked). */
     quantity: z.number().int().nonnegative(),
+    wishlisted: z.boolean(),
   }),
 ])
 export type WikiEntrySummary = z.infer<typeof wikiEntrySummarySchema>
@@ -343,11 +349,14 @@ export const wikiAppearanceSchema = z.object({
 })
 
 export const wikiCharacterSchema = z.discriminatedUnion('locked', [
+  /** Only the character and its series: description, appearances… unlock with the card. */
   z.object({
     locked: z.literal(true),
     id: idSchema,
     rarityKey: rarityKeySchema,
     series: z.array(seriesRefSchema),
+    name: z.string(),
+    imageUrl: z.string().nullable(),
     wishlisted: z.boolean(),
   }),
   z.object({

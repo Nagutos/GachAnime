@@ -42,7 +42,7 @@ import { activeSeriesList } from './cards'
 
 /**
  * Wiki rules (GAME_DESIGN §6): an entry unlocks when the character is first obtained and stays
- * unlocked (the `user_cards` row is kept at quantity 0). Locked entries reveal only their rarity.
+ * unlocked (the `user_cards` row is kept at quantity 0). Locked entries show only the character.
  */
 
 /**
@@ -188,7 +188,7 @@ export async function getWikiSeries(
   }
 }
 
-/** Entries of an active series: unlocked ones in full, locked ones masked. */
+/** Entries of an active series; locked ones are shown greyed by the client. */
 export async function listWikiSeriesCharacters(
   db: Executor,
   userId: string,
@@ -216,6 +216,7 @@ export async function listWikiSeriesCharacters(
         rarityKey: rarities.key,
         unlocked: sql<boolean>`${userCards.userId} IS NOT NULL`,
         quantity: sql<number>`coalesce(${userCards.quantity}, 0)`,
+        wishlisted: sql<boolean>`${wishlistItems.userId} IS NOT NULL`,
       })
       .from(seriesCharacters)
       .innerJoin(
@@ -226,6 +227,10 @@ export async function listWikiSeriesCharacters(
       .leftJoin(
         userCards,
         and(eq(userCards.characterId, characters.id), eq(userCards.userId, userId)),
+      )
+      .leftJoin(
+        wishlistItems,
+        and(eq(wishlistItems.characterId, characters.id), eq(wishlistItems.userId, userId)),
       )
 
   const [rows, [total]] = await Promise.all([
@@ -253,18 +258,18 @@ export async function listWikiSeriesCharacters(
   ])
 
   return {
-    items: rows.map((row): WikiEntrySummary =>
-      row.unlocked
-        ? {
-            locked: false,
-            id: row.id,
-            rarityKey: row.rarityKey,
-            name: row.name,
-            imageUrl: publicImageUrl(row.imagePath, row.imageUrl),
-            quantity: row.quantity,
-          }
-        : { locked: true, id: row.id, rarityKey: row.rarityKey },
-    ),
+    items: rows.map((row): WikiEntrySummary => {
+      const card = {
+        id: row.id,
+        rarityKey: row.rarityKey,
+        name: row.name,
+        imageUrl: publicImageUrl(row.imagePath, row.imageUrl),
+        wishlisted: row.wishlisted,
+      }
+      return row.unlocked
+        ? { ...card, locked: false, quantity: row.quantity }
+        : { ...card, locked: true }
+    }),
     total: total?.value ?? 0,
     page: query.page,
     pageSize: query.pageSize,
@@ -325,6 +330,8 @@ export async function getWikiCharacter(
       id: row.id,
       rarityKey: row.rarityKey,
       series: row.series,
+      name: row.name,
+      imageUrl: publicImageUrl(row.imagePath, row.imageUrl),
       wishlisted: row.wishlisted,
     }
   }

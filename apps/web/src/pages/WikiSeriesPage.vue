@@ -7,6 +7,7 @@ import { useErrorMessage } from '@/app/errors'
 import BackLink from '@/components/BackLink.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import LockedCard from '@/components/cards/LockedCard.vue'
+import WishlistButton from '@/components/collection/WishlistButton.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
 import { playerUi } from '@/components/ui'
@@ -126,21 +127,30 @@ const series = computed(() => detail.data.value)
         </div>
 
         <ul v-if="entries.data.value" :class="playerUi.cardGrid" data-testid="wiki-entries">
-          <li v-for="entry in entries.data.value.items" :key="entry.id">
-            <RouterLink
+          <li v-for="entry in entries.data.value.items" :key="entry.id" class="relative">
+            <LockedCard
+              v-if="entry.locked"
               :to="{ name: 'wiki-character', params: { id: entry.id } }"
-              class="block transition hover:-translate-y-1"
-            >
-              <LockedCard v-if="entry.locked" :rarity-key="entry.rarityKey" />
-              <CharacterCard
-                v-else
-                :name="entry.name"
-                :image-url="entry.imageUrl"
-                :rarity-key="entry.rarityKey"
-                :quantity="entry.quantity"
-                :class="{ 'opacity-60 grayscale': entry.quantity === 0 }"
-              />
-            </RouterLink>
+              :name="entry.name"
+              :image-url="entry.imageUrl"
+              :rarity-key="entry.rarityKey"
+              class="transition hover:-translate-y-1"
+            />
+            <CharacterCard
+              v-else
+              :to="{ name: 'wiki-character', params: { id: entry.id } }"
+              :name="entry.name"
+              :image-url="entry.imageUrl"
+              :rarity-key="entry.rarityKey"
+              :quantity="entry.quantity"
+              class="transition hover:-translate-y-1"
+              :class="{ 'opacity-60 grayscale': entry.quantity === 0 }"
+            />
+            <WishlistButton
+              class="absolute right-1.5 bottom-12"
+              :character-id="entry.id"
+              :wishlisted="entry.wishlisted"
+            />
           </li>
         </ul>
         <PaginationBar

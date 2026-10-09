@@ -56,13 +56,14 @@ test('a new player opens a free booster, then finds the cards in the collection 
   await turnable.click()
   await expect(turnable).toHaveAttribute('aria-pressed', 'false')
 
-  // The series page shows unlocked entries and masked locked ones.
+  // The series page shows every character; locked ones are greyed, with a wishlist shortcut.
   await page.getByRole('link', { name: E2E_SERIES_TITLE }).click()
   await expect(page.getByTestId('series-title')).toHaveText(E2E_SERIES_TITLE, { timeout: 30_000 })
   const entries = page.getByTestId('wiki-entries')
-  await expect(entries.getByTestId('character-card')).toHaveCount(owned)
+  await expect(entries.getByTestId('character-card')).toHaveCount(20)
   await expect(entries.getByTestId('locked-card')).toHaveCount(20 - owned)
-  await expect(entries.getByTestId('locked-card').first()).toContainText('???')
+  await expect(entries.getByTestId('locked-card').first()).toContainText(/Student \d\d/)
+  await expect(entries.getByTestId('wishlist-button')).toHaveCount(20)
 })
 
 test('cards are revealed one by one, then all laid out', async ({ page, context }) => {

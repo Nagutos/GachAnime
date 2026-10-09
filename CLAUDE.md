@@ -309,3 +309,6 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   random number without wished characters). `daily_wishlist` replaced by `daily_recycle_10`
   (migration 0018). Error toasts (`notifyError`) for actions with no inline error. Opening scene:
   flying cards clipped (`overflow-clip`) so phones no longer scroll/zoom out.
+- 2026-10-09 — Locked characters are no longer masked: wiki, collection and wishlist show them
+  greyed with a lock (`LockedCard` wraps `CharacterCard`), name + picture + series only; the rest
+  of the wiki entry unlocks with the card. Wiki series grid has the wishlist heart again.

@@ -65,7 +65,12 @@ function back(): void {
 
       <article v-else-if="entry" class="flex flex-col gap-8 md:flex-row" data-testid="wiki-entry">
         <div class="mx-auto w-56 shrink-0 md:mx-0 md:w-72">
-          <LockedCard v-if="entry.locked" :rarity-key="entry.rarityKey" />
+          <LockedCard
+            v-if="entry.locked"
+            :name="entry.name"
+            :image-url="entry.imageUrl"
+            :rarity-key="entry.rarityKey"
+          />
           <TurnableCard v-else>
             <CharacterCard
               :name="entry.name"
@@ -85,7 +90,7 @@ function back(): void {
         <div class="flex min-w-0 flex-1 flex-col gap-5">
           <template v-if="entry.locked">
             <div>
-              <h1 :class="playerUi.title">{{ t('wiki.unknownName') }}</h1>
+              <h1 :class="playerUi.title" data-testid="wiki-name">{{ entry.name }}</h1>
               <p class="font-semibold" :class="rarityStyle(entry.rarityKey).text">
                 {{ nameOf(entry.rarityKey) }}
               </p>

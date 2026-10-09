@@ -197,13 +197,15 @@ function clearSeries(): void {
       </div>
       <ul v-else-if="data" :class="playerUi.cardGrid" data-testid="collection-grid">
         <li v-for="item in data.items" :key="item.id" class="relative">
-          <RouterLink
+          <LockedCard
             v-if="item.locked"
             :to="{ name: 'wiki-character', params: { id: item.id } }"
-            class="block transition hover:-translate-y-1"
-          >
-            <LockedCard :rarity-key="item.rarityKey" />
-          </RouterLink>
+            :name="item.name"
+            :image-url="item.imageUrl"
+            :rarity-key="item.rarityKey"
+            :series="item.series"
+            class="transition hover:-translate-y-1"
+          />
           <CharacterCard
             v-else
             :to="{ name: 'wiki-character', params: { id: item.id } }"

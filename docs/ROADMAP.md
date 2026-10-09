@@ -51,7 +51,7 @@ are not imported · catalog completion achievements use % tiers (10/25/50/75) in
 - [x] Schema: booster_tiers, booster_openings(+cards), user_cards, gem_transactions, free timer anchor; seed (free tier)
 - [x] `openBoosters` service (x1/x5/x10, one transaction, profile row locked), boosters endpoint with free timer (cap 15), Idempotency-Key on openings
 - [x] Booster opening scene with Motion (pack tear, card flips, rarity glow and burst, skip / reveal all, summary, reduced motion)
-- [x] Collection page (grid, search, rarity, duplicates, sort), wiki pages (series progress, masked locked entries, spoilers, AniList credit)
+- [x] Collection page (grid, search, rarity, duplicates, sort), wiki pages (series progress, greyed locked entries, spoilers, AniList credit)
 - [x] Integration tests: concurrency (parallel openings never exceed charges), collection and wiki rules
 - [x] E2E: sign up → open free booster → see card in collection and wiki (full stack, ADR-023)
 
