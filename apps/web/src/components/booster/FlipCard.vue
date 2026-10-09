@@ -19,8 +19,13 @@ const props = withDefaults(
     linked?: boolean
     /** An aura of the rarity color spreads around the card when it is revealed. */
     aura?: boolean
+    /**
+     * Flat rendering for phones showing many cards: no 3D flip, no glow or animated sheen (dozens
+     * of 3D layers made mobile GPUs flicker). The revealed face simply fades in.
+     */
+    lite?: boolean
   }>(),
-  { advance: false, linked: false, aura: false },
+  { advance: false, linked: false, aura: false, lite: false },
 )
 const emit = defineEmits<{ reveal: []; next: []; navigate: [] }>()
 const asLink = computed(() => props.revealed && props.linked)
@@ -79,7 +84,7 @@ const auraStyle = computed(() => ({
     @click="asLink ? emit('navigate') : revealed ? advance && emit('next') : emit('reveal')"
   >
     <!-- Aura of the rarity color, fading out in waves around the card -->
-    <template v-if="auraVisible">
+    <template v-if="auraVisible && !lite">
       <span
         class="aura-glow pointer-events-none absolute"
         :style="{ ...auraStyle, animationDelay: `${flipDuration * 0.5}s` }"
@@ -93,8 +98,22 @@ const auraStyle = computed(() => ({
         aria-hidden="true"
       />
     </template>
+    <div v-if="lite" class="relative">
+      <CardBack v-if="!revealed" />
+      <CharacterCard
+        v-else
+        class="flip-fade"
+        :name="card.character.name"
+        :image-url="card.character.imageUrl"
+        :rarity-key="rarity"
+        :series="card.character.series"
+        :is-new="card.isNew"
+        :effects="false"
+      />
+    </div>
     <!-- CSS flip (no JavaScript animation per card: a grid can hold 50 of them) -->
     <div
+      v-else
       class="relative"
       :class="{ 'flip-pop': revealed && highlight && !reduced }"
       :style="{ '--flip-duration': `${flipDuration}s` }"

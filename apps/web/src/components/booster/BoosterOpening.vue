@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { OpenBoostersResponse } from '@gachanime/shared'
+import { useMediaQuery } from '@vueuse/core'
 import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'motion-v'
 import {
   DialogContent,
@@ -71,6 +72,11 @@ const allRevealed = computed(() => cards.value.every((card) => revealed.value.ha
 const newCount = computed(() => props.result.cards.filter((card) => card.isNew).length)
 /** Many cards: a compact grid. */
 const compact = computed(() => cards.value.length > 5)
+/**
+ * Phones: the final grid is drawn flat (no tilt, flip or animated sheen per card: dozens of 3D
+ * layers made mobile GPUs flicker), and the slot tray of a ×5/×10 opening is hidden (25-50 icons).
+ */
+const isPhone = useMediaQuery('(max-width: 639px)')
 
 /** The pack glows with the color of its best card when it is epic or better. */
 const packGlow = computed(() => {
@@ -473,6 +479,7 @@ onBeforeUnmount(() => {
               </div>
               <!-- One slot per card: filled as the cards are revealed -->
               <ol
+                v-if="!(isPhone && compact)"
                 class="flex max-w-xl flex-wrap justify-center gap-1.5"
                 :aria-label="t('boosters.slots', { revealed: revealed.size, total: cards.length })"
                 data-testid="card-slots"
@@ -538,7 +545,16 @@ onBeforeUnmount(() => {
                     '--deal-rotate': `${((index % 5) - 2) * 9}deg`,
                   }"
                 >
-                  <TiltCard :max="compact ? 8 : 10">
+                  <FlipCard
+                    v-if="isPhone"
+                    :card="card"
+                    :revealed="revealed.has(card.position)"
+                    linked
+                    lite
+                    @reveal="revealWithSound(card.position)"
+                    @navigate="emit('close')"
+                  />
+                  <TiltCard v-else :max="compact ? 8 : 10">
                     <FlipCard
                       :card="card"
                       :revealed="revealed.has(card.position)"

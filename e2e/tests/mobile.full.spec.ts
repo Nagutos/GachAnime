@@ -72,6 +72,27 @@ test('player pages fit a phone screen', async ({ browser }) => {
   await context.close()
 })
 
+test('a ×10 opening stays light on a phone', async ({ browser }) => {
+  const context = await browser.newContext({ locale: 'en-US', viewport: PHONE, hasTouch: true })
+  await signInNewPlayer(context, 'Phone Opener')
+  const page = await context.newPage()
+  await page.goto('/boosters')
+  await page.getByTestId('open-10').click({ timeout: 30_000 })
+  const opening = page.getByTestId('booster-opening')
+  await opening.getByTestId('pack').click()
+  // No tray of 50 slots on a phone.
+  await expect(opening.getByTestId('card-progress')).toBeVisible({ timeout: 15_000 })
+  await expect(opening.getByTestId('card-slots')).toHaveCount(0)
+
+  await opening.getByTestId('skip').click()
+  await expect(opening.getByTestId('flip-card')).toHaveCount(50)
+  // Flat cards: no tilt layer per card, and nothing makes the scene scroll sideways.
+  await expect(opening.locator('.tilt-card')).toHaveCount(0)
+  const scrollWidth = await opening.evaluate((element) => element.scrollWidth)
+  expect(scrollWidth).toBeLessThanOrEqual(PHONE.width)
+  await context.close()
+})
+
 test('admin pages fit a phone screen', async ({ browser }) => {
   const context = await browser.newContext({ locale: 'en-US', viewport: PHONE, hasTouch: true })
   await signInNewPlayer(context, 'Phone Admin', undefined, 'admin')

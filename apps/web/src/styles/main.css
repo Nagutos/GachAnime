@@ -436,6 +436,17 @@ body.scene-open #app {
   animation: deal-in 0.5s ease-out both;
 }
 
+/* Revealed face of a flat (lite) FlipCard. */
+.flip-fade {
+  animation: flip-fade 0.3s ease-out both;
+}
+
+@keyframes flip-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 @keyframes deal-in {
   from {
     opacity: 0;
@@ -475,6 +486,7 @@ body.scene-open #app {
   .opening-particle,
   .opening-halo,
   .deal-in,
+  .flip-fade,
   .flip-pop {
     animation: none;
   }
