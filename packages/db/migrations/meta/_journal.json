@@ -120,6 +120,13 @@
       "when": 1791478401784,
       "tag": "0016_drop_pack_art_token",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791530304339,
+      "tag": "0017_economy_rebalance",
+      "breakpoints": true
     }
   ]
 }

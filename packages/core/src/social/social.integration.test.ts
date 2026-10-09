@@ -171,8 +171,8 @@ describe.skipIf(!testDatabaseUrl)('social: market, trades, profiles (integration
     it('enforces price bounds and the market limits', async () => {
       await give('alice', 'Rare A', 5)
       await expect(
-        createListing(db, 'alice', { characterId: ids['Rare A']!, price: 1 }, NOW),
-      ).rejects.toMatchObject({ code: 'PRICE_OUT_OF_RANGE', details: { min: 2, max: 200 } })
+        createListing(db, 'alice', { characterId: ids['Rare A']!, price: 4 }, NOW),
+      ).rejects.toMatchObject({ code: 'PRICE_OUT_OF_RANGE', details: { min: 5, max: 200 } })
       await db
         .update(settings)
         .set({
@@ -229,7 +229,7 @@ describe.skipIf(!testDatabaseUrl)('social: market, trades, profiles (integration
       await give('alice', 'Rare A', 2)
       await give('bob', 'Rare A', 1)
       await setWishlisted(db, 'bob', ids['Epic A']!, true)
-      await createListing(db, 'alice', { characterId: ids['Epic A']!, price: 20 }, NOW)
+      await createListing(db, 'alice', { characterId: ids['Epic A']!, price: 30 }, NOW)
       await createListing(db, 'alice', { characterId: ids['Rare A']!, price: 5 }, NOW)
       const wished = await browseListings(
         db,
@@ -252,7 +252,7 @@ describe.skipIf(!testDatabaseUrl)('social: market, trades, profiles (integration
         marketQuerySchema.parse({ sort: 'price_asc' }),
         NOW,
       )
-      expect(byPrice.items.map((item) => item.price)).toEqual([5, 20])
+      expect(byPrice.items.map((item) => item.price)).toEqual([5, 30])
     })
   })
 

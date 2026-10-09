@@ -16,7 +16,7 @@ const { values } = parseArgs({
   options: {
     days: { type: 'string', default: '90' },
     'free-per-day': { type: 'string', default: '25' },
-    'other-per-day': { type: 'string', default: '80' },
+    'other-per-day': { type: 'string', default: '230' },
     seed: { type: 'string', default: '1' },
   },
 })
@@ -26,7 +26,7 @@ const otherPerDay = Number(values['other-per-day'])
 const databaseUrl = process.env.DATABASE_URL
 if (!databaseUrl || ![days, freePerDay, otherPerDay].every(Number.isInteger)) {
   console.error(
-    'Usage: pnpm economy:simulate -- [--days 90] [--free-per-day 25] [--other-per-day 80] [--seed 1]',
+    'Usage: pnpm economy:simulate -- [--days 90] [--free-per-day 25] [--other-per-day 230] [--seed 1]',
   )
   process.exit(1)
 }

@@ -298,3 +298,7 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   (labels, external network, no published port; Caddy stays inside for the SPA, /media, /api and
   headers). Caddy trusts private-range proxies (`TRUSTED_PROXIES`) so X-Forwarded-For keeps the
   client IP; verified end to end with Traefik 3.7.
+- 2026-10-09 — Economy rebalance (maintainer feedback: missions paid too little): daily missions
+  80 → 230 gems/day (new `daily_open_10_boosters` 50, `daily_open_25_boosters` 80; open 1 and
+  recycle 30), welcome 300; recycle values 2/5/25/100/500 (market minimum follows). Migration 0017
+  only updates rows still at the old defaults. Simulation: ≈ 650 gems/day after 3 months.

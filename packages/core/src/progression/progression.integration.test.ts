@@ -104,6 +104,8 @@ describe.skipIf(!testDatabaseUrl)('progression (integration)', () => {
       ])
       expect(list.daily.map((mission) => mission.key)).toEqual([
         'daily_open_booster',
+        'daily_open_10_boosters',
+        'daily_open_25_boosters',
         'daily_recycle',
         'daily_wishlist',
         'daily_wiki',
@@ -115,8 +117,8 @@ describe.skipIf(!testDatabaseUrl)('progression (integration)', () => {
 
       const id = await missionId('welcome')
       expect(await claimMission(db, 'p1', { missionId: id, periodKey: 'once' }, DAY1)).toEqual({
-        rewardGems: 30,
-        gemBalance: 30,
+        rewardGems: 300,
+        gemBalance: 300,
       })
       await expect(
         claimMission(db, 'p1', { missionId: id, periodKey: 'once' }, DAY1),
@@ -140,7 +142,7 @@ describe.skipIf(!testDatabaseUrl)('progression (integration)', () => {
       ).rejects.toMatchObject({ code: 'NOT_CLAIMABLE' })
       expect(
         await claimMission(db, 'p1', { missionId: id, periodKey: '2026-10-07' }, DAY2),
-      ).toMatchObject({ rewardGems: 20 })
+      ).toMatchObject({ rewardGems: 30 })
     })
 
     it('counts a wishlisted character once per day', async () => {
@@ -330,7 +332,10 @@ describe.skipIf(!testDatabaseUrl)('progression (integration)', () => {
     await openBoosters(db, 'p1', { tier: 'free', quantity: 1 }, { now: DAY1 })
     const again = await openBoosters(db, 'p1', { tier: 'free', quantity: 1 }, { now: DAY1 })
     expect(completedKeys(again.progression)).not.toContain('Open your first booster')
+    const id = await missionId('daily_open_booster')
     const rows = await db.select().from(userMissions).where(eq(userMissions.userId, 'p1'))
-    expect(rows.filter((row) => row.periodKey === '2026-10-07')).toHaveLength(1)
+    expect(
+      rows.filter((row) => row.missionId === id && row.periodKey === '2026-10-07'),
+    ).toHaveLength(1)
   })
 })

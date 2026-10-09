@@ -14,7 +14,7 @@ test('a new player claims missions and unlocks achievements', async ({ page, con
   await expect(page.getByTestId('badge-missions')).toHaveText('1')
   await welcome.getByTestId('claim-mission').click()
   await expect(welcome).toBeHidden()
-  await expect(page.getByTestId('header-gems')).toHaveText('30 gems')
+  await expect(page.getByTestId('header-gems')).toHaveText('300 gems')
 
   // Opening a booster completes the daily mission: a toast appears once the opening closes.
   await page.getByTestId('nav-boosters').click()
@@ -30,7 +30,7 @@ test('a new player claims missions and unlocks achievements', async ({ page, con
   const daily = page.getByTestId('mission-daily_open_booster')
   await daily.getByTestId('claim-mission').click()
   await expect(daily).toContainText('Claimed')
-  await expect(page.getByTestId('header-gems')).toHaveText('50 gems')
+  await expect(page.getByTestId('header-gems')).toHaveText('330 gems')
 
   // Ten more boosters complete the "First Steps" achievement.
   await page.getByTestId('nav-boosters').click()
@@ -55,5 +55,5 @@ test('a new player claims missions and unlocks achievements', async ({ page, con
   const firstSteps = page.getByTestId('achievement-open_10')
   await firstSteps.getByTestId('claim-achievement').click()
   await expect(firstSteps).toContainText('Claimed')
-  await expect(page.getByTestId('header-gems')).toHaveText('60 gems')
+  await expect(page.getByTestId('header-gems')).toHaveText('340 gems')
 })

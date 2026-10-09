@@ -153,7 +153,7 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
     it('recycles duplicates, never the first copy nor locked copies', async () => {
       await setCards('Epic A', 5, 2)
       const result = await recycleCards(db, 'p1', { characterId: ids['Epic A']!, count: 2 })
-      expect(result).toMatchObject({ cards: 2, gems: 20, gemBalance: 20 })
+      expect(result).toMatchObject({ cards: 2, gems: 50, gemBalance: 50 })
       expect(await quantityOf('Epic A')).toBe(3)
       // 3 copies, 2 locked: the remaining one is the first copy.
       await expect(
@@ -176,22 +176,22 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
       expect(preview).toEqual({
         cards: 3 + 1 + 1,
         characters: 3,
-        gems: 3 * 1 + 1 * 2 + 1 * 50,
+        gems: 3 * 2 + 1 * 5 + 1 * 100,
         byRarity: [
-          { rarityKey: 'common', cards: 3, gems: 3 },
-          { rarityKey: 'rare', cards: 1, gems: 2 },
-          { rarityKey: 'legendary', cards: 1, gems: 50 },
+          { rarityKey: 'common', cards: 3, gems: 6 },
+          { rarityKey: 'rare', cards: 1, gems: 5 },
+          { rarityKey: 'legendary', cards: 1, gems: 100 },
         ],
       })
 
       const filter = { rarities: ['common', 'rare'] }
       const filtered = await previewRecycleDuplicates(db, 'p1', filter)
-      expect(filtered).toMatchObject({ cards: 4, gems: 5 })
+      expect(filtered).toMatchObject({ cards: 4, gems: 11 })
       const result = await recycleAllDuplicates(db, 'p1', {
         ...filter,
-        expected: { cards: 4, gems: 5 },
+        expected: { cards: 4, gems: 11 },
       })
-      expect(result).toMatchObject({ cards: 4, gems: 5, gemBalance: 5 })
+      expect(result).toMatchObject({ cards: 4, gems: 11, gemBalance: 11 })
       expect(await quantityOf('Common A')).toBe(1)
       expect(await quantityOf('Rare A')).toBe(2) // first copy + locked copy
       expect(await quantityOf('Legendary A')).toBe(2)
@@ -202,7 +202,7 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
       await setCards('Common A', 3)
       await expect(
         recycleAllDuplicates(db, 'p1', { expected: { cards: 1, gems: 1 } }),
-      ).rejects.toMatchObject({ code: 'PREVIEW_OUTDATED', details: { cards: 2, gems: 2 } })
+      ).rejects.toMatchObject({ code: 'PREVIEW_OUTDATED', details: { cards: 2, gems: 4 } })
       expect(await quantityOf('Common A')).toBe(3)
       await setCards('Common A', 1)
       await expect(
@@ -215,9 +215,9 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
       await setCards('Rare A', 2)
       await recycleCards(db, 'p1', { characterId: ids['Rare A']!, count: 1 })
       const history = await listGemHistory(db, 'p1', { page: 1, pageSize: 10 })
-      expect(history.gemBalance).toBe(102)
+      expect(history.gemBalance).toBe(105)
       expect(history.items.map((item) => [item.reason, item.amount, item.balanceAfter])).toEqual([
-        ['recycle', 2, 102],
+        ['recycle', 5, 105],
         ['admin_adjustment', 100, 100],
       ])
       expect(await db.select().from(adminAuditLog)).toHaveLength(1)

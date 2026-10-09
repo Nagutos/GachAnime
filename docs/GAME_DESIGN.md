@@ -127,38 +127,57 @@ Sinks: paid boosters, market purchases (a transfer between players, not a sink).
 
 | Rarity    | Gems |
 | --------- | ---- |
-| Common    | 1    |
-| Rare      | 2    |
-| Epic      | 10   |
-| Legendary | 50   |
-| Mythic    | 250  |
+| Common    | 2    |
+| Rare      | 5    |
+| Epic      | 25   |
+| Legendary | 100  |
+| Mythic    | 500  |
 
-Expected recycle value if every card were a duplicate: **≈ 10.7 gems per free booster**.
+Values grow with rarity (×2.5 from Common to Rare, then ×4–5 per step). Rare stays close to Common
+because both are drawn about as often (43 % vs 52 % of free cards); a higher Rare value would let
+recycling pay back most of an Epic booster. Revised 2026-10-09 (was 1/2/10/50/250).
+
+Expected recycle value if every card were a duplicate: **≈ 24 gems per free booster**.
 
 Safety check — recycling a paid booster's content must never pay back its price:
 
 | Booster   | Recycle EV / booster | Price | Ratio |
 | --------- | -------------------- | ----- | ----- |
-| Epic      | 24                   | 150   | 16 %  |
-| Legendary | 55                   | 500   | 11 %  |
-| Mythic    | 105                  | 1 500 | 7 %   |
-| Divine    | 290                  | 5 000 | 6 %   |
+| Epic      | 55                   | 150   | 36 %  |
+| Legendary | 118                  | 500   | 24 %  |
+| Mythic    | 218                  | 1 500 | 15 %  |
+| Divine    | 594                  | 5 000 | 12 %  |
 
 ### Income model (used to size prices)
 
-| Player profile                     | Free boosters/day | Gems/day (mid-game)                |
-| ---------------------------------- | ----------------- | ---------------------------------- |
-| Casual (3–4 visits)                | ~25               | 80 missions + ~150 recycling ≈ 230 |
-| Active (cap never wasted, 15/2h30) | ~70               | 80 + ~450 ≈ 530                    |
+| Player profile                     | Free boosters/day | Gems/day (mid-game)                 |
+| ---------------------------------- | ----------------- | ----------------------------------- |
+| Casual (3–4 visits)                | ~25               | 230 missions + ~350 recycling ≈ 580 |
+| Active (cap never wasted, 15/2h30) | ~70               | 310 + ~1 000 ≈ 1 300                |
 
 Early game, most cards are new (few duplicates) so recycling income is lower; one-time achievements
-(≈ 9 200 gems in total, most of them long-term) and the welcome mission (+30) fill the gap.
+(≈ 9 200 gems in total, most of them long-term) and the welcome mission (+300) fill the gap.
 Result (spending everything on a single booster type): a casual player affords an Epic booster
 about 1.5 times a day, or a Mythic booster about weekly, or a Divine booster roughly every 3 weeks;
 an active player about 2.3× faster. An economy simulation
 script (Phase 3) will validate this with the real catalog size.
 
-### Simulation with the real catalog (2026-10-07)
+### Simulation with the real catalog (2026-10-09, after the rebalance)
+
+`pnpm economy:simulate -- --other-per-day 230` on the dev catalog (11 165 Common, 1 006 Rare,
+424 Epic, 54 Legendary drawable characters), 25 free boosters/day, every duplicate recycled,
+nothing spent (welcome mission and achievements not counted):
+
+| Day | Recycle gems that day | Total gems | Distinct owned |
+| --- | --------------------- | ---------- | -------------- |
+| 7   | 241                   | 2 114      | 790            |
+| 30  | 366                   | 12 244     | 2 750          |
+| 90  | 371                   | 48 507     | 5 916          |
+
+Income after 3 months ≈ 650 gems/day: an Epic booster every 0.2 day, Legendary every 0.8 day,
+Mythic every 2.3 days, Divine every 7.7 days (first one around day 15).
+
+### Simulation with the real catalog (2026-10-07, before the rebalance)
 
 `pnpm economy:simulate` on the top 200 import (10 088 Common, 886 Rare, 401 Epic, 54 Legendary,
 0 Mythic drawable characters), 25 free boosters/day + 80 gems/day from missions, every duplicate
@@ -194,7 +213,7 @@ Common pool keeps duplicates (and recycling income) low for months.
 | Max active listings per player  | 20                                                                   | Market flooding, hoarding the order book.                                                                                               |
 | Max sales per seller per day    | 20                                                                   | Turning the market into an infinite gem faucet for one account.                                                                         |
 | Max purchases per buyer per day | 20                                                                   | Gem funneling from alt accounts (each alt buys from the main).                                                                          |
-| Min price per rarity            | = recycle value (1/2/10/50/250)                                      | Selling a rare card for 1 gem to a second account (card funneling); also prevents pointless dumping below the guaranteed recycle value. |
+| Min price per rarity            | = recycle value (2/5/25/100/500)                                     | Selling a rare card for 1 gem to a second account (card funneling); also prevents pointless dumping below the guaranteed recycle value. |
 | Max price per rarity            | Common 100 · Rare 200 · Epic 1 000 · Legendary 5 000 · Mythic 20 000 | Gem funneling (alt buys a Common for 50 000), price manipulation, inflation of perceived value.                                         |
 | Listing lifetime                | 7 days (then expires, card unlocked)                                 | Stale listings at outdated prices.                                                                                                      |
 
@@ -282,13 +301,18 @@ A mission = `event_type` + optional `filter` (JSON, e.g. `{ "rateTable": "divine
   current period computed from the reset hour/timezone (default 00:00 Europe/Paris), or `once`.
   Rewards are claimed manually. No cron: a new day simply means a new period key.
 
-| Key                  | EN                                | FR                            | Event             | Target | Reward |
-| -------------------- | --------------------------------- | ----------------------------- | ----------------- | ------ | ------ |
-| `daily_open_booster` | Open your first booster           | Ouvre ton premier booster     | booster_opened    | 1      | 20     |
-| `daily_recycle`      | Recycle a duplicate               | Recycle un doublon            | card_recycled     | 1      | 20     |
-| `daily_wishlist`     | Add 3 characters to your wishlist | Ajoute 3 persos à ta wishlist | wishlist_added    | 3      | 20     |
-| `daily_wiki`         | Open a wiki entry                 | Ouvre une fiche du wiki       | wiki_entry_viewed | 1      | 20     |
-| `welcome` (once)     | Create your account               | Crée ton compte               | account_created   | 1      | 30     |
+| Key                      | EN                                | FR                            | Event             | Target | Reward |
+| ------------------------ | --------------------------------- | ----------------------------- | ----------------- | ------ | ------ |
+| `daily_open_booster`     | Open your first booster           | Ouvre ton premier booster     | booster_opened    | 1      | 30     |
+| `daily_open_10_boosters` | Open 10 boosters                  | Ouvre 10 boosters             | booster_opened    | 10     | 50     |
+| `daily_open_25_boosters` | Open 25 boosters                  | Ouvre 25 boosters             | booster_opened    | 25     | 80     |
+| `daily_recycle`          | Recycle a duplicate               | Recycle un doublon            | card_recycled     | 1      | 30     |
+| `daily_wishlist`         | Add 3 characters to your wishlist | Ajoute 3 persos à ta wishlist | wishlist_added    | 3      | 20     |
+| `daily_wiki`             | Open a wiki entry                 | Ouvre une fiche du wiki       | wiki_entry_viewed | 1      | 20     |
+| `welcome` (once)         | Create your account               | Crée ton compte               | account_created   | 1      | 300    |
+
+Daily total: 230 gems (revised 2026-10-09, was 80; welcome was 30). `booster_opened` advances by
+the number of boosters opened, free or paid.
 
 `wiki_entry_viewed` only counts unlocked entries; `wishlist_added` counts additions (removing and
 re-adding the same character on the same day counts once — dedup per character per period).

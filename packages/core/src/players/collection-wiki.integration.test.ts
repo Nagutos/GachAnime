@@ -212,7 +212,7 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
         name: 'Aiko',
         quantity: 0,
         recyclable: 0,
-        recycleValue: 10,
+        recycleValue: 25,
         source: 'manual',
         sourceUrl: null,
       })
