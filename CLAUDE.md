@@ -318,3 +318,6 @@ before an answer. Ask the maintainer (in French) before any architecture or game
 - 2026-10-09 — Phones (< 640 px): the opening's final grid uses flat cards (`FlipCard lite`: no
   3D flip, tilt, glow or animated sheen; dozens of 3D layers made mobile GPUs flicker) and the
   slot tray is hidden for ×5/×10 openings. Collection default sort: rarity desc, then name.
+- 2026-10-09 — Character cards with `to` are links over the whole card again (overlay
+  `card-link`; a stretched ::after on the name only covered the absolute name plate). Pagers:
+  a gap (…) turns into a "go to page" field, phones get "Page [n] / N".

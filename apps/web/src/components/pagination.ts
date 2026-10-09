@@ -14,3 +14,10 @@ export function pageItems(page: number, pages: number, around = 1): (number | nu
   })
   return items
 }
+
+/** Page typed in a "go to page" field: an integer clamped to `[1, pages]`, null if not a number. */
+export function parsePageInput(value: string, pages: number): number | null {
+  const parsed = Number.parseInt(value.trim(), 10)
+  if (!Number.isFinite(parsed)) return null
+  return Math.min(Math.max(parsed, 1), pages)
+}

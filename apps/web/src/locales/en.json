@@ -12,7 +12,8 @@
     "pagination": "Pagination",
     "previous": "Previous",
     "next": "Next",
-    "pageOf": "Page {page} of {pages}",
+    "pageShort": "Page",
+    "jumpToPage": "Go to page (1 to {pages})",
     "goToPage": "Page {page}",
     "close": "Close",
     "cancel": "Cancel"
