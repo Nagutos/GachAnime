@@ -1,4 +1,11 @@
-import { characters, rarities, userCards, wishlistItems, type Executor } from '@gachanime/db'
+import {
+  characters,
+  favoriteItems,
+  rarities,
+  userCards,
+  wishlistItems,
+  type Executor,
+} from '@gachanime/db'
 import { recyclableCopies } from '@gachanime/game'
 import type {
   CollectionItem,
@@ -11,7 +18,10 @@ import { containsPattern } from '../catalog/admin-series'
 import { characterCardColumns, toCharacterCard, type CharacterCardRow } from './cards'
 import { loadDrawableIds } from '../catalog/drawable-pool'
 
-/** Player card columns selected with `characterCardColumns` to build a collection item. */
+/**
+ * Player card columns selected with `characterCardColumns` to build a collection item (the query
+ * joins the player's `user_cards`, `wishlist_items` and `favorite_items` rows).
+ */
 export const collectionItemColumns = {
   ...characterCardColumns,
   ownerId: userCards.userId,
@@ -20,6 +30,7 @@ export const collectionItemColumns = {
   firstObtainedAt: userCards.firstObtainedAt,
   lastObtainedAt: userCards.lastObtainedAt,
   wishlisted: sql<boolean>`${wishlistItems.userId} IS NOT NULL`,
+  favorite: sql<boolean>`${favoriteItems.userId} IS NOT NULL`,
 }
 
 interface CollectionRow extends CharacterCardRow {
@@ -29,6 +40,7 @@ interface CollectionRow extends CharacterCardRow {
   firstObtainedAt: Date | null
   lastObtainedAt: Date | null
   wishlisted: boolean
+  favorite: boolean
 }
 
 /** Never-obtained characters are shown greyed, like locked wiki entries. */
@@ -45,6 +57,7 @@ export function toCollectionItem(row: CollectionRow): CollectionItem {
     lockedQuantity,
     recyclable: recyclableCopies(quantity, lockedQuantity),
     wishlisted: row.wishlisted,
+    favorite: row.favorite,
     firstObtainedAt: row.firstObtainedAt.toISOString(),
     lastObtainedAt: row.lastObtainedAt.toISOString(),
   }
@@ -60,6 +73,7 @@ const SORT_COLUMNS: Record<CollectionSortKey, SQL> = {
   rarity: sql`${rarities.sortOrder}`,
   name: sql`${characters.nameFull}`,
   count: ownedQuantity,
+  favorite: sql`${favoriteItems.position}`,
   series: sql`(SELECT s.title FROM series_characters sc JOIN series s ON s.id = sc.series_id
     WHERE sc.character_id = "characters"."id" AND s.is_active
     ORDER BY s.popularity DESC, s.id LIMIT 1)`,
@@ -98,6 +112,7 @@ export async function listCollection(
   }
   if (query.duplicates) conditions.push(gt(userCards.quantity, 1))
   if (query.wishlist) conditions.push(sql`${wishlistItems.userId} IS NOT NULL`)
+  if (query.favorites) conditions.push(sql`${favoriteItems.userId} IS NOT NULL`)
   const where = and(...conditions)
 
   const order = [
@@ -111,6 +126,10 @@ export async function listCollection(
     eq(wishlistItems.characterId, characters.id),
     eq(wishlistItems.userId, userId),
   )
+  const playerFavorite = and(
+    eq(favoriteItems.characterId, characters.id),
+    eq(favoriteItems.userId, userId),
+  )
 
   const [rows, [filtered], [summary], [catalog]] = await Promise.all([
     db
@@ -119,6 +138,7 @@ export async function listCollection(
       .innerJoin(rarities, eq(rarities.id, characters.rarityId))
       .leftJoin(userCards, playerCard)
       .leftJoin(wishlistItems, playerWish)
+      .leftJoin(favoriteItems, playerFavorite)
       .where(where)
       .orderBy(...order)
       .limit(query.pageSize)
@@ -129,6 +149,7 @@ export async function listCollection(
       .innerJoin(rarities, eq(rarities.id, characters.rarityId))
       .leftJoin(userCards, playerCard)
       .leftJoin(wishlistItems, playerWish)
+      .leftJoin(favoriteItems, playerFavorite)
       .where(where),
     db
       .select({

@@ -27,6 +27,7 @@ import {
   testDatabaseUrl,
 } from '../test/database'
 import { adjustGems, listGemHistory } from './gems'
+import { setFavorite } from './favorites'
 import { ensurePlayerProfile } from './profile'
 import { previewRecycleDuplicates, recycleAllDuplicates, recycleCards } from './recycle'
 
@@ -195,6 +196,25 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
       expect(await quantityOf('Common A')).toBe(1)
       expect(await quantityOf('Rare A')).toBe(2) // first copy + locked copy
       expect(await quantityOf('Legendary A')).toBe(2)
+      await expectLedgerMatches()
+    })
+
+    it('keeps the duplicates of favorites unless asked', async () => {
+      await setCards('Common A', 3)
+      await setCards('Rare A', 2)
+      await setFavorite(db, 'p1', ids['Rare A']!, true)
+      expect(await previewRecycleDuplicates(db, 'p1', {})).toMatchObject({ cards: 2, gems: 4 })
+      const all = await previewRecycleDuplicates(db, 'p1', { includeFavorites: true })
+      expect(all).toMatchObject({ cards: 3, gems: 4 + 5 })
+
+      await recycleAllDuplicates(db, 'p1', { expected: { cards: 2, gems: 4 } })
+      expect(await quantityOf('Common A')).toBe(1)
+      expect(await quantityOf('Rare A')).toBe(2)
+      await recycleAllDuplicates(db, 'p1', {
+        includeFavorites: true,
+        expected: { cards: 1, gems: 5 },
+      })
+      expect(await quantityOf('Rare A')).toBe(1)
       await expectLedgerMatches()
     })
 

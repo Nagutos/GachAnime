@@ -6,6 +6,7 @@ import { useTradeActionMutation } from '@/api/social'
 import { useErrorMessage } from '@/app/errors'
 import { playerUi } from '@/components/ui'
 import MiniCard from './MiniCard.vue'
+import FeaturedCard from './FeaturedCard.vue'
 import PlayerAvatar from './PlayerAvatar.vue'
 
 const props = defineProps<{ trade: TradeDto }>()
@@ -32,6 +33,7 @@ const STATUS_CLASSES: Record<TradeDto['status'], string> = {
   <article :class="[playerUi.panel, 'flex flex-col gap-4 p-4']" :data-testid="`trade-${trade.id}`">
     <header class="flex flex-wrap items-center gap-3">
       <PlayerAvatar :name="trade.counterpart.displayName" :url="trade.counterpart.avatarUrl" />
+      <FeaturedCard v-if="trade.counterpart.featured" :card="trade.counterpart.featured" />
       <p class="flex-1">
         <RouterLink
           :to="{ name: 'profile', params: { username: trade.counterpart.username } }"

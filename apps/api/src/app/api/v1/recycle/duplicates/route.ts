@@ -1,13 +1,14 @@
 import { previewRecycleDuplicates, recycleAllDuplicates } from '@gachanime/core'
-import { rarityKeySchema, recycleDuplicatesRequestSchema } from '@gachanime/shared'
+import { booleanQuery, rarityKeySchema, recycleDuplicatesRequestSchema } from '@gachanime/shared'
 import { z } from 'zod'
 import { getDb } from '@/lib/db'
 import { parseJsonBody, parseQuery } from '@/lib/http'
 import { withIdempotency } from '@/lib/idempotency'
 import { playerRoute } from '@/lib/player'
 
-/** `?rarities=common,rare` */
+/** `?rarities=common,rare&includeFavorites=true` */
 const previewQuerySchema = z.object({
+  includeFavorites: booleanQuery,
   rarities: z
     .string()
     .optional()

@@ -12,6 +12,8 @@ const props = defineProps<{
   rarityKey: string
   quantity: number
   lockedQuantity: number
+  /** A favorite: its last copy gets a stronger warning. */
+  favorite?: boolean
 }>()
 const { t, n } = useI18n()
 const rules = useMarketRulesQuery()
@@ -76,7 +78,7 @@ async function sell(): Promise<void> {
         class="rounded-lg border border-gold-400/40 bg-gold-400/10 px-3 py-2 text-sm text-gold-400"
         role="alert"
       >
-        {{ t('market.lastCopyWarning') }}
+        {{ favorite ? t('market.lastFavoriteWarning') : t('market.lastCopyWarning') }}
       </p>
     </template>
     <p v-if="listed" class="text-sm text-emerald-400" role="status">

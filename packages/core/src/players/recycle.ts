@@ -69,9 +69,18 @@ export async function recycleCards(
   })
 }
 
+/** Favorites keep their duplicates in a bulk recycle unless asked (GAME_DESIGN §6). */
+const notFavorite = (userId: string, characterId: SQL) =>
+  sql`NOT EXISTS (SELECT 1 FROM favorite_items f
+    WHERE f.user_id = ${userId} AND f.character_id = ${characterId})`
+
 function duplicateConditions(userId: string, filter: RecycleFilter): SQL[] {
   const conditions = [eq(userCards.userId, userId), sql`${recyclable} > 0`]
   if (filter.rarities?.length) conditions.push(inArray(rarities.key, filter.rarities))
+  // Outer column named explicitly: Drizzle would render it unqualified (bound to f.character_id).
+  if (!filter.includeFavorites) {
+    conditions.push(notFavorite(userId, sql`"user_cards"."character_id"`))
+  }
   return conditions
 }
 
@@ -126,12 +135,15 @@ export async function recycleAllDuplicates(
           sql`, `,
         )})`
       : sql``
+    const favoriteFilter = input.includeFavorites
+      ? sql``
+      : sql`AND ${notFavorite(userId, sql`uc.character_id`)}`
     await tx.execute(sql`
       UPDATE user_cards uc
       SET quantity = uc.quantity - (uc.quantity - 1 - uc.locked_quantity)
       FROM characters c JOIN rarities r ON r.id = c.rarity_id
       WHERE c.id = uc.character_id AND uc.user_id = ${userId}
-        AND uc.quantity - 1 - uc.locked_quantity > 0 ${rarityFilter}`)
+        AND uc.quantity - 1 - uc.locked_quantity > 0 ${rarityFilter} ${favoriteFilter}`)
 
     const gemBalance =
       preview.gems > 0

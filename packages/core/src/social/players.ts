@@ -2,6 +2,7 @@ import { alias } from 'drizzle-orm/pg-core'
 import {
   achievements,
   characters,
+  favoriteItems,
   playerProfiles,
   rarities,
   userAchievements,
@@ -16,6 +17,8 @@ import {
   type PlayerCard,
   type PlayerCardsQuery,
   type PlayerProfile,
+  PROFILE_SHOWCASE_SIZE,
+  type CharacterCard,
   type PlayerSummary,
   type PlayerWishlistResponse,
 } from '@gachanime/shared'
@@ -23,6 +26,7 @@ import { and, asc, count, desc, eq, gt, ilike, isNotNull, or, sql, type SQL } fr
 import { containsPattern } from '../catalog/admin-series'
 import { AppError } from '../errors'
 import { characterCardColumns, toCharacterCard } from '../players/cards'
+import { loadFavoriteCards } from '../players/favorites'
 import { loadDrawableIds } from '../catalog/drawable-pool'
 import { getSetting } from '../settings'
 
@@ -50,7 +54,7 @@ export async function findPlayer(db: Executor, username: string): Promise<Player
 export async function listPlayers(
   db: Executor,
   query: { page: number; pageSize: number; search?: string },
-): Promise<Paginated<PlayerSummary & { owned: number }>> {
+): Promise<Paginated<PlayerSummary & { owned: number; featured: CharacterCard | null }>> {
   const conditions: SQL[] = [eq(users.banned, false)]
   if (query.search) {
     const pattern = containsPattern(query.search)
@@ -62,6 +66,7 @@ export async function listPlayers(
   const [rows, [total]] = await Promise.all([
     db
       .select({
+        userId: playerProfiles.userId,
         username: playerProfiles.username,
         displayName: users.name,
         avatarUrl: users.image,
@@ -79,7 +84,19 @@ export async function listPlayers(
       .innerJoin(users, eq(users.id, playerProfiles.userId))
       .where(where),
   ])
-  return { items: rows, total: total?.value ?? 0, page: query.page, pageSize: query.pageSize }
+  const featured = await loadFavoriteCards(
+    db,
+    rows.map((row) => row.userId),
+  )
+  return {
+    items: rows.map(({ userId, ...row }) => ({
+      ...row,
+      featured: featured.get(userId)?.[0] ?? null,
+    })),
+    total: total?.value ?? 0,
+    page: query.page,
+    pageSize: query.pageSize,
+  }
 }
 
 /** Public profile: stats and completed achievements (achievements are sticky, never revoked). */
@@ -89,7 +106,7 @@ export async function getPlayerProfile(
   username: string,
 ): Promise<PlayerProfile> {
   const player = await findPlayer(db, username)
-  const [[profile], [cards], [catalog], completed, [totalAchievements], seriesRows] =
+  const [[profile], [cards], [catalog], completed, [totalAchievements], seriesRows, showcase] =
     await Promise.all([
       db
         .select({ createdAt: playerProfiles.createdAt })
@@ -128,12 +145,14 @@ export async function getPlayerProfile(
           AND NOT EXISTS (SELECT 1 FROM series_characters sc JOIN characters c ON c.id = sc.character_id
             WHERE sc.series_id = s.id AND c.is_active AND NOT EXISTS (SELECT 1 FROM user_cards uc
               WHERE uc.user_id = ${player.userId} AND uc.character_id = c.id AND uc.quantity > 0))`),
+      loadFavoriteCards(db, [player.userId], PROFILE_SHOWCASE_SIZE),
     ])
   return {
     username: player.username,
     displayName: player.displayName,
     avatarUrl: player.avatarUrl,
     memberSince: profile!.createdAt.toISOString(),
+    showcase: showcase.get(player.userId) ?? [],
     stats: {
       owned: cards?.owned ?? 0,
       cards: cards?.cards ?? 0,
@@ -189,12 +208,17 @@ export async function listPlayerCards(
         tradable,
         inViewerWishlist: sql<boolean>`${viewerWish.userId} IS NOT NULL`,
         inOwnerWishlist: sql<boolean>`${ownerWish.userId} IS NOT NULL`,
+        ownerFavorite: sql<boolean>`${favoriteItems.userId} IS NOT NULL`,
       })
       .from(userCards)
       .innerJoin(characters, eq(characters.id, userCards.characterId))
       .innerJoin(rarities, eq(rarities.id, characters.rarityId))
       .leftJoin(viewerWish, viewerJoin)
       .leftJoin(ownerWish, ownerJoin)
+      .leftJoin(
+        favoriteItems,
+        and(eq(favoriteItems.characterId, characters.id), eq(favoriteItems.userId, ownerId)),
+      )
       .where(where)
       .orderBy(...order)
       .limit(query.pageSize)
@@ -214,6 +238,7 @@ export async function listPlayerCards(
       tradable: Number(row.tradable),
       inViewerWishlist: row.inViewerWishlist,
       inOwnerWishlist: row.inOwnerWishlist,
+      ownerFavorite: row.ownerFavorite,
     })),
     total: total?.value ?? 0,
     page: query.page,

@@ -11,6 +11,7 @@ export const adminSettingsSchema = z.object({
   'missions.reset': settingsSchemas['missions.reset'],
   'market.limits': settingsSchemas['market.limits'],
   wishlist: settingsSchemas.wishlist,
+  favorites: settingsSchemas.favorites,
   'trades.offers': settingsSchemas['trades.offers'],
   'images.cache': settingsSchemas['images.cache'],
   'imports.adult': settingsSchemas['imports.adult'],

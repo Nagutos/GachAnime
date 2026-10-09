@@ -6,6 +6,7 @@ export const PAGE_TITLE_KEYS: Record<string, string> = {
   boosters: 'nav.boosters',
   collection: 'nav.collection',
   'collection-series': 'nav.collection',
+  'collection-favorites': 'nav.collection',
   'collection-wishlist': 'nav.collection',
   market: 'nav.market',
   trades: 'nav.trades',

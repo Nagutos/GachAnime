@@ -321,3 +321,13 @@ before an answer. Ask the maintainer (in French) before any architecture or game
 - 2026-10-09 — Character cards with `to` are links over the whole card again (overlay
   `card-link`; a stretched ::after on the name only covered the absolute name plate). Pagers:
   a gap (…) turns into a "go to page" field, phones get "Page [n] / N".
+- 2026-10-09 — Favorites (cosmetic): `favorite_items` (migration 0019, `position` from 1),
+  core `players/favorites` (obtained characters only, `favorites.maxItems` 100, reorder lists
+  every favorite once), `/api/v1/favorites` (+ `/order`, `/:characterId`), star on collection
+  cards and wiki entries, collection filter, Collection → Favorites page (drag and drop + arrows,
+  card size in localStorage). `collectionItemColumns` now needs a `favorite_items` join.
+- 2026-10-09 — Favorites, round 2 (all approved): profile showcase (first 12, `loadFavoriteCards`)
+  and main favorite (= first favorite) next to the name in the players list and trades
+  (`featured`); bulk recycle skips favorites' duplicates unless `includeFavorites`; stronger
+  last-copy warning for favorites (sell panel, trade composer via `ownerFavorite`); collection
+  sort key `favorite`.

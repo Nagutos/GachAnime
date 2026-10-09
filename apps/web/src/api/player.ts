@@ -1,6 +1,8 @@
 import {
   boostersResponseSchema,
   collectionResponseSchema,
+  favoriteResponseSchema,
+  favoritesListResponseSchema,
   gemHistoryResponseSchema,
   recyclePreviewSchema,
   recycleResultSchema,
@@ -21,6 +23,7 @@ import {
 } from '@gachanime/shared'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
+import { z } from 'zod'
 import { notifyError, notifyProgression } from '@/app/toasts'
 import { meQueryKey } from './me'
 import { invalidateProgression } from './progression'
@@ -103,6 +106,45 @@ export function useCollectionQuery(filters: MaybeRefOrGetter<CollectionFilters>)
         schema: collectionResponseSchema,
       }),
     placeholderData: keepPreviousData,
+  })
+}
+
+/** Under the collection key: anything that changes cards or favorites refreshes it. */
+export function useFavoritesQuery() {
+  return useQuery({
+    queryKey: [...playerKeys.collection, 'favorites'],
+    queryFn: () => apiFetch('/favorites', { schema: favoritesListResponseSchema }),
+  })
+}
+
+export function useFavoriteMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { characterId: number; favorite: boolean }) =>
+      apiFetch(`/favorites/${input.characterId}`, {
+        method: input.favorite ? 'PUT' : 'DELETE',
+        schema: favoriteResponseSchema,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: playerKeys.collection })
+      void queryClient.invalidateQueries({ queryKey: playerKeys.wiki })
+    },
+    onError: (error) =>
+      notifyError(
+        error,
+        error instanceof ApiError && error.code === 'FAVORITES_FULL'
+          ? { name: 'collection-favorites', label: 'favorites.manage' }
+          : undefined,
+      ),
+  })
+}
+
+export function useReorderFavoritesMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: number[]) =>
+      apiFetch('/favorites/order', { method: 'PUT', body: { ids }, schema: z.null() }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: playerKeys.collection }),
   })
 }
 
@@ -197,14 +239,23 @@ export function useRecycleCardsMutation() {
 
 export function useRecyclePreviewQuery(
   rarities: MaybeRefOrGetter<string[]>,
+  includeFavorites: MaybeRefOrGetter<boolean>,
   enabled: MaybeRefOrGetter<boolean>,
 ) {
   return useQuery({
-    queryKey: computed(() => [...playerKeys.recyclePreview, toValue(rarities)]),
+    queryKey: computed(() => [
+      ...playerKeys.recyclePreview,
+      toValue(rarities),
+      toValue(includeFavorites),
+    ]),
     queryFn: () =>
-      apiFetch(`/recycle/duplicates${toQueryString({ rarities: toValue(rarities).join(',') })}`, {
-        schema: recyclePreviewSchema,
-      }),
+      apiFetch(
+        `/recycle/duplicates${toQueryString({
+          rarities: toValue(rarities).join(','),
+          includeFavorites: toValue(includeFavorites) ? 'true' : undefined,
+        })}`,
+        { schema: recyclePreviewSchema },
+      ),
     enabled: computed(() => toValue(enabled)),
     staleTime: 0,
   })

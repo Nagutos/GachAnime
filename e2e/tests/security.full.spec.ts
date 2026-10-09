@@ -25,6 +25,8 @@ const PLAYER_WRITES: [method: 'POST' | 'PUT', path: string][] = [
   ['POST', '/api/v1/market'],
   ['POST', '/api/v1/market/1/buy'],
   ['PUT', '/api/v1/wishlist/1'],
+  ['PUT', '/api/v1/favorites/1'],
+  ['PUT', '/api/v1/favorites/order'],
 ]
 
 const ADMIN_ROUTES: [method: 'GET' | 'POST' | 'PATCH' | 'PUT', path: string][] = [

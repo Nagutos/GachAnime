@@ -1,5 +1,6 @@
 import {
   characters,
+  favoriteItems,
   rarities,
   userCards,
   wishlistItems,
@@ -82,6 +83,10 @@ export async function listWishlist(db: Executor, userId: string): Promise<Wishli
       .leftJoin(
         userCards,
         and(eq(userCards.characterId, characters.id), eq(userCards.userId, userId)),
+      )
+      .leftJoin(
+        favoriteItems,
+        and(eq(favoriteItems.characterId, characters.id), eq(favoriteItems.userId, userId)),
       )
       .where(eq(wishlistItems.userId, userId))
       .orderBy(desc(wishlistItems.createdAt), desc(characters.id)),

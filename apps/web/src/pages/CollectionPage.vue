@@ -18,6 +18,7 @@ import LockedCard from '@/components/cards/LockedCard.vue'
 import CollectionTabs from '@/components/collection/CollectionTabs.vue'
 import RecycleDialog from '@/components/collection/RecycleDialog.vue'
 import SortEditor from '@/components/collection/SortEditor.vue'
+import FavoriteButton from '@/components/collection/FavoriteButton.vue'
 import WishlistButton from '@/components/collection/WishlistButton.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
@@ -51,6 +52,7 @@ const sorts = ref<CollectionSort[]>([
 ])
 const duplicates = ref(false)
 const wishlist = ref(false)
+const favorites = ref(false)
 const page = ref(1)
 const recycleOpen = ref(false)
 
@@ -72,11 +74,15 @@ const filters = computed((): CollectionQueryInput => ({
   sort: formatCollectionSort(sorts.value),
   duplicates: duplicates.value ? 'true' : undefined,
   wishlist: wishlist.value ? 'true' : undefined,
+  favorites: favorites.value ? 'true' : undefined,
   seriesId: seriesId.value,
 }))
-watch([ownership, debouncedSearch, rarity, theme, sorts, duplicates, wishlist, seriesId], () => {
-  page.value = 1
-})
+watch(
+  [ownership, debouncedSearch, rarity, theme, sorts, duplicates, wishlist, favorites, seriesId],
+  () => {
+    page.value = 1
+  },
+)
 
 const collection = useCollectionQuery(filters)
 const data = computed(() => collection.data.value)
@@ -87,6 +93,7 @@ const hasFilters = computed(() =>
     theme.value ||
     duplicates.value ||
     wishlist.value ||
+    favorites.value ||
     seriesId.value,
   ),
 )
@@ -178,6 +185,15 @@ function clearSeries(): void {
             {{ t('collection.wishlistOnly') }}
           </label>
           <label class="flex items-center gap-2 text-sm text-mist-300">
+            <input
+              v-model="favorites"
+              type="checkbox"
+              class="accent-sakura-500"
+              data-testid="filter-favorites"
+            />
+            {{ t('collection.favoritesOnly') }}
+          </label>
+          <label class="flex items-center gap-2 text-sm text-mist-300">
             <input v-model="duplicates" type="checkbox" class="accent-sakura-500" />
             {{ t('collection.duplicates') }}
           </label>
@@ -221,11 +237,10 @@ function clearSeries(): void {
             class="transition hover:-translate-y-1"
             :class="{ 'opacity-60 grayscale': item.quantity === 0 }"
           />
-          <WishlistButton
-            class="absolute right-1.5 bottom-12"
-            :character-id="item.id"
-            :wishlisted="item.wishlisted"
-          />
+          <div class="absolute right-1.5 bottom-12 flex flex-col gap-1">
+            <FavoriteButton v-if="!item.locked" :character-id="item.id" :favorite="item.favorite" />
+            <WishlistButton :character-id="item.id" :wishlisted="item.wishlisted" />
+          </div>
         </li>
       </ul>
 

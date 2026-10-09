@@ -20,6 +20,8 @@ interface Selected {
   max: number | null
   /** Copies owned in total (last-copy warning on the side the player gives). */
   owned: number | null
+  /** One of the owner's favorites (stronger last-copy warning). */
+  favorite: boolean
 }
 
 const { t } = useI18n()
@@ -50,12 +52,14 @@ watch(
       quantity: item.quantity,
       max: null,
       owned: null,
+      favorite: false,
     }))
     request.value = trade.receive.map((item) => ({
       character: item.character,
       quantity: item.quantity,
       max: null,
       owned: null,
+      favorite: false,
     }))
   },
   { immediate: true },
@@ -71,10 +75,17 @@ function add(side: Side, card: PlayerCard): void {
     existing.quantity = Math.min(existing.quantity + 1, card.tradable)
     existing.max = card.tradable
     existing.owned = card.quantity
+    existing.favorite = card.ownerFavorite
   } else {
     list.value = [
       ...list.value,
-      { character: card, quantity: 1, max: card.tradable, owned: card.quantity },
+      {
+        character: card,
+        quantity: 1,
+        max: card.tradable,
+        owned: card.quantity,
+        favorite: card.ownerFavorite,
+      },
     ]
   }
 }
@@ -90,6 +101,7 @@ function change(side: Side, index: number, delta: number): void {
 const givesLastCopy = computed(() =>
   offer.value.filter((item) => item.owned !== null && item.quantity >= item.owned),
 )
+const givesLastFavorite = computed(() => givesLastCopy.value.filter((item) => item.favorite))
 const canSubmit = computed(
   () => offer.value.length > 0 && request.value.length > 0 && !propose.isPending.value,
 )
@@ -221,6 +233,16 @@ async function submit(): Promise<void> {
               names: givesLastCopy.map((item) => item.character.name).join(', '),
             })
           }}
+          <template v-if="givesLastFavorite.length">
+            <br />
+            <strong data-testid="last-favorite-warning">
+              {{
+                t('trades.lastFavoriteWarning', {
+                  names: givesLastFavorite.map((item) => item.character.name).join(', '),
+                })
+              }}
+            </strong>
+          </template>
         </p>
         <p v-if="errorMessage" :class="playerUi.error" role="alert">{{ errorMessage }}</p>
         <div class="flex justify-end">

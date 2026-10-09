@@ -21,6 +21,7 @@ import type {
 import { and, count, desc, eq, gt, inArray, isNull, lte, ne, or, sql } from 'drizzle-orm'
 import { AppError } from '../errors'
 import { characterCardColumns, toCharacterCard } from '../players/cards'
+import { loadFavoriteCards } from '../players/favorites'
 import { emitEvents } from '../progression/engine'
 import { getSetting } from '../settings'
 import { lockCopies, lockPlayers, moveCopies, obtainedEvents, unlockCopies } from './inventory'
@@ -55,7 +56,7 @@ async function toTradeDtos(db: Executor, viewerId: string, rows: TradeRow[]): Pr
     rows.map((row) => row.id),
   )
   const people = [...new Set(rows.flatMap((row) => [row.proposerId, row.recipientId]))]
-  const [players, wishes] = await Promise.all([
+  const [players, wishes, featured] = await Promise.all([
     db
       .select({
         userId: playerProfiles.userId,
@@ -75,6 +76,7 @@ async function toTradeDtos(db: Executor, viewerId: string, rows: TradeRow[]): Pr
           inArray(wishlistItems.characterId, items.length ? items.map((item) => item.id) : [0]),
         ),
       ),
+    loadFavoriteCards(db, people),
   ])
   const playerOf = new Map(players.map((player) => [player.userId, player]))
   const wished = new Set(wishes.map((wish) => `${wish.userId}:${wish.characterId}`))
@@ -102,6 +104,7 @@ async function toTradeDtos(db: Executor, viewerId: string, rows: TradeRow[]): Pr
         username: counterpart.username,
         displayName: counterpart.displayName,
         avatarUrl: counterpart.avatarUrl,
+        featured: featured.get(counterpartId)?.[0] ?? null,
       },
       give: outgoing ? proposerGives : recipientGives,
       receive: outgoing ? recipientGives : proposerGives,

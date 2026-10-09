@@ -24,7 +24,9 @@ watch(
 const filter = computed(() =>
   selected.value.length === rarities.value.length ? [] : [...selected.value].sort(),
 )
-const preview = useRecyclePreviewQuery(filter, open)
+/** Duplicates of favorites are kept unless the player asks. */
+const includeFavorites = ref(false)
+const preview = useRecyclePreviewQuery(filter, includeFavorites, open)
 const recycle = useRecycleDuplicatesMutation()
 const errorMessage = useErrorMessage(recycle.error)
 const done = ref<{ cards: number; gems: number } | null>(null)
@@ -42,6 +44,7 @@ async function confirm(): Promise<void> {
   try {
     const result = await recycle.mutateAsync({
       rarities: filter.value.length ? filter.value : undefined,
+      includeFavorites: includeFavorites.value || undefined,
       expected: { cards: current.cards, gems: current.gems },
     })
     done.value = { cards: result.cards, gems: result.gems }
@@ -90,6 +93,15 @@ async function confirm(): Promise<void> {
           <span :class="rarityStyle(rarity.key).text">{{ nameOf(rarity.key) }}</span>
         </label>
       </fieldset>
+      <label class="flex items-center gap-2 text-sm text-mist-300">
+        <input
+          v-model="includeFavorites"
+          type="checkbox"
+          class="accent-sakura-500"
+          data-testid="recycle-include-favorites"
+        />
+        {{ t('recycle.includeFavorites') }}
+      </label>
 
       <p v-if="preview.isFetching.value && !preview.data.value" class="text-mist-300">
         {{ t('common.loading') }}

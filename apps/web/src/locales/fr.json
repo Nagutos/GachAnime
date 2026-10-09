@@ -355,7 +355,9 @@
       "wishlist": "Wishlist",
       "wishlistHelp": "Chance qu'une carte tirée soit l'un des persos wishlistés du joueur de sa rareté, s'il ne le possède pas et qu'il est dans le pool du booster. Les taux par rareté ne changent pas.",
       "wishlistMaxItems": "Nombre maximum de persos par joueur",
-      "wishlistBoostPercent": "Boost par carte (%)"
+      "wishlistBoostPercent": "Boost par carte (%)",
+      "favorites": "Favoris",
+      "favoritesMaxItems": "Nombre maximum de favoris par joueur"
     },
     "rarities": {
       "title": "Raretés",
@@ -583,7 +585,8 @@
       "rarity": "Rareté",
       "name": "Nom",
       "count": "Plus d'exemplaires",
-      "series": "Série"
+      "series": "Série",
+      "favorite": "Ordre des favoris"
     },
     "duplicates": "Doublons uniquement",
     "series": "Série : {title} ✕",
@@ -606,7 +609,8 @@
     "tabs": {
       "cards": "Cartes",
       "series": "Progression par série",
-      "wishlist": "Wishlist"
+      "wishlist": "Wishlist",
+      "favorites": "Favoris"
     },
     "seriesSubtitle": "Complète une série en possédant tous ses personnages.",
     "seriesStatus": {
@@ -617,7 +621,8 @@
     },
     "noSeries": "Aucune série ici pour le moment.",
     "pack": "Pack",
-    "allPacks": "Tous les packs"
+    "allPacks": "Tous les packs",
+    "favoritesOnly": "Favoris uniquement"
   },
   "wiki": {
     "title": "Wiki",
@@ -699,7 +704,8 @@
     "single": "Recycler",
     "singleHelp": "{count} doublon recyclable, {gems} gemmes. | {count} doublons recyclables, {gems} gemmes chacun.",
     "count": "Exemplaires à recycler",
-    "singleConfirm": "Recycler (+{gems} gemmes)"
+    "singleConfirm": "Recycler (+{gems} gemmes)",
+    "includeFavorites": "Recycler aussi les doublons de mes favoris"
   },
   "gems": {
     "title": "Gemmes",
@@ -777,7 +783,11 @@
     },
     "wishlistHelp": "Les persos que ce joueur recherche : propose-les-lui en échange.",
     "noWishlist": "Ce joueur n'a aucun perso dans sa wishlist.",
-    "youHaveIt": "Tu l'as ×{count}"
+    "youHaveIt": "Tu l'as ×{count}",
+    "showcase": "Vitrine",
+    "arrangeShowcase": "Réorganiser ma vitrine",
+    "fillShowcase": "Choisir mes favoris",
+    "emptyShowcase": "Tes premiers favoris s'affichent ici, dans ton ordre. Le premier est ton favori principal, affiché à côté de ton nom."
   },
   "trades": {
     "title": "Échanges",
@@ -826,7 +836,8 @@
       "countered": "Contre-proposé",
       "expired": "Expiré",
       "failed": "Échoué"
-    }
+    },
+    "lastFavoriteWarning": "Dont des favoris : {names}."
   },
   "market": {
     "title": "Marché",
@@ -874,7 +885,8 @@
     "sell": "Mettre en vente",
     "lastCopyWarning": "C'est ton dernier exemplaire. La fiche du wiki reste débloquée s'il se vend.",
     "listed": "En vente !",
-    "seeMarket": "Voir le marché"
+    "seeMarket": "Voir le marché",
+    "lastFavoriteWarning": "C'est ta dernière copie d'un favori. La fiche du wiki reste débloquée s'il est vendu, et il reste dans tes favoris."
   },
   "errors": {
     "BAD_REQUEST": "La requête est invalide.",
@@ -908,6 +920,31 @@
     "PLAYER_BANNED": "Ce joueur est banni.",
     "IGDB_UNAVAILABLE": "IGDB est injoignable pour le moment. Réessaie plus tard.",
     "IGDB_NOT_CONFIGURED": "IGDB n'est pas configuré sur cette instance : renseigne IGDB_CLIENT_ID et IGDB_CLIENT_SECRET (voir le guide d'auto-hébergement).",
-    "WISHLIST_FULL": "Ta wishlist est pleine ({max} personnages)."
+    "WISHLIST_FULL": "Ta wishlist est pleine ({max} personnages).",
+    "FAVORITES_FULL": "Tu as déjà le maximum de {max} favoris.",
+    "NOT_OBTAINED": "Obtiens d'abord ce personnage."
+  },
+  "favorites": {
+    "add": "Ajouter aux favoris",
+    "remove": "Retirer des favoris",
+    "inFavorites": "Dans mes favoris",
+    "manage": "Gérer mes favoris",
+    "title": "Mes favoris",
+    "count": "{count} / {max} personnages",
+    "size": "Taille des cartes",
+    "sizes": {
+      "small": "Petites",
+      "medium": "Moyennes",
+      "large": "Grandes"
+    },
+    "arrange": "Réorganiser",
+    "saveOrder": "Enregistrer l'ordre",
+    "arrangeHelp": "Fais glisser les cartes à la souris, ou utilise les flèches, puis enregistre.",
+    "moveEarlier": "Avancer {name}",
+    "moveLater": "Reculer {name}",
+    "empty": "Aucun favori pour l'instant. Ajoute tes persos préférés avec l'étoile sur leur carte.",
+    "browseCollection": "Voir ma collection",
+    "featured": "Favori principal : {name}",
+    "mainHint": "Le premier favori est ton favori principal, affiché à côté de ton nom."
   }
 }

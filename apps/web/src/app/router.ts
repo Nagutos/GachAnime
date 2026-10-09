@@ -16,6 +16,11 @@ export const router = createRouter({
       component: () => import('@/pages/CollectionSeriesPage.vue'),
     },
     {
+      path: '/collection/favorites',
+      name: 'collection-favorites',
+      component: () => import('@/pages/FavoritesPage.vue'),
+    },
+    {
       path: '/collection/wishlist',
       name: 'collection-wishlist',
       component: () => import('@/pages/WishlistPage.vue'),

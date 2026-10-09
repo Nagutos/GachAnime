@@ -355,7 +355,9 @@
       "wishlist": "Wishlist",
       "wishlistHelp": "Chance that a drawn card is one of the player's wished characters of its rarity, if they do not own it and it is in the booster's pool. Rarity rates do not change.",
       "wishlistMaxItems": "Maximum characters per player",
-      "wishlistBoostPercent": "Boost per card (%)"
+      "wishlistBoostPercent": "Boost per card (%)",
+      "favorites": "Favorites",
+      "favoritesMaxItems": "Maximum favorites per player"
     },
     "rarities": {
       "title": "Rarities",
@@ -583,7 +585,8 @@
       "rarity": "Rarity",
       "name": "Name",
       "count": "Most copies",
-      "series": "Series"
+      "series": "Series",
+      "favorite": "Favorites order"
     },
     "duplicates": "Duplicates only",
     "series": "Series: {title} ✕",
@@ -606,7 +609,8 @@
     "tabs": {
       "cards": "Cards",
       "series": "Series progress",
-      "wishlist": "Wishlist"
+      "wishlist": "Wishlist",
+      "favorites": "Favorites"
     },
     "seriesSubtitle": "Complete a series by owning all of its characters.",
     "seriesStatus": {
@@ -617,7 +621,8 @@
     },
     "noSeries": "No series here yet.",
     "pack": "Pack",
-    "allPacks": "All packs"
+    "allPacks": "All packs",
+    "favoritesOnly": "Favorites only"
   },
   "wiki": {
     "title": "Wiki",
@@ -699,7 +704,8 @@
     "single": "Recycle",
     "singleHelp": "{count} duplicate can be recycled, {gems} gems. | {count} duplicates can be recycled, {gems} gems each.",
     "count": "Copies to recycle",
-    "singleConfirm": "Recycle (+{gems} gems)"
+    "singleConfirm": "Recycle (+{gems} gems)",
+    "includeFavorites": "Also recycle the duplicates of my favorites"
   },
   "gems": {
     "title": "Gems",
@@ -777,7 +783,11 @@
     },
     "wishlistHelp": "Characters this player is looking for: offer them in a trade.",
     "noWishlist": "This player has no character in their wishlist.",
-    "youHaveIt": "You have it ×{count}"
+    "youHaveIt": "You have it ×{count}",
+    "showcase": "Showcase",
+    "arrangeShowcase": "Arrange my showcase",
+    "fillShowcase": "Choose my favorites",
+    "emptyShowcase": "Your first favorites appear here, in your order. The first one is your main favorite, shown next to your name."
   },
   "trades": {
     "title": "Trades",
@@ -826,7 +836,8 @@
       "countered": "Countered",
       "expired": "Expired",
       "failed": "Failed"
-    }
+    },
+    "lastFavoriteWarning": "Including favorites: {names}."
   },
   "market": {
     "title": "Market",
@@ -874,7 +885,8 @@
     "sell": "Put on sale",
     "lastCopyWarning": "This is your last copy. The wiki entry stays unlocked if it sells.",
     "listed": "On sale!",
-    "seeMarket": "See the market"
+    "seeMarket": "See the market",
+    "lastFavoriteWarning": "This is your last copy of a favorite. The wiki entry stays unlocked if it sells, and it stays in your favorites."
   },
   "errors": {
     "BAD_REQUEST": "The request is invalid.",
@@ -908,6 +920,31 @@
     "PLAYER_BANNED": "This player is banned.",
     "IGDB_UNAVAILABLE": "IGDB is not reachable right now. Please retry later.",
     "IGDB_NOT_CONFIGURED": "IGDB is not configured on this instance: set IGDB_CLIENT_ID and IGDB_CLIENT_SECRET (see the self-hosting guide).",
-    "WISHLIST_FULL": "Your wishlist is full ({max} characters)."
+    "WISHLIST_FULL": "Your wishlist is full ({max} characters).",
+    "FAVORITES_FULL": "You already have the maximum of {max} favorites.",
+    "NOT_OBTAINED": "Obtain this character first."
+  },
+  "favorites": {
+    "add": "Add to favorites",
+    "remove": "Remove from favorites",
+    "inFavorites": "In my favorites",
+    "manage": "Manage my favorites",
+    "title": "My favorites",
+    "count": "{count} / {max} characters",
+    "size": "Card size",
+    "sizes": {
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large"
+    },
+    "arrange": "Arrange",
+    "saveOrder": "Save the order",
+    "arrangeHelp": "Drag the cards with the mouse, or use the arrows, then save.",
+    "moveEarlier": "Move {name} earlier",
+    "moveLater": "Move {name} later",
+    "empty": "No favorite yet. Add the characters you prefer with the star on their card.",
+    "browseCollection": "Browse my collection",
+    "featured": "Main favorite: {name}",
+    "mainHint": "The first favorite is your main favorite, shown next to your name."
   }
 }

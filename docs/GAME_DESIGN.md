@@ -279,6 +279,16 @@ Starting packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos.
   public: the player profile has a Wishlist tab showing, for the viewer, the copies they could
   offer in a trade. Existing lists above the limit are kept, only additions are refused
   (`WISHLIST_FULL`).
+- **Favorites** (2026-10-09, cosmetic apart from the bulk recycle rule below): a star on obtained characters
+  (a card traded away later stays a favorite, shown greyed), at most 100 per player (setting
+  `favorites.maxItems`). Collection filter "favorites only"; Collection → Favorites page in the
+  player's own order (drag and drop with a mouse, arrows on a phone), with a card size choice
+  remembered per browser. The first favorites (12) are the **showcase** of the public profile;
+  the first one is the player's **main favorite**, shown next to their name in the players list,
+  on the profile and in trades. A collection sort follows the favorites order.
+- Favorites keep their duplicates in "recycle all duplicates" unless the player ticks "also
+  recycle my favorites" (single recycling from the wiki entry is unaffected). Selling or trading
+  the last copy of a favorite shows a stronger warning (it stays a favorite, greyed).
 - **Wishlist boost** (decided 2026-10-09), in every booster and pack: the card's rarity is drawn
   as usual (published rates unchanged); then, if the booster's pool holds wished characters of
   that rarity that the player does not own now (quantity 0), the card is one of them (uniformly)

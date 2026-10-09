@@ -1,5 +1,6 @@
 import {
   characterMedia,
+  favoriteItems,
   characters,
   media,
   rarities,
@@ -306,6 +307,7 @@ export async function getWikiCharacter(
       lockedQuantity: userCards.lockedQuantity,
       firstObtainedAt: userCards.firstObtainedAt,
       wishlisted: sql<boolean>`${wishlistItems.userId} IS NOT NULL`,
+      favorite: sql<boolean>`${favoriteItems.userId} IS NOT NULL`,
     })
     .from(characters)
     .innerJoin(rarities, eq(rarities.id, characters.rarityId))
@@ -316,6 +318,10 @@ export async function getWikiCharacter(
     .leftJoin(
       wishlistItems,
       and(eq(wishlistItems.characterId, characters.id), eq(wishlistItems.userId, userId)),
+    )
+    .leftJoin(
+      favoriteItems,
+      and(eq(favoriteItems.characterId, characters.id), eq(favoriteItems.userId, userId)),
     )
     .where(eq(characters.id, id))
 
@@ -366,6 +372,7 @@ export async function getWikiCharacter(
     recyclable: recyclableCopies(row.quantity ?? 0, row.lockedQuantity ?? 0),
     recycleValue: row.recycleValue,
     wishlisted: row.wishlisted,
+    favorite: row.favorite,
     firstObtainedAt: row.firstObtainedAt.toISOString(),
   }
 }

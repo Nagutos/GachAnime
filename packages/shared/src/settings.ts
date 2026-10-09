@@ -28,6 +28,10 @@ export const settingsSchemas = {
     maxItems: z.number().int().min(1).max(200).default(20),
     boostPercent: z.number().min(0).max(100).default(5),
   }),
+  /** Favorite characters (cosmetic, ordered by the player): at most `maxItems`. */
+  favorites: z.object({
+    maxItems: z.number().int().min(1).max(500).default(100),
+  }),
   /** Trade offers expire after this many days; 0 = never. */
   'trades.offers': z.object({
     offerTtlDays: z.number().int().min(0).max(365).default(0),

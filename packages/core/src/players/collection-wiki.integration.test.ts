@@ -14,6 +14,7 @@ import {
   testDatabaseUrl,
 } from '../test/database'
 import { listCollection } from './collection'
+import { listFavorites, reorderFavorites, setFavorite } from './favorites'
 import { listWishlist, setWishlisted } from './wishlist'
 import { ensurePlayerProfile } from './profile'
 import { getWikiCharacter, getWikiSeries, listWikiSeries, listWikiSeriesCharacters } from './wiki'
@@ -169,6 +170,73 @@ describe.skipIf(!testDatabaseUrl)('collection and wiki (integration)', () => {
       await setWishlisted(db, 'p1', ids['Chloe']!, false)
       await setWishlisted(db, 'p1', ids['Ben']!, true)
       expect(names((await listWishlist(db, 'p1')).items)).toEqual(['Ben', 'Dana'])
+    })
+  })
+
+  describe('favorites', () => {
+    const favoriteNames = async () => (await listFavorites(db, 'p1')).items.map((item) => item.name)
+
+    it('only takes obtained characters, in the order they were added', async () => {
+      await give('Aiko', 1)
+      await give('Ben', 0)
+      await expect(setFavorite(db, 'p1', ids['Chloe']!, true)).rejects.toMatchObject({
+        code: 'NOT_OBTAINED',
+      })
+      await setFavorite(db, 'p1', ids['Ben']!, true)
+      await setFavorite(db, 'p1', ids['Aiko']!, true)
+      await setFavorite(db, 'p1', ids['Aiko']!, true)
+      expect(await favoriteNames()).toEqual(['Ben', 'Aiko'])
+      const [ben] = (await listFavorites(db, 'p1')).items
+      expect(ben).toMatchObject({ favorite: true, quantity: 0 })
+
+      const filtered = await listCollection(
+        db,
+        'p1',
+        collectionQuerySchema.parse({ ownership: 'all', favorites: 'true' }),
+      )
+      expect(filtered.total).toBe(2)
+      expect(filtered.items.every((item) => !item.locked && item.favorite)).toBe(true)
+      expect(await getWikiCharacter(db, 'p1', ids['Aiko']!)).toMatchObject({ favorite: true })
+    })
+
+    it('limits the favorites and keeps a custom order', async () => {
+      await db
+        .update(settings)
+        .set({ value: { maxItems: 3 } })
+        .where(eq(settings.key, 'favorites'))
+      for (const name of ['Aiko', 'Ben', 'Chloe', 'Dana']) await give(name, 1)
+      for (const name of ['Aiko', 'Ben', 'Chloe']) await setFavorite(db, 'p1', ids[name]!, true)
+      await expect(setFavorite(db, 'p1', ids['Dana']!, true)).rejects.toMatchObject({
+        code: 'FAVORITES_FULL',
+        details: { max: 3 },
+      })
+
+      await reorderFavorites(db, 'p1', [ids['Chloe']!, ids['Aiko']!, ids['Ben']!])
+      expect(await favoriteNames()).toEqual(['Chloe', 'Aiko', 'Ben'])
+      await expect(reorderFavorites(db, 'p1', [ids['Chloe']!, ids['Aiko']!])).rejects.toMatchObject(
+        { code: 'VALIDATION_FAILED' },
+      )
+      await expect(
+        reorderFavorites(db, 'p1', [ids['Chloe']!, ids['Aiko']!, ids['Dana']!]),
+      ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' })
+
+      // Removing one frees a place; a new favorite goes last.
+      await setFavorite(db, 'p1', ids['Aiko']!, false)
+      await setFavorite(db, 'p1', ids['Dana']!, true)
+      expect(await favoriteNames()).toEqual(['Chloe', 'Ben', 'Dana'])
+      const sorted = await listCollection(
+        db,
+        'p1',
+        collectionQuerySchema.parse({ sort: 'favorite:asc,name:asc' }),
+      )
+      expect(sorted.items.map((item) => (item.locked ? null : item.name))).toEqual([
+        'Chloe',
+        'Ben',
+        'Dana',
+        'Aiko',
+      ])
+      // Other players never see or change them.
+      expect((await listFavorites(db, 'p2')).items).toEqual([])
     })
   })
 

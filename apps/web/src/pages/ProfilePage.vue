@@ -11,6 +11,7 @@ import AppSelect from '@/components/AppSelect.vue'
 import CharacterCard from '@/components/cards/CharacterCard.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
+import FeaturedCard from '@/components/social/FeaturedCard.vue'
 import PlayerAvatar from '@/components/social/PlayerAvatar.vue'
 import { playerUi } from '@/components/ui'
 
@@ -71,6 +72,7 @@ const stats = computed(() =>
       <template v-else-if="data">
         <header :class="[playerUi.panel, 'flex flex-wrap items-center gap-5']">
           <PlayerAvatar :name="data.displayName" :url="data.avatarUrl" size="lg" />
+          <FeaturedCard v-if="data.showcase[0]" :card="data.showcase[0]" size="lg" />
           <div class="min-w-0 flex-1">
             <h1 :class="playerUi.title" data-testid="profile-name">{{ data.displayName }}</h1>
             <p class="text-mist-300">
@@ -93,6 +95,39 @@ const stats = computed(() =>
             <dd class="font-display text-2xl font-bold tabular-nums">{{ value }}</dd>
           </div>
         </dl>
+
+        <section
+          v-if="data.showcase.length || data.isMe"
+          class="flex flex-col gap-3"
+          data-testid="profile-showcase"
+        >
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 class="font-display text-xl font-bold">{{ t('profile.showcase') }}</h2>
+            <RouterLink
+              v-if="data.isMe"
+              :to="{ name: 'collection-favorites' }"
+              class="text-sm text-mist-300 underline hover:text-sakura-400"
+            >
+              {{ data.showcase.length ? t('profile.arrangeShowcase') : t('profile.fillShowcase') }}
+            </RouterLink>
+          </div>
+          <ol
+            v-if="data.showcase.length"
+            class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6"
+          >
+            <li v-for="card in data.showcase" :key="card.id">
+              <CharacterCard
+                :to="{ name: 'wiki-character', params: { id: card.id } }"
+                :name="card.name"
+                :image-url="card.imageUrl"
+                :rarity-key="card.rarityKey"
+                :series="card.series"
+                class="transition hover:-translate-y-1"
+              />
+            </li>
+          </ol>
+          <p v-else class="text-sm text-mist-300">{{ t('profile.emptyShowcase') }}</p>
+        </section>
 
         <div class="flex gap-1 border-b border-night-700" role="tablist">
           <button

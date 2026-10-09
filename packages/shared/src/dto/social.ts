@@ -19,12 +19,20 @@ export type PlayerSummary = z.infer<typeof playerSummarySchema>
 export const playersQuerySchema = paginationQuerySchema.extend({
   search: z.string().trim().max(50).optional(),
 })
+/** Favorites shown on a public profile (the first ones in the player's order). */
+export const PROFILE_SHOWCASE_SIZE = 12
+
+/** A player's main favorite (first of their favorites), shown next to their name. */
+const featuredSchema = characterCardSchema.nullable()
+
 export const playersListSchema = paginatedSchema(
-  playerSummarySchema.extend({ owned: z.number().int().nonnegative() }),
+  playerSummarySchema.extend({ owned: z.number().int().nonnegative(), featured: featuredSchema }),
 )
 
 export const playerProfileSchema = playerSummarySchema.extend({
   memberSince: z.iso.datetime(),
+  /** First favorites in the player's order; the first one is their main favorite. */
+  showcase: z.array(characterCardSchema),
   stats: z.object({
     owned: z.number().int().nonnegative(),
     cards: z.number().int().nonnegative(),
@@ -65,6 +73,8 @@ export const playerCardSchema = characterCardSchema.extend({
   inViewerWishlist: z.boolean(),
   /** In the owner's wishlist (e.g. they want more copies). */
   inOwnerWishlist: z.boolean(),
+  /** In the owner's favorites (warned before giving the last copy away). */
+  ownerFavorite: z.boolean(),
 })
 export type PlayerCard = z.infer<typeof playerCardSchema>
 export const playerCardsResponseSchema = paginatedSchema(playerCardSchema)
@@ -135,7 +145,7 @@ export const tradeSchema = z.object({
   status: z.enum(TRADE_STATUSES),
   /** Whether the current player proposed it. */
   outgoing: z.boolean(),
-  counterpart: playerSummarySchema,
+  counterpart: playerSummarySchema.extend({ featured: featuredSchema }),
   /** Cards the current player gives / receives if accepted. */
   give: z.array(tradeItemSchema),
   receive: z.array(tradeItemSchema),

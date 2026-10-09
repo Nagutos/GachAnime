@@ -213,6 +213,28 @@ export const gemTransactions = pgTable(
   ],
 )
 
+/**
+ * Favorite characters of a player (obtained at least once), in the player's own order
+ * (`position`, from 1). Cosmetic: no game rule reads them.
+ */
+export const favoriteItems = pgTable(
+  'favorite_items',
+  {
+    userId: text()
+      .notNull()
+      .references(() => playerProfiles.userId, { onDelete: 'cascade' }),
+    characterId: bigint({ mode: 'number' })
+      .notNull()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+    position: integer().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.characterId] }),
+    index().on(table.userId, table.position),
+  ],
+)
+
 /** Characters a player wants (owned or not): collection filter, market and trade highlights. */
 export const wishlistItems = pgTable(
   'wishlist_items',

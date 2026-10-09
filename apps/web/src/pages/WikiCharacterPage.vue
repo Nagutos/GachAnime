@@ -10,6 +10,7 @@ import CharacterCard from '@/components/cards/CharacterCard.vue'
 import LockedCard from '@/components/cards/LockedCard.vue'
 import { rarityStyle } from '@/components/cards/rarity-styles'
 import TurnableCard from '@/components/cards/TurnableCard.vue'
+import FavoriteButton from '@/components/collection/FavoriteButton.vue'
 import WishlistButton from '@/components/collection/WishlistButton.vue'
 import SellPanel from '@/components/social/SellPanel.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
@@ -83,6 +84,13 @@ function back(): void {
             class="mt-3 w-full"
             :character-id="entry.id"
             :wishlisted="entry.wishlisted"
+            large
+          />
+          <FavoriteButton
+            v-if="!entry.locked"
+            class="mt-2 w-full"
+            :character-id="entry.id"
+            :favorite="entry.favorite"
             large
           />
         </div>
@@ -192,6 +200,7 @@ function back(): void {
               :rarity-key="entry.rarityKey"
               :quantity="entry.quantity"
               :locked-quantity="entry.lockedQuantity"
+              :favorite="entry.favorite"
             />
 
             <section class="flex flex-col gap-2">

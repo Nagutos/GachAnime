@@ -6,6 +6,7 @@ import { RouterLink } from 'vue-router'
 import { usePlayersQuery } from '@/api/social'
 import PaginationBar from '@/components/PaginationBar.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
+import FeaturedCard from '@/components/social/FeaturedCard.vue'
 import PlayerAvatar from '@/components/social/PlayerAvatar.vue'
 import { playerUi } from '@/components/ui'
 
@@ -48,6 +49,7 @@ const data = computed(() => players.data.value)
             <span class="text-sm text-mist-300 tabular-nums">
               {{ t('players.owned', { count: n(player.owned, 'integer') }) }}
             </span>
+            <FeaturedCard v-if="player.featured" :card="player.featured" />
           </RouterLink>
         </li>
       </ul>

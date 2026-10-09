@@ -22,6 +22,7 @@ const market = ref<AdminSettings['market.limits']>({
 })
 const tradeOffers = ref<AdminSettings['trades.offers']>({ offerTtlDays: 0 })
 const wishlist = ref<AdminSettings['wishlist']>({ maxItems: 20, boostPercent: 5 })
+const favorites = ref<AdminSettings['favorites']>({ maxItems: 100 })
 const imageCache = ref<AdminSettings['images.cache']>({ enabled: false })
 const adultImports = ref<AdminSettings['imports.adult']>({ allowed: false })
 const marketFields = [
@@ -39,6 +40,7 @@ watch(
     market.value = { ...value['market.limits'] }
     tradeOffers.value = { ...value['trades.offers'] }
     wishlist.value = { ...value.wishlist }
+    favorites.value = { ...value.favorites }
     imageCache.value = { ...value['images.cache'] }
     adultImports.value = { ...value['imports.adult'] }
   },
@@ -126,6 +128,32 @@ async function save<K extends keyof AdminSettings>(key: K, value: AdminSettings[
         </div>
         <div class="flex items-center justify-end gap-3">
           <span v-if="saved === 'wishlist'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+
+      <form
+        :class="[ui.card, 'flex flex-col gap-4']"
+        @submit.prevent="save('favorites', favorites)"
+      >
+        <h2 class="font-display text-xl font-bold">{{ t('admin.settings.favorites') }}</h2>
+        <label :class="ui.label">
+          {{ t('admin.settings.favoritesMaxItems') }}
+          <input
+            v-model.number="favorites.maxItems"
+            type="number"
+            min="1"
+            max="500"
+            :class="ui.input"
+            data-testid="setting-favorites-max"
+          />
+        </label>
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === 'favorites'" class="text-sm text-emerald-400">
             {{ t('admin.common.saved') }}
           </span>
           <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">

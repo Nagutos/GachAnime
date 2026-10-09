@@ -14,6 +14,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { adjustGems } from '../players/gems'
 import { ensurePlayerProfile } from '../players/profile'
 import { recycleCards } from '../players/recycle'
+import { setFavorite } from '../players/favorites'
 import { setWishlisted } from '../players/wishlist'
 import { listAchievements } from '../progression/objectives'
 import { insertSeriesWithCharacters } from '../test/catalog-fixture'
@@ -453,6 +454,24 @@ describe.skipIf(!testDatabaseUrl)('social: market, trades, profiles (integration
         ['Rare A', true, 0],
         ['Legendary A', false, 2],
       ])
+    })
+
+    it('shows the favorites showcase and the main favorite next to the name', async () => {
+      await give('alice', 'Epic A', 1)
+      await give('alice', 'Rare A', 1)
+      await setFavorite(db, 'alice', ids['Rare A']!, true)
+      await setFavorite(db, 'alice', ids['Epic A']!, true)
+      const profile = await getPlayerProfile(db, 'bob', 'alice')
+      expect(profile.showcase.map((card) => card.name)).toEqual(['Rare A', 'Epic A'])
+      const players = await listPlayers(db, { page: 1, pageSize: 10 })
+      const featured = Object.fromEntries(
+        players.items.map((player) => [player.username, player.featured?.name ?? null]),
+      )
+      expect(featured).toMatchObject({ alice: 'Rare A', bob: null })
+      const cards = await listPlayerCards(db, 'alice', 'alice', playerCardsQuerySchema.parse({}))
+      expect(
+        Object.fromEntries(cards.items.map((card) => [card.name, card.ownerFavorite])),
+      ).toEqual({ 'Epic A': true, 'Rare A': true })
     })
 
     it('shows public stats and cards with wishlist highlights', async () => {

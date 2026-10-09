@@ -106,7 +106,15 @@ export type OpenBoostersResponse = z.infer<typeof openBoostersResponseSchema>
 
 // ─── Collection ──────────────────────────────────────────────────────────────
 
-export const COLLECTION_SORT_KEYS = ['recent', 'rarity', 'name', 'count', 'series'] as const
+/** `favorite`: the player's favorites order (ascending), other cards after them. */
+export const COLLECTION_SORT_KEYS = [
+  'recent',
+  'rarity',
+  'name',
+  'count',
+  'series',
+  'favorite',
+] as const
 export type CollectionSortKey = (typeof COLLECTION_SORT_KEYS)[number]
 export const COLLECTION_OWNERSHIP = ['owned', 'missing', 'all'] as const
 
@@ -149,6 +157,7 @@ export const collectionQuerySchema = paginationQuerySchema.extend({
   /** Only characters owned more than once. */
   duplicates: booleanQuery,
   wishlist: booleanQuery,
+  favorites: booleanQuery,
   sort: collectionSortQuerySchema.default([{ key: 'recent', direction: 'desc' }]),
 })
 export type CollectionQuery = z.infer<typeof collectionQuerySchema>
@@ -168,11 +177,14 @@ export const collectionItemSchema = z.discriminatedUnion('locked', [
     /** Duplicates that can be recycled now. */
     recyclable: z.number().int().nonnegative(),
     wishlisted: z.boolean(),
+    /** Only obtained characters can be favorites. */
+    favorite: z.boolean(),
     firstObtainedAt: z.iso.datetime(),
     lastObtainedAt: z.iso.datetime(),
   }),
 ])
 export type CollectionItem = z.infer<typeof collectionItemSchema>
+export type ObtainedCollectionItem = Extract<CollectionItem, { locked: false }>
 
 export const collectionResponseSchema = paginatedSchema(collectionItemSchema).extend({
   summary: z.object({
@@ -200,6 +212,23 @@ export const wishlistListResponseSchema = z.object({
   boostPercent: z.number().min(0).max(100),
 })
 export type WishlistListResponse = z.infer<typeof wishlistListResponseSchema>
+
+// ─── Favorites ───────────────────────────────────────────────────────────────
+
+export const favoriteResponseSchema = z.object({ favorite: z.boolean() })
+
+/** The player's favorites in their own order. */
+export const favoritesListResponseSchema = z.object({
+  items: z.array(collectionItemSchema.options[1]),
+  maxItems: z.number().int().positive(),
+})
+export type FavoritesListResponse = z.infer<typeof favoritesListResponseSchema>
+
+/** New order of the favorites: every favorite exactly once. */
+export const reorderFavoritesSchema = z.object({
+  ids: z.array(idSchema).max(500),
+})
+export type ReorderFavoritesRequest = z.infer<typeof reorderFavoritesSchema>
 
 // ─── Gems and recycling ──────────────────────────────────────────────────────
 
@@ -236,9 +265,13 @@ export const recycleCardsRequestSchema = z.object({
 })
 export type RecycleCardsRequest = z.infer<typeof recycleCardsRequestSchema>
 
-/** Rarities whose duplicates are recycled; none = every rarity. */
+/**
+ * Rarities whose duplicates are recycled (none = every rarity). Duplicates of favorites are kept
+ * unless `includeFavorites`.
+ */
 export const recycleFilterSchema = z.object({
   rarities: z.array(rarityKeySchema).max(20).optional(),
+  includeFavorites: z.boolean().optional(),
 })
 export type RecycleFilter = z.infer<typeof recycleFilterSchema>
 
@@ -381,6 +414,7 @@ export const wikiCharacterSchema = z.discriminatedUnion('locked', [
     /** Gems earned per recycled copy of this rarity. */
     recycleValue: z.number().int().nonnegative(),
     wishlisted: z.boolean(),
+    favorite: z.boolean(),
     firstObtainedAt: z.iso.datetime(),
   }),
 ])
