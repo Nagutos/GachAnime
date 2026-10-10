@@ -36,3 +36,6 @@ data/
 
 # Local-only French spec (the repository is English-only)
 InitialPrompt.md
+
+# Local research, never committed
+scraping_mudae/
