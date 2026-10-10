@@ -129,6 +129,16 @@ export function playSwipe(): void {
   noise(sound.ctx, sound.out, { duration: 0.22, from: 900, to: 2600, q: 0.9, gain: 0.14 })
 }
 
+/** The top rarity charges up before its flip: a rising whoosh and hum for `duration` seconds. */
+export function playCharge(duration: number): void {
+  const sound = audio()
+  if (!sound || duration <= 0) return
+  const { ctx, out } = sound
+  noise(ctx, out, { duration, from: 300, to: 4200, q: 3, gain: 0.1 })
+  tone(ctx, out, { frequency: 130.81, duration, glideTo: 523.25, type: 'sawtooth', gain: 0.025 })
+  tone(ctx, out, { frequency: 196, duration, glideTo: 783.99, gain: 0.05 })
+}
+
 /** C major pentatonic, from C5: pleasant whatever notes are combined. */
 const NOTES = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51, 1567.98, 1760]
 
@@ -153,7 +163,13 @@ export function playReveal(rank: number): void {
   if (level >= 4) {
     // Legendary and above: a low swell, then sparkles.
     tone(ctx, out, { frequency: 110, duration: 0.9, glideTo: 55, gain: 0.18 })
-    const sparkles = level === 5 ? 8 : 4
+    if (level === 5) {
+      // Mythic: a sustained bright chord under the arpeggio.
+      for (const frequency of [261.63, 392, 659.25, 1046.5]) {
+        tone(ctx, out, { frequency, at: 0.05, duration: 1.8, gain: 0.05 })
+      }
+    }
+    const sparkles = level === 5 ? 14 : 4
     for (let index = 0; index < sparkles; index += 1) {
       const frequency = NOTES[5 + Math.floor(Math.random() * 5)]! * 2
       tone(ctx, out, { frequency, at: 0.3 + index * 0.08, duration: 0.25, gain: 0.035 })

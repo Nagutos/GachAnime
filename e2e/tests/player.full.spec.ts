@@ -176,3 +176,40 @@ async function expectRarityOrder(cards: Locator): Promise<void> {
   ).map((rarity) => RARITY_ORDER.indexOf(rarity ?? ''))
   expect(ranks).toEqual([...ranks].sort((a, b) => a - b))
 }
+
+test('the shop previews the series of a booster, and back from a card shows the summary again', async ({
+  page,
+  context,
+}) => {
+  await signInNewPlayer(context)
+  await page.goto('/boosters')
+  const series = page.getByTestId('tier-free').getByTestId('pool-series')
+  await expect(series.getByRole('link', { name: E2E_SERIES_TITLE })).toBeVisible({
+    timeout: 30_000,
+  })
+  // Paid tiers draw from the whole catalog: their full list opens in a dialog.
+  await page.getByTestId('tier-epic').getByTestId('pool-series-open').click()
+  const list = page.getByTestId('pool-series-list')
+  await expect(list).toContainText(E2E_SERIES_TITLE)
+  await expect(list).toContainText('0 / 20 owned')
+  await page.keyboard.press('Escape')
+
+  await page.getByTestId('open-1').click()
+  const opening = page.getByTestId('booster-opening')
+  await opening.getByTestId('skip').click()
+  await expect(page).toHaveURL(/[?&]opening=\d+/)
+  const summary = opening.getByTestId('opening-summary')
+  const card = summary.locator('[data-testid="flip-card"][data-revealed="true"]').first()
+  const characterId = await card.getAttribute('data-character-id')
+  await card.click()
+  await expect(page).toHaveURL(new RegExp(`/wiki/characters/${characterId}`))
+
+  await page.goBack()
+  await expect(opening.getByTestId('opening-summary')).toBeVisible()
+  await expect(
+    opening.locator(`[data-testid="flip-card"][data-character-id="${characterId}"]`).first(),
+  ).toBeVisible()
+  await opening.getByTestId('close-opening').click()
+  await expect(opening).toBeHidden()
+  await expect(page).not.toHaveURL(/opening=/)
+})

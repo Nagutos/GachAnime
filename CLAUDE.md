@@ -340,3 +340,8 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   `upgrades.*` settings (Admin → Settings), `player_upgrades` (migration 0020), ledger reason
   `upgrade_purchase`. Base recycle multiplier setting `recycle.multiplier`. Free rules are per
   player (`getPlayerFreeRules`); buying a timer upgrade rebases the anchor (no refill).
+- 2026-10-10 — Shop series preview (`listPoolSeries`, `GET /boosters/series`, `PoolSeriesPreview`;
+  pack editor preview gets `series`). Back from a summary card returns to the summary
+  (`?opening=<id>` + `app/last-opening.ts` session storage, `resume` prop). Mythic reveal rebuilt
+  (charge-up, flash, rays, sparks, screen burst; `SPECTACULAR_RARITIES`, `flipTiming`); the
+  charge plays only on a live reveal, never for cards mounted revealed.

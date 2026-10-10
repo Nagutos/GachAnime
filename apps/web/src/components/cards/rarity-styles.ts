@@ -58,3 +58,22 @@ export function rarityStyle(key: string): RarityStyle {
 /** Rarities that get a special reveal (shine, burst). */
 export const SHINY_RARITIES = new Set(['legendary', 'mythic'])
 export const HIGHLIGHT_RARITIES = new Set(['epic', 'legendary', 'mythic'])
+
+/** The top rarity: its card charges up before the flip, then bursts into light. */
+export const SPECTACULAR_RARITIES = new Set(['mythic'])
+
+/**
+ * Flip timing of a revealed card, in seconds: higher rarities flip slower, for suspense, and the
+ * top rarity waits `delay` (its charge-up) first. The face shows at `delay + duration / 2`.
+ */
+export function flipTiming(key: string): { delay: number; duration: number } {
+  if (SPECTACULAR_RARITIES.has(key)) return { delay: 0.7, duration: 1 }
+  if (SHINY_RARITIES.has(key)) return { delay: 0, duration: 0.9 }
+  return { delay: 0, duration: 0.5 }
+}
+
+/** When the face of a card of this rarity shows, in milliseconds after the reveal. */
+export function faceShownMs(key: string): number {
+  const { delay, duration } = flipTiming(key)
+  return Math.round((delay + duration / 2) * 1000)
+}

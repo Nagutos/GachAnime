@@ -70,7 +70,32 @@
     will-change: transform;
   }
 
-  /* Iridescent sheen on mythic cards: a two-period gradient slid by one period. */
+  /*
+   * Mythic cards: a light sweep like legendary ones (::before, above the picture), plus an
+   * iridescent sheen (::after): a two-period gradient slid by one period (vertical bands, so
+   * that the loop is seamless).
+   */
+  .card-holo::before {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    left: -200%;
+    width: 300%;
+    pointer-events: none;
+    background: linear-gradient(
+      105deg,
+      transparent 45%,
+      rgb(255 255 255 / 0.18) 48.5%,
+      rgb(255 255 255 / 0.4) 50%,
+      rgb(255 255 255 / 0.18) 51.5%,
+      transparent 55%
+    );
+    animation: sheen-slide 3.8s linear infinite;
+    will-change: transform;
+  }
+
   .card-holo::after {
     content: '';
     position: absolute;
@@ -92,7 +117,7 @@
       rgb(255 77 109 / 0.35)
     );
     mix-blend-mode: color-dodge;
-    opacity: 0.55;
+    opacity: 0.38;
     animation: holo-slide 6s linear infinite;
     will-change: transform;
   }
@@ -414,7 +439,7 @@ body.scene-open #app {
 
 /* Card flip (FlipCard) and the pop of high rarities, in CSS. */
 .flip-inner {
-  transition: transform var(--flip-duration, 0.5s) ease-in-out;
+  transition: transform var(--flip-duration, 0.5s) ease-in-out var(--flip-delay, 0s);
 }
 
 .flip-inner.is-revealed {
@@ -428,6 +453,218 @@ body.scene-open #app {
 @keyframes flip-pop {
   50% {
     transform: scale(1.08);
+  }
+}
+
+/*
+ * Top rarity reveal (FlipCard, BoosterOpening): the card shakes and charges up (`--flip-delay`),
+ * flips, flashes white and pops, while iridescent rays turn behind it, sparks fly out and the
+ * whole scene lights up. Transform and opacity animations only.
+ */
+.mythic-charge {
+  animation: mythic-charge calc(var(--flip-delay, 0s) + var(--flip-duration, 0.5s)) ease-in-out;
+}
+
+@keyframes mythic-charge {
+  0% {
+    transform: none;
+  }
+  8% {
+    transform: translate3d(-2px, 0, 0) rotate(-1deg) scale(1.01);
+  }
+  14% {
+    transform: translate3d(3px, -1px, 0) rotate(1.2deg) scale(1.02);
+  }
+  20% {
+    transform: translate3d(-3px, 1px, 0) rotate(-1.5deg) scale(1.03);
+  }
+  26% {
+    transform: translate3d(4px, 0, 0) rotate(1.8deg) scale(1.04);
+  }
+  32% {
+    transform: translate3d(-4px, -1px, 0) rotate(-2deg) scale(1.05);
+  }
+  38% {
+    transform: translate3d(3px, 1px, 0) rotate(1.5deg) scale(1.06);
+  }
+  42% {
+    transform: scale(1.06);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  85% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.mythic-charge-glow {
+  inset: -30%;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 77 109 / 0.75),
+    rgb(176 107 255 / 0.35) 55%,
+    transparent
+  );
+  opacity: 0;
+  animation: mythic-charge-glow 1.5s ease-in forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes mythic-charge-glow {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(0.95);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+/* A disc 2.3 card widths across, centered on the card (margins in % of the card width). */
+.mythic-rays {
+  top: 50%;
+  left: 50%;
+  width: 230%;
+  aspect-ratio: 1;
+  margin: -115% 0 0 -115%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    rgb(255 77 109 / 0.6) 0deg 5deg,
+    transparent 5deg 18deg,
+    rgb(255 209 102 / 0.55) 18deg 23deg,
+    transparent 23deg 36deg,
+    rgb(79 179 255 / 0.5) 36deg 41deg,
+    transparent 41deg 54deg,
+    rgb(176 107 255 / 0.55) 54deg 59deg,
+    transparent 59deg 72deg
+  );
+  mask-image: radial-gradient(closest-side, black 15%, transparent 85%);
+  opacity: 0;
+  animation: mythic-rays 4s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes mythic-rays {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+    transform: scale(1) rotate(25deg);
+  }
+  65% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15) rotate(140deg);
+  }
+}
+
+/* Waves in the four mythic colors: a conic gradient shown only on the ring's border. */
+.aura-ring-iridescent {
+  border: 4px solid transparent;
+  background: conic-gradient(#ff4d6d, #ffd166, #4fb3ff, #b06bff, #ff4d6d) border-box;
+  mask:
+    linear-gradient(#000 0 0) padding-box exclude,
+    linear-gradient(#000 0 0) border-box;
+}
+
+.mythic-flash {
+  z-index: 2;
+  background: radial-gradient(
+    circle,
+    rgb(255 255 255 / 0.95),
+    rgb(255 228 238 / 0.7) 55%,
+    rgb(255 255 255 / 0.2)
+  );
+  opacity: 0;
+  animation: mythic-flash 0.8s ease-out forwards;
+  will-change: opacity;
+}
+
+@keyframes mythic-flash {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* A four-pointed star thrown from the card center to (`--spark-x`, `--spark-y`). */
+.mythic-spark {
+  z-index: 3;
+  width: var(--spark-size, 10px);
+  height: var(--spark-size, 10px);
+  background: var(--spark-color, white);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  animation: mythic-spark 1.2s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes mythic-spark {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale(0.3) rotate(0deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(-50% + var(--spark-x)), calc(-50% + var(--spark-y)), 0) scale(1.1)
+      rotate(200deg);
+  }
+}
+
+.mythic-screen-burst {
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgb(255 255 255 / 0.3),
+    rgb(255 77 109 / 0.35) 22%,
+    rgb(176 107 255 / 0.25) 42%,
+    rgb(79 179 255 / 0.12) 62%,
+    transparent 80%
+  );
+  opacity: 0;
+  animation: mythic-screen-burst 2s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes mythic-screen-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
   }
 }
 
@@ -471,6 +708,7 @@ body.scene-open #app {
 
 @media (prefers-reduced-motion: reduce) {
   .card-shine::after,
+  .card-holo::before,
   .card-holo::after,
   .select-pop[data-state='open'],
   .pack-sheen,
@@ -487,7 +725,13 @@ body.scene-open #app {
   .opening-halo,
   .deal-in,
   .flip-fade,
-  .flip-pop {
+  .flip-pop,
+  .mythic-charge,
+  .mythic-charge-glow,
+  .mythic-rays,
+  .mythic-flash,
+  .mythic-spark,
+  .mythic-screen-burst {
     animation: none;
   }
 }

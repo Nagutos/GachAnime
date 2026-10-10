@@ -3,17 +3,23 @@ import {
   resolveLocalizedText,
   type BoosterQuantity,
   type BoosterTierDto,
-  type OpenBoostersResponse,
   type ThemeDto,
 } from '@gachanime/shared'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useBoostersQuery, useOpenBoostersMutation } from '@/api/player'
 import { useErrorMessage } from '@/app/errors'
+import {
+  clearLastOpening,
+  loadLastOpening,
+  saveLastOpening,
+  type StoredOpening,
+} from '@/app/last-opening'
 import { formatCountdown, useServerNow } from '@/app/now'
 import BoosterOpening from '@/components/booster/BoosterOpening.vue'
 import BoosterPack from '@/components/booster/BoosterPack.vue'
+import PoolSeriesPreview from '@/components/booster/PoolSeriesPreview.vue'
 import TierRates from '@/components/booster/TierRates.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
 import { playerUi } from '@/components/ui'
@@ -55,13 +61,39 @@ watch(now, (value) => {
   }
 })
 
-const opening = ref<{
-  result: OpenBoostersResponse
-  label: string
-  art: string
-  color: string | null
-  seal: string
-} | null>(null)
+const route = useRoute()
+const router = useRouter()
+/** `resume`: shown again from history (back from a card), straight to the summary. */
+const opening = ref<(StoredOpening & { resume: boolean }) | null>(null)
+
+/**
+ * The opening id goes in the URL (replacing the shop entry), so that "back" from a card of the
+ * summary returns to `/boosters?opening=<id>` and the summary shows again.
+ */
+function showOpening(entry: StoredOpening): void {
+  saveLastOpening(entry)
+  opening.value = { ...entry, resume: false }
+  void router.replace({ query: { ...route.query, opening: String(entry.result.openingId) } })
+}
+
+function closeOpening(): void {
+  opening.value = null
+  clearLastOpening()
+  const query = { ...route.query }
+  delete query.opening
+  void router.replace({ query })
+}
+
+watch(
+  () => route.query.opening,
+  (value) => {
+    if (typeof value !== 'string' || opening.value?.result.openingId === Number(value)) return
+    const stored = loadLastOpening(Number(value))
+    if (stored) opening.value = { ...stored, resume: true }
+    else closeOpening()
+  },
+  { immediate: true },
+)
 
 /**
  * Free boosters: the whole catalog, or one of the packs (categories, character types), each a
@@ -96,9 +128,11 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
     .mutateAsync({ tier: tier.key, quantity, theme: theme?.key })
     .catch(() => null)
   if (result) {
-    opening.value = theme
-      ? { result, label: themeName(theme), art: 'free', color: theme.color, seal: theme.seal }
-      : { result, label: tierName(tier), art: tier.artToken, color: null, seal: '招' }
+    showOpening(
+      theme
+        ? { result, label: themeName(theme), art: 'free', color: theme.color, seal: theme.seal }
+        : { result, label: tierName(tier), art: tier.artToken, color: null, seal: '招' },
+    )
   }
 }
 </script>
@@ -230,6 +264,11 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
               {{ resolveLocalizedText(tier.description, locale) }}
             </p>
           </div>
+          <PoolSeriesPreview
+            :theme="themeKey"
+            :label="selectedTheme ? themeName(selectedTheme) : t('boosters.packs.all')"
+            inline
+          />
           <div class="flex flex-wrap gap-3">
             <button
               v-for="quantity in QUANTITIES"
@@ -277,6 +316,7 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
               <p class="mt-2 font-semibold text-gold-400 tabular-nums">
                 {{ t('boosters.pricePerPack', { price: n(tier.priceGems ?? 0, 'integer') }) }}
               </p>
+              <PoolSeriesPreview :theme="null" :label="tierName(tier)" class="mt-1 items-center" />
             </div>
             <div class="mt-auto flex flex-col gap-2">
               <button
@@ -309,7 +349,9 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
         :pack-art="opening.art"
         :pack-color="opening.color"
         :pack-seal="opening.seal"
-        @close="opening = null"
+        :resume="opening.resume"
+        @close="closeOpening"
+        @navigate="opening = null"
       />
     </RequireSignIn>
   </main>

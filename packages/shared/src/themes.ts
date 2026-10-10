@@ -150,6 +150,8 @@ export const themePreviewSchema = z.object({
   byRarity: z.array(z.object({ rarityKey: rarityKeySchema, count: z.number().int() })),
   /** Rarities with no character: draws fall back to the next lower, then higher rarity. */
   emptyRarities: z.array(rarityKeySchema),
+  /** Active series of the pack's characters, most characters first. */
+  series: z.array(z.object({ id: z.number().int(), title: z.string(), count: z.number().int() })),
   samples: z.array(
     z.object({
       id: z.number().int(),

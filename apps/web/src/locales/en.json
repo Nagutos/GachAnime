@@ -514,7 +514,9 @@
           "series": "Series"
         }
       },
-      "seal": "Kanji"
+      "seal": "Kanji",
+      "previewSeries": "Series ({count})",
+      "previewSeriesList": "Series of the pack, with their number of characters"
     },
     "users": {
       "title": "Users",
@@ -599,7 +601,17 @@
     },
     "nextCard": "Next card",
     "cardProgress": "Card {current} of {total}",
-    "slots": "{revealed} of {total} cards revealed"
+    "slots": "{revealed} of {total} cards revealed",
+    "series": {
+      "title": "Series in this booster ({count})",
+      "showAll": "See all {count} series",
+      "show": "Series in this booster",
+      "dialogTitle": "Series — {pack}",
+      "dialogHelp": "Every series this booster can draw from, with how many of their characters you own.",
+      "search": "Search a series",
+      "none": "No series found.",
+      "progress": "{owned} / {total} owned"
+    }
   },
   "collection": {
     "title": "My collection",

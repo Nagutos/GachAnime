@@ -275,6 +275,30 @@ async function deleteTheme(): Promise<void> {
               </div>
             </li>
           </ul>
+          <section class="flex flex-col gap-2" data-testid="theme-preview-series">
+            <h3 class="text-sm font-semibold text-mist-300">
+              {{
+                t('admin.themes.previewSeries', {
+                  count: n(preview.data.value.series.length, 'integer'),
+                })
+              }}
+            </h3>
+            <ul
+              v-if="preview.data.value.series.length"
+              class="flex max-h-64 flex-col gap-1 overflow-y-auto pr-1 text-sm"
+              tabindex="0"
+              :aria-label="t('admin.themes.previewSeriesList')"
+            >
+              <li
+                v-for="row in preview.data.value.series"
+                :key="row.id"
+                class="flex justify-between gap-2"
+              >
+                <span class="truncate">{{ row.title }}</span>
+                <span class="text-mist-300 tabular-nums">{{ n(row.count, 'integer') }}</span>
+              </li>
+            </ul>
+          </section>
         </template>
         <p v-else class="text-mist-300">{{ t('common.loading') }}</p>
       </aside>

@@ -9,6 +9,7 @@ import {
   seriesCharacters,
   themeCharacters,
   themes,
+  userCards,
   type Database,
 } from '@gachanime/db'
 import { seededRng } from '@gachanime/game'
@@ -16,6 +17,7 @@ import { collectionQuerySchema, createThemeSchema, type ThemeRule } from '@gacha
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { listBoosters, openBoosters } from '../boosters/boosters'
+import { listPoolSeries } from '../boosters/pool-series'
 import { RarityTable } from '../catalog/rarities'
 import { adjustGems } from '../players/gems'
 import { listCollection } from '../players/collection'
@@ -191,6 +193,39 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
     expect(preview.byRarity.find((row) => row.rarityKey === 'legendary')?.count).toBe(1)
     expect(preview.emptyRarities).toEqual(['rare', 'epic', 'mythic'])
     expect(preview.samples.map((sample) => sample.name)).toEqual(['Ace', 'Captain'])
+    expect(preview.series.map((row) => [row.title, row.count]).sort()).toEqual([
+      ['court-kings', 1],
+      ['tennis-game', 1],
+    ])
+  })
+
+  it('lists the series of a booster pool with the player progress', async () => {
+    await createTheme(
+      db,
+      {
+        key: 'sports-series',
+        name: { en: 'Sports' },
+        category: 'genre',
+        rules: group({ type: 'genre', genre: 'Sports' }),
+        color: '#2fc48d',
+        seal: '競',
+        isActive: true,
+        sortOrder: 0,
+      },
+      actor,
+    )
+    await db.insert(userCards).values({ userId: 'p1', characterId: ids['Hero']!, quantity: 1 })
+    const all = await listPoolSeries(db, 'p1', null)
+    expect(all.series.map((row) => [row.title, row.characters, row.owned]).sort()).toEqual([
+      ['court-kings', 1, 0],
+      ['hero-academy', 2, 1],
+      ['tennis-game', 1, 0],
+    ])
+    const pack = await listPoolSeries(db, 'p1', 'sports-series')
+    expect(pack.series.map((row) => row.title).sort()).toEqual(['court-kings', 'tennis-game'])
+    await expect(listPoolSeries(db, 'p1', 'nope')).rejects.toMatchObject({
+      code: 'THEME_UNAVAILABLE',
+    })
   })
 
   it('draws only from the pack with free boosters; paid tiers ignore packs', async () => {

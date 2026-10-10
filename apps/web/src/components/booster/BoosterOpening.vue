@@ -14,6 +14,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePlayerRarities } from '@/app/rarities'
 import {
+  playCharge,
   playFlip,
   playReveal,
   playSwipe,
@@ -23,7 +24,13 @@ import {
 } from '@/app/sounds'
 import { flushDeferredToasts } from '@/app/toasts'
 import CardBack from '@/components/cards/CardBack.vue'
-import { HIGHLIGHT_RARITIES, rarityStyle, SHINY_RARITIES } from '@/components/cards/rarity-styles'
+import {
+  faceShownMs,
+  flipTiming,
+  HIGHLIGHT_RARITIES,
+  rarityStyle,
+  SPECTACULAR_RARITIES,
+} from '@/components/cards/rarity-styles'
 import BoosterPack from './BoosterPack.vue'
 import FlipCard from './FlipCard.vue'
 import OpeningBackdrop from './OpeningBackdrop.vue'
@@ -37,10 +44,13 @@ const props = withDefaults(
     packArt?: string
     packColor?: string | null
     packSeal?: string
+    /** Shown again (back from a card's page): straight to the summary, every card revealed. */
+    resume?: boolean
   }>(),
-  { packArt: 'free', packColor: null, packSeal: '招' },
+  { packArt: 'free', packColor: null, packSeal: '招', resume: false },
 )
-const emit = defineEmits<{ close: [] }>()
+/** `navigate`: a card of the summary was opened (its page replaces the scene). */
+const emit = defineEmits<{ close: []; navigate: [] }>()
 
 const { t } = useI18n()
 const { rankOf } = usePlayerRarities()
@@ -51,10 +61,12 @@ const reduced = useReducedMotion()
  * cards one by one from the most common to the rarest, then all of them in a grid.
  */
 type Stage = 'pack' | 'single' | 'grid'
-const stage = ref<Stage>('pack')
+const stage = ref<Stage>(props.resume ? 'grid' : 'pack')
 const focusIndex = ref(0)
-const torn = ref(false)
-const revealed = ref(new Set<number>())
+const torn = ref(props.resume)
+const revealed = ref(
+  new Set<number>(props.resume ? props.result.cards.map((card) => card.position) : []),
+)
 const timers: ReturnType<typeof setTimeout>[] = []
 
 const cards = computed(() =>
@@ -120,11 +132,25 @@ const rankAt = (position: number) =>
 function revealWithSound(position: number): void {
   if (revealed.value.has(position)) return
   reveal(position)
-  playFlip()
   const key = cards.value.find((card) => card.position === position)?.character.rarityKey ?? ''
-  // FlipCard flips shiny rarities slower: the chime lands when the face shows.
-  later(() => playReveal(rankAt(position)), SHINY_RARITIES.has(key) ? 450 : 250)
+  const { delay } = flipTiming(key)
+  // The top rarity charges up before flipping, and floods the scene with light as it shows.
+  if (SPECTACULAR_RARITIES.has(key)) {
+    playCharge(delay)
+    later(
+      () => {
+        burst.value++
+      },
+      faceShownMs(key) - 80,
+    )
+  }
+  later(() => playFlip(), delay * 1000)
+  // FlipCard flips higher rarities slower: the chime lands when the face shows.
+  later(() => playReveal(rankAt(position)), faceShownMs(key))
 }
+
+/** Bumped when a top-rarity card shows in the inspected view: replays the screen burst. */
+const burst = ref(0)
 
 /** One chime for many cards at once: the best rarity among them. */
 function chimeBest(positions: number[]): void {
@@ -259,9 +285,12 @@ function onEscape(event: KeyboardEvent): void {
   }
 }
 
-/** Dealing delay of a grid card: the whole deal lasts at most ~1.2 s. */
+/** Dealing delay of a grid card: the whole deal lasts at most ~1.2 s, quicker when resumed. */
 function dealDelay(index: number): number {
-  return reduced.value ? 0 : index * Math.min(0.08, 1.2 / cards.value.length)
+  if (reduced.value) return 0
+  return (
+    index * Math.min(props.resume ? 0.03 : 0.08, (props.resume ? 0.5 : 1.2) / cards.value.length)
+  )
 }
 
 // The scene covers the whole screen: the page behind is hidden so that its own animations
@@ -287,6 +316,12 @@ onBeforeUnmount(() => {
         @pointer-down-outside.prevent
       >
         <OpeningBackdrop />
+        <div
+          v-if="burst && stage === 'single' && !reduced"
+          :key="burst"
+          class="mythic-screen-burst pointer-events-none fixed inset-0 -z-10"
+          aria-hidden="true"
+        />
         <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
           <div>
             <DialogTitle class="font-display text-2xl font-bold">{{ packLabel }}</DialogTitle>
@@ -552,7 +587,7 @@ onBeforeUnmount(() => {
                     linked
                     lite
                     @reveal="revealWithSound(card.position)"
-                    @navigate="emit('close')"
+                    @navigate="emit('navigate')"
                   />
                   <TiltCard v-else :max="compact ? 8 : 10">
                     <FlipCard
@@ -561,7 +596,7 @@ onBeforeUnmount(() => {
                       linked
                       :aura="!compact"
                       @reveal="revealWithSound(card.position)"
-                      @navigate="emit('close')"
+                      @navigate="emit('navigate')"
                     />
                   </TiltCard>
                 </li>

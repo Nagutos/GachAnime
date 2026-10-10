@@ -514,7 +514,9 @@
           "series": "Séries"
         }
       },
-      "seal": "Kanji"
+      "seal": "Kanji",
+      "previewSeries": "Séries ({count})",
+      "previewSeriesList": "Séries du pack, avec leur nombre de personnages"
     },
     "users": {
       "title": "Utilisateurs",
@@ -599,7 +601,17 @@
     },
     "nextCard": "Carte suivante",
     "cardProgress": "Carte {current} sur {total}",
-    "slots": "{revealed} cartes révélées sur {total}"
+    "slots": "{revealed} cartes révélées sur {total}",
+    "series": {
+      "title": "Séries du booster ({count})",
+      "showAll": "Voir les {count} séries",
+      "show": "Séries du booster",
+      "dialogTitle": "Séries — {pack}",
+      "dialogHelp": "Toutes les séries que ce booster peut tirer, avec combien de leurs personnages tu possèdes.",
+      "search": "Chercher une série",
+      "none": "Aucune série trouvée.",
+      "progress": "{owned} / {total} possédés"
+    }
   },
   "collection": {
     "title": "Ma collection",

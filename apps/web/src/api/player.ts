@@ -15,6 +15,7 @@ import {
   wikiSeriesDetailSchema,
   wikiSeriesListSchema,
   upgradesResponseSchema,
+  poolSeriesResponseSchema,
   type UpgradeKey,
   type BoosterQuantity,
   type CollectionQueryInput,
@@ -74,6 +75,22 @@ export function useBoostersQuery() {
   return useQuery({
     queryKey: playerKeys.boosters,
     queryFn: () => apiFetch('/boosters', { schema: boostersResponseSchema }),
+  })
+}
+
+/** Series of a booster pool: a pack, or the whole catalog (`null`). */
+export function usePoolSeriesQuery(
+  theme: MaybeRefOrGetter<string | null>,
+  enabled: MaybeRefOrGetter<boolean> = true,
+) {
+  return useQuery({
+    queryKey: computed(() => [...playerKeys.boosters, 'series', toValue(theme)]),
+    queryFn: () =>
+      apiFetch(`/boosters/series${toQueryString({ theme: toValue(theme) ?? undefined })}`, {
+        schema: poolSeriesResponseSchema,
+      }),
+    enabled: computed(() => toValue(enabled)),
+    staleTime: 60_000,
   })
 }
 

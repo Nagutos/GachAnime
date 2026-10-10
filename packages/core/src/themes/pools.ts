@@ -47,12 +47,20 @@ export async function ensureThemePools(database: Database): Promise<void> {
 /** What a pack would contain with these rules (admin live preview). */
 export async function previewTheme(db: Executor, rules: ThemeRule): Promise<ThemePreview> {
   const condition = sql`${drawable} AND (${themeRuleSql(rules)})`
-  const [rarityRows, counts, samples] = await Promise.all([
+  const [rarityRows, counts, seriesRows, samples] = await Promise.all([
     loadRarities(db),
     db.execute<{ rarity_key: string; count: number }>(sql`
       SELECT r.key AS rarity_key, count(*)::int AS count
       FROM characters c JOIN rarities r ON r.id = c.rarity_id
       WHERE ${condition} GROUP BY r.key`),
+    db.execute<{ id: string; title: string; count: number }>(sql`
+      SELECT s.id, s.title, count(*)::int AS count
+      FROM characters c
+      JOIN series_characters sc ON sc.character_id = c.id
+      JOIN series s ON s.id = sc.series_id AND s.is_active
+      WHERE ${condition}
+      GROUP BY s.id
+      ORDER BY count DESC, s.popularity DESC, s.id`),
     db.execute<{
       id: string
       name: string
@@ -75,6 +83,11 @@ export async function previewTheme(db: Executor, rules: ThemeRule): Promise<Them
     total: byRarity.reduce((sum, row) => sum + row.count, 0),
     byRarity,
     emptyRarities: byRarity.filter((row) => row.count === 0).map((row) => row.rarityKey),
+    series: seriesRows.rows.map((row) => ({
+      id: Number(row.id),
+      title: row.title,
+      count: Number(row.count),
+    })),
     samples: samples.rows.map((row) => ({
       id: Number(row.id),
       name: row.name,

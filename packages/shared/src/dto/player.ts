@@ -36,6 +36,26 @@ export type CharacterCard = z.infer<typeof characterCardSchema>
 
 // ─── Boosters ────────────────────────────────────────────────────────────────
 
+/** Series of a booster pool (preview before opening): the whole catalog, or one pack. */
+export const poolSeriesQuerySchema = z.object({ theme: themeKeySchema.optional() })
+
+export const poolSeriesSchema = z.object({
+  id: idSchema,
+  title: z.string(),
+  coverUrl: z.string().nullable(),
+  /** Drawable characters of this series in the pool. */
+  characters: z.number().int().positive(),
+  /** Of those, the ones the player owns. */
+  owned: z.number().int().nonnegative(),
+})
+export type PoolSeries = z.infer<typeof poolSeriesSchema>
+
+export const poolSeriesResponseSchema = z.object({
+  /** Most popular first. */
+  series: z.array(poolSeriesSchema),
+})
+export type PoolSeriesResponse = z.infer<typeof poolSeriesResponseSchema>
+
 export const BOOSTER_QUANTITIES = [1, 5, 10] as const
 export type BoosterQuantity = (typeof BOOSTER_QUANTITIES)[number]
 
