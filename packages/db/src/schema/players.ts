@@ -1,5 +1,14 @@
 import { sql } from 'drizzle-orm'
-import { bigint, check, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import {
+  bigint,
+  check,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  smallint,
+  text,
+  timestamp,
+} from 'drizzle-orm/pg-core'
 import { users } from './auth'
 
 /**
@@ -33,5 +42,34 @@ export const playerProfiles = pgTable(
   (table) => [
     check('player_profiles_gem_balance_non_negative', sql`${table.gemBalance} >= 0`),
     check('player_profiles_username_format', sql`${table.username} ~ '^[a-z0-9_]{3,32}$'`),
+  ],
+)
+
+export const upgradeKey = pgEnum('upgrade_key', [
+  'booster_storage',
+  'booster_speed',
+  'recycle_bonus',
+])
+
+/**
+ * Upgrades a player bought with gems (GAME_DESIGN §9): one row per bought upgrade, its level.
+ * The effects of each level live in the `upgrades.*` settings.
+ */
+export const playerUpgrades = pgTable(
+  'player_upgrades',
+  {
+    userId: text()
+      .notNull()
+      .references(() => playerProfiles.userId, { onDelete: 'cascade' }),
+    key: upgradeKey().notNull(),
+    level: smallint().notNull(),
+    updatedAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.key] }),
+    check('player_upgrades_level_positive', sql`${table.level} >= 1`),
   ],
 )

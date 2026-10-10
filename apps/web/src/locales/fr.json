@@ -357,7 +357,34 @@
       "wishlistMaxItems": "Nombre maximum de persos par joueur",
       "wishlistBoostPercent": "Boost par carte (%)",
       "favorites": "Favoris",
-      "favoritesMaxItems": "Nombre maximum de favoris par joueur"
+      "favoritesMaxItems": "Nombre maximum de favoris par joueur",
+      "recycle": "Recyclage",
+      "recycleHelp": "La valeur de recyclage de chaque rareté (Admin → Raretés) est multipliée par ce taux, puis par l'amélioration de recyclage du joueur. Les gemmes par copie sont arrondies.",
+      "recycleMultiplier": "Multiplicateur de recyclage de base",
+      "upgrades": {
+        "level": "Niveau",
+        "cost": "Coût (gemmes)",
+        "costOf": "Coût du niveau {level}",
+        "actions": "Actions",
+        "add": "Ajouter un niveau",
+        "remove": "Retirer",
+        "noLevel": "Aucun niveau : les joueurs ne peuvent pas acheter cette amélioration.",
+        "boosterStorage": {
+          "title": "Amélioration : stockage de boosters",
+          "help": "Boosters gratuits qu'un joueur peut stocker en plus du maximum ci-dessus. Chaque niveau donne sa propre valeur (non cumulée avec les précédents) ; les valeurs doivent augmenter.",
+          "value": "Boosters en plus"
+        },
+        "boosterSpeed": {
+          "title": "Amélioration : boosters plus rapides",
+          "help": "Réduit le temps entre deux boosters gratuits de ce pourcentage. Chaque niveau donne sa propre valeur ; les valeurs doivent augmenter.",
+          "value": "Réduction (%)"
+        },
+        "recycleBonus": {
+          "title": "Amélioration : bonus de recyclage",
+          "help": "Multiplie les gemmes des doublons recyclés (en plus du multiplicateur de base). Chaque niveau donne sa propre valeur ; les valeurs doivent augmenter.",
+          "value": "Multiplicateur"
+        }
+      }
     },
     "rarities": {
       "title": "Raretés",
@@ -525,7 +552,8 @@
     "myProfile": "Mon profil",
     "players": "Joueurs",
     "skipToContent": "Aller au contenu",
-    "myWishlist": "Ma wishlist"
+    "myWishlist": "Ma wishlist",
+    "upgrades": "Améliorations"
   },
   "cards": {
     "turn": "Retourner la carte",
@@ -724,7 +752,8 @@
       "market_purchase": "Achat au marché",
       "mission_reward": "Récompense de mission",
       "achievement_reward": "Récompense de succès",
-      "admin_adjustment": "Ajustement par un admin"
+      "admin_adjustment": "Ajustement par un admin",
+      "upgrade_purchase": "Achat d'amélioration"
     }
   },
   "progression": {
@@ -922,7 +951,9 @@
     "IGDB_NOT_CONFIGURED": "IGDB n'est pas configuré sur cette instance : renseigne IGDB_CLIENT_ID et IGDB_CLIENT_SECRET (voir le guide d'auto-hébergement).",
     "WISHLIST_FULL": "Ta wishlist est pleine ({max} personnages).",
     "FAVORITES_FULL": "Tu as déjà le maximum de {max} favoris.",
-    "NOT_OBTAINED": "Obtiens d'abord ce personnage."
+    "NOT_OBTAINED": "Obtiens d'abord ce personnage.",
+    "UPGRADE_UNAVAILABLE": "Cette amélioration est déjà au niveau maximum.",
+    "UPGRADE_LEVEL_CHANGED": "Cette amélioration a changé entre-temps : vérifie son nouveau niveau."
   },
   "favorites": {
     "add": "Ajouter aux favoris",
@@ -946,5 +977,38 @@
     "browseCollection": "Voir ma collection",
     "featured": "Favori principal : {name}",
     "mainHint": "Le premier favori est ton favori principal, affiché à côté de ton nom."
+  },
+  "upgrades": {
+    "title": "Améliorations",
+    "subtitle": "Dépense tes gemmes en bonus permanents pour ton compte.",
+    "summary": {
+      "storage": "Boosters gratuits stockés",
+      "interval": "Un booster gratuit toutes les",
+      "minutes": "{count} min",
+      "recycle": "Gemmes du recyclage"
+    },
+    "multiplier": "×{value}",
+    "names": {
+      "booster_storage": "Stockage de boosters",
+      "booster_speed": "Boosters plus rapides",
+      "recycle_bonus": "Bonus de recyclage"
+    },
+    "help": {
+      "booster_storage": "Stocke plus de boosters gratuits avant que le minuteur ne s'arrête.",
+      "booster_speed": "Les boosters gratuits arrivent plus vite.",
+      "recycle_bonus": "Les doublons recyclés rapportent plus de gemmes."
+    },
+    "effects": {
+      "booster_storage": "+{count} boosters",
+      "booster_speed": "−{percent} % d'attente",
+      "recycle_bonus": "×{multiplier} gemmes"
+    },
+    "level": "Niveau {level} / {max}",
+    "current": "Actuel",
+    "next": "Niveau suivant",
+    "none": "Aucun",
+    "buy": "Améliorer pour {gems} gemmes",
+    "maxed": "Niveau maximum atteint",
+    "unavailable": "Indisponible sur ce serveur."
   }
 }

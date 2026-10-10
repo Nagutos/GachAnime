@@ -35,6 +35,7 @@ const PLAYER_PAGES: [path: string, ready: string][] = [
   ['/missions', 'main h1'],
   ['/achievements', 'main h1'],
   ['/gems', 'main h1'],
+  ['/upgrades', '[data-testid="upgrade-booster_storage"]'],
   ['/market', 'main h1'],
   ['/trades', 'main h1'],
   ['/players', 'main h1'],

@@ -45,6 +45,7 @@ export const router = createRouter({
       name: 'achievements',
       component: () => import('@/pages/AchievementsPage.vue'),
     },
+    { path: '/upgrades', name: 'upgrades', component: () => import('@/pages/UpgradesPage.vue') },
     { path: '/gems', name: 'gems', component: () => import('@/pages/GemsPage.vue') },
     { path: '/wiki', name: 'wiki', component: () => import('@/pages/WikiPage.vue') },
     {

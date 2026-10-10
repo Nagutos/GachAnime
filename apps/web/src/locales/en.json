@@ -357,7 +357,34 @@
       "wishlistMaxItems": "Maximum characters per player",
       "wishlistBoostPercent": "Boost per card (%)",
       "favorites": "Favorites",
-      "favoritesMaxItems": "Maximum favorites per player"
+      "favoritesMaxItems": "Maximum favorites per player",
+      "recycle": "Recycling",
+      "recycleHelp": "Every rarity recycle value (Admin → Rarities) is multiplied by this rate, then by the player's recycling upgrade. Gems per copy are rounded.",
+      "recycleMultiplier": "Base recycle multiplier",
+      "upgrades": {
+        "level": "Level",
+        "cost": "Cost (gems)",
+        "costOf": "Cost of level {level}",
+        "actions": "Actions",
+        "add": "Add a level",
+        "remove": "Remove",
+        "noLevel": "No level: players cannot buy this upgrade.",
+        "boosterStorage": {
+          "title": "Upgrade: booster storage",
+          "help": "Free boosters a player can store on top of the maximum above. Each level gives its own value (not added to the previous ones); values must increase.",
+          "value": "Extra boosters"
+        },
+        "boosterSpeed": {
+          "title": "Upgrade: faster boosters",
+          "help": "Shortens the time between free boosters by this percentage. Each level gives its own value; values must increase.",
+          "value": "Reduction (%)"
+        },
+        "recycleBonus": {
+          "title": "Upgrade: recycling bonus",
+          "help": "Multiplies the gems of recycled duplicates (on top of the base multiplier). Each level gives its own value; values must increase.",
+          "value": "Multiplier"
+        }
+      }
     },
     "rarities": {
       "title": "Rarities",
@@ -525,7 +552,8 @@
     "myProfile": "My profile",
     "players": "Players",
     "skipToContent": "Skip to content",
-    "myWishlist": "My wishlist"
+    "myWishlist": "My wishlist",
+    "upgrades": "Upgrades"
   },
   "cards": {
     "turn": "Turn the card over",
@@ -724,7 +752,8 @@
       "market_purchase": "Market purchase",
       "mission_reward": "Mission reward",
       "achievement_reward": "Achievement reward",
-      "admin_adjustment": "Adjustment by an admin"
+      "admin_adjustment": "Adjustment by an admin",
+      "upgrade_purchase": "Upgrade purchase"
     }
   },
   "progression": {
@@ -922,7 +951,9 @@
     "IGDB_NOT_CONFIGURED": "IGDB is not configured on this instance: set IGDB_CLIENT_ID and IGDB_CLIENT_SECRET (see the self-hosting guide).",
     "WISHLIST_FULL": "Your wishlist is full ({max} characters).",
     "FAVORITES_FULL": "You already have the maximum of {max} favorites.",
-    "NOT_OBTAINED": "Obtain this character first."
+    "NOT_OBTAINED": "Obtain this character first.",
+    "UPGRADE_UNAVAILABLE": "This upgrade is already at its maximum level.",
+    "UPGRADE_LEVEL_CHANGED": "This upgrade changed in the meantime: check its new level."
   },
   "favorites": {
     "add": "Add to favorites",
@@ -946,5 +977,38 @@
     "browseCollection": "Browse my collection",
     "featured": "Main favorite: {name}",
     "mainHint": "The first favorite is your main favorite, shown next to your name."
+  },
+  "upgrades": {
+    "title": "Upgrades",
+    "subtitle": "Spend gems on permanent bonuses for your account.",
+    "summary": {
+      "storage": "Stored free boosters",
+      "interval": "One free booster every",
+      "minutes": "{count} min",
+      "recycle": "Recycling gems"
+    },
+    "multiplier": "×{value}",
+    "names": {
+      "booster_storage": "Booster storage",
+      "booster_speed": "Faster boosters",
+      "recycle_bonus": "Recycling bonus"
+    },
+    "help": {
+      "booster_storage": "Store more free boosters before the timer stops.",
+      "booster_speed": "Free boosters arrive sooner.",
+      "recycle_bonus": "Recycled duplicates give more gems."
+    },
+    "effects": {
+      "booster_storage": "+{count} boosters",
+      "booster_speed": "−{percent} % waiting time",
+      "recycle_bonus": "×{multiplier} gems"
+    },
+    "level": "Level {level} / {max}",
+    "current": "Current",
+    "next": "Next level",
+    "none": "None",
+    "buy": "Upgrade for {gems} gems",
+    "maxed": "Maximum level reached",
+    "unavailable": "Not available on this server."
   }
 }

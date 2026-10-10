@@ -89,8 +89,8 @@ checks the per-card frequencies and that weights always sum to 1 000 000.
 - One free charge every **10 minutes** (`free_booster_interval_seconds = 600`).
 - A new player starts with every charge available (anchor at epoch).
 - Charges accumulate up to a cap of **15** (2h30), which makes x5/x10 useful for free boosters
-  without rewarding 24/7 presence too much. Future: upgrades that raise the cap per player
-  (not in v1 scope; the cap is read through one function so a per-player bonus can be added).
+  without rewarding 24/7 presence too much. Players can raise their own cap and shorten their
+  interval with upgrades (§9): the rules are read per player (`getPlayerFreeRules`).
 - Stored as one timestamp per player (`free_booster_anchor_at`), no cron, no Redis:
 
 ```
@@ -200,6 +200,10 @@ Common pool keeps duplicates (and recycling income) low for months.
   `recyclable = quantity − 1 − locked_quantity` (never negative).
 - "Recycle all duplicates" with rarity filter → preview (count + gems) → confirmation → one
   transaction.
+- Gems per copy = rarity recycle value × base multiplier (setting `recycle.multiplier`, default
+  1. × the player's recycling upgrade (§9), multipliers taken in hundredths, rounded half up per
+     copy (`recycleValuePerCopy`). The wiki shows this per-copy value; market minimum prices keep the
+     raw rarity value.
 
 ## 4. Market (player-to-player)
 
@@ -412,9 +416,29 @@ Implementation notes (Phase 4):
 The achievements page shows a global counter (completed / active), filters All / To do / Completed,
 progress bars and claim buttons.
 
-## 9. Feedback
+## 9. Player upgrades
 
-Removed (maintainer decision, 2026-10-07): there is no feedback form.
+Permanent per-player bonuses bought with gems (maintainer request, 2026-10-10), page Upgrades:
+
+| Upgrade           | Setting                   | Value of a level              | Default levels (cost → value)                                       |
+| ----------------- | ------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| `booster_storage` | `upgrades.boosterStorage` | extra free charges on the cap | 1 000 → +2, 2 500 → +4, 5 000 → +6, 10 000 → +8, 20 000 → +10       |
+| `booster_speed`   | `upgrades.boosterSpeed`   | free interval shortened by %  | 1 000 → 5, 2 500 → 10, 5 000 → 15, 10 000 → 20, 20 000 → 25         |
+| `recycle_bonus`   | `upgrades.recycleBonus`   | recycle multiplier            | 800 → ×1.1, 2 000 → ×1.25, 4 000 → ×1.5, 8 000 → ×1.75, 16 000 → ×2 |
+
+- Levels are bought one at a time, in order; the value of a level is absolute (not cumulative)
+  and values must increase. An upgrade without level is not offered. If an admin removes levels,
+  players above keep the effect of the last configured level.
+- The purchase request names the level being bought: a repeated click fails with
+  `UPGRADE_LEVEL_CHANGED` instead of buying two levels. One transaction: profile lock, gem debit
+  with an `upgrade_purchase` ledger row, level row.
+- Buying a free booster upgrade **rebases the timer anchor**: the player keeps their available
+  charges and their progress toward the next one (as a fraction of the interval), so a bigger cap
+  or a shorter interval never refills charges at once (`rebaseFreeCharges`). Admin changes to the
+  settings are not rebased (same as `boosters.free`).
+- No mission or achievement for upgrades yet.
+
+The feedback form was removed (maintainer decision, 2026-10-07).
 
 ## 10. Catalog sources
 

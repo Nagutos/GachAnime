@@ -14,6 +14,8 @@ import {
   wikiCharacterSchema,
   wikiSeriesDetailSchema,
   wikiSeriesListSchema,
+  upgradesResponseSchema,
+  type UpgradeKey,
   type BoosterQuantity,
   type CollectionQueryInput,
   type OpenBoostersResponse,
@@ -41,6 +43,7 @@ export const playerKeys = {
   wiki: ['wiki'] as const,
   gems: ['gems'] as const,
   recyclePreview: ['recycle-preview'] as const,
+  upgrades: ['upgrades'] as const,
 }
 
 /** After anything that changes cards or gems. */
@@ -52,6 +55,7 @@ function invalidateInventory(queryClient: ReturnType<typeof useQueryClient>): vo
     playerKeys.wiki,
     playerKeys.gems,
     playerKeys.recyclePreview,
+    playerKeys.upgrades,
   ]) {
     void queryClient.invalidateQueries({ queryKey: key })
   }
@@ -299,5 +303,28 @@ export function useWishlistMutation() {
           ? { name: 'collection-wishlist', label: 'wishlist.manage' }
           : undefined,
       ),
+  })
+}
+
+export function useUpgradesQuery() {
+  return useQuery({
+    queryKey: playerKeys.upgrades,
+    queryFn: () => apiFetch('/upgrades', { schema: upgradesResponseSchema }),
+  })
+}
+
+/** Buys `level` of an upgrade (the level shown, so a double click cannot buy two). */
+export function useBuyUpgradeMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { key: UpgradeKey; level: number }) =>
+      apiFetch(`/upgrades/${input.key}`, {
+        method: 'POST',
+        body: { level: input.level },
+        schema: upgradesResponseSchema,
+      }),
+    onSuccess: (result) => queryClient.setQueryData(playerKeys.upgrades, result),
+    onError: (error) => notifyError(error),
+    onSettled: () => invalidateInventory(queryClient),
   })
 }

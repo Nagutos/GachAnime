@@ -6,13 +6,19 @@ import type {
   RecyclePreview,
   RecycleResult,
 } from '@gachanime/shared'
+import { recycleValuePerCopy } from '@gachanime/game'
 import { and, eq, inArray, sql, type SQL } from 'drizzle-orm'
 import { AppError } from '../errors'
 import { emitEvents } from '../progression/engine'
 import { changeGems, lockPlayer } from './gems'
+import { getPlayerRecycleFactor } from './upgrades'
 
 /** Copies beyond the first, minus locked copies (GAME_DESIGN §3), in SQL. */
 const recyclable = sql<number>`greatest(${userCards.quantity} - 1 - ${userCards.lockedQuantity}, 0)`
+
+/** Gems per recycled copy of a rarity with the player's factor: `recycleValuePerCopy` in SQL. */
+const valuePerCopy = (factor: number) =>
+  sql<number>`((${rarities.recycleValue}::bigint * ${factor} + 5000) / 10000)`
 
 /**
  * Recycles `count` duplicates of one character. Never the first copy, never locked copies:
@@ -51,7 +57,8 @@ export async function recycleCards(
       throw new AppError('NOTHING_TO_RECYCLE', 'Not enough duplicates to recycle', { available })
     }
 
-    const gems = input.count * card.recycleValue
+    const factor = await getPlayerRecycleFactor(tx, userId)
+    const gems = input.count * recycleValuePerCopy(card.recycleValue, factor)
     const gemBalance =
       gems > 0
         ? await changeGems(tx, {
@@ -90,12 +97,13 @@ export async function previewRecycleDuplicates(
   userId: string,
   filter: RecycleFilter,
 ): Promise<RecyclePreview> {
+  const factor = await getPlayerRecycleFactor(db, userId)
   const rows = await db
     .select({
       rarityKey: rarities.key,
       characters: sql<number>`count(*)::int`,
       cards: sql<number>`sum(${recyclable})::int`,
-      gems: sql<number>`sum(${recyclable} * ${rarities.recycleValue})::int`,
+      gems: sql<number>`sum(${recyclable} * ${valuePerCopy(factor)})::int`,
     })
     .from(userCards)
     .innerJoin(characters, eq(characters.id, userCards.characterId))

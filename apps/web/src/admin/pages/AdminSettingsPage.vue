@@ -4,6 +4,7 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsQuery, useUpdateSettingMutation } from '@/api/admin'
 import { useErrorMessage } from '@/app/errors'
+import UpgradeLevelsEditor from '../components/UpgradeLevelsEditor.vue'
 import { ui } from '../ui'
 
 const { t } = useI18n()
@@ -23,6 +24,18 @@ const market = ref<AdminSettings['market.limits']>({
 const tradeOffers = ref<AdminSettings['trades.offers']>({ offerTtlDays: 0 })
 const wishlist = ref<AdminSettings['wishlist']>({ maxItems: 20, boostPercent: 5 })
 const favorites = ref<AdminSettings['favorites']>({ maxItems: 100 })
+const recycle = ref<AdminSettings['recycle']>({ multiplier: 1 })
+const upgradeForms = [
+  { key: 'upgrades.boosterStorage', name: 'boosterStorage', min: 1, max: 1000, step: 1 },
+  { key: 'upgrades.boosterSpeed', name: 'boosterSpeed', min: 1, max: 90, step: 1 },
+  { key: 'upgrades.recycleBonus', name: 'recycleBonus', min: 1, max: 100, step: 0.01 },
+] as const
+type UpgradeSettingKey = (typeof upgradeForms)[number]['key']
+const upgrades = ref<Record<UpgradeSettingKey, AdminSettings[UpgradeSettingKey]>>({
+  'upgrades.boosterStorage': { levels: [] },
+  'upgrades.boosterSpeed': { levels: [] },
+  'upgrades.recycleBonus': { levels: [] },
+})
 const imageCache = ref<AdminSettings['images.cache']>({ enabled: false })
 const adultImports = ref<AdminSettings['imports.adult']>({ allowed: false })
 const marketFields = [
@@ -41,6 +54,12 @@ watch(
     tradeOffers.value = { ...value['trades.offers'] }
     wishlist.value = { ...value.wishlist }
     favorites.value = { ...value.favorites }
+    recycle.value = { ...value.recycle }
+    for (const form of upgradeForms) {
+      upgrades.value[form.key] = {
+        levels: value[form.key].levels.map((level) => ({ ...level })),
+      }
+    }
     imageCache.value = { ...value['images.cache'] }
     adultImports.value = { ...value['imports.adult'] }
   },
@@ -90,6 +109,59 @@ async function save<K extends keyof AdminSettings>(key: K, value: AdminSettings[
         </div>
         <div class="flex items-center justify-end gap-3">
           <span v-if="saved === 'boosters.free'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+
+      <form :class="[ui.card, 'flex flex-col gap-4']" @submit.prevent="save('recycle', recycle)">
+        <h2 class="font-display text-xl font-bold">{{ t('admin.settings.recycle') }}</h2>
+        <p class="text-sm text-mist-300">{{ t('admin.settings.recycleHelp') }}</p>
+        <label :class="ui.label">
+          {{ t('admin.settings.recycleMultiplier') }}
+          <input
+            v-model.number="recycle.multiplier"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            :class="ui.input"
+            data-testid="setting-recycle-multiplier"
+          />
+        </label>
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === 'recycle'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+
+      <form
+        v-for="form in upgradeForms"
+        :key="form.key"
+        :class="[ui.card, 'flex flex-col gap-4']"
+        @submit.prevent="save(form.key, upgrades[form.key])"
+      >
+        <h2 class="font-display text-xl font-bold">
+          {{ t(`admin.settings.upgrades.${form.name}.title`) }}
+        </h2>
+        <p class="text-sm text-mist-300">{{ t(`admin.settings.upgrades.${form.name}.help`) }}</p>
+        <UpgradeLevelsEditor
+          v-model="upgrades[form.key].levels"
+          :value-label="t(`admin.settings.upgrades.${form.name}.value`)"
+          :min="form.min"
+          :max="form.max"
+          :step="form.step"
+          :testid="`setting-${form.name}`"
+        />
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === form.key" class="text-sm text-emerald-400">
             {{ t('admin.common.saved') }}
           </span>
           <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">

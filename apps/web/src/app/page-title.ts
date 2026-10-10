@@ -16,6 +16,7 @@ export const PAGE_TITLE_KEYS: Record<string, string> = {
   missions: 'nav.missions',
   achievements: 'nav.achievements',
   gems: 'gems.title',
+  upgrades: 'nav.upgrades',
   wiki: 'nav.wiki',
   'wiki-series': 'nav.wiki',
   'wiki-character': 'nav.wiki',

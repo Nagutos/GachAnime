@@ -55,3 +55,26 @@ export function consumeFreeCharges(
   if (available < count) throw new RangeError(`Only ${available} free charges available`)
   return new Date(effectiveAnchorMs(anchor, now, rules) + count * rules.intervalSeconds * 1000)
 }
+
+/**
+ * New anchor when one player's rules change (an upgrade bought): the available charges and the
+ * progress toward the next charge (as a fraction of the interval) are kept, so a bigger cap or a
+ * shorter interval never refills charges at once. A full player starts charging from `now`.
+ */
+export function rebaseFreeCharges(
+  anchor: Date,
+  now: Date,
+  before: FreeChargeRules,
+  after: FreeChargeRules,
+): Date {
+  const state = freeChargeState(anchor, now, before)
+  const beforeMs = before.intervalSeconds * 1000
+  const afterMs = after.intervalSeconds * 1000
+  const available = Math.min(state.available, after.maxCharges)
+  const fraction =
+    state.available < before.maxCharges
+      ? (now.getTime() - effectiveAnchorMs(anchor, now, before) - state.available * beforeMs) /
+        beforeMs
+      : 0
+  return new Date(now.getTime() - available * afterMs - Math.floor(fraction * afterMs))
+}

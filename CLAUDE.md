@@ -335,3 +335,8 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   `xy`, auto-scroll): the picked card tilts (`TiltCard`) and lifts, the others slide away (layout
   animations), it springs into its slot on release; works with a finger (`touch-none` while
   arranging). The order moves one slot per pointer move (e2e: move in steps, after layouts settle).
+- 2026-10-10 — Player upgrades bought with gems (GAME_DESIGN §9, page Upgrades): booster storage
+  (+charges), faster boosters (−% interval), recycling bonus (multiplier); levels and costs in the
+  `upgrades.*` settings (Admin → Settings), `player_upgrades` (migration 0020), ledger reason
+  `upgrade_purchase`. Base recycle multiplier setting `recycle.multiplier`. Free rules are per
+  player (`getPlayerFreeRules`); buying a timer upgrade rebases the anchor (no refill).

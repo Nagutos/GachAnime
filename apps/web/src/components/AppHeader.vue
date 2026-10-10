@@ -25,6 +25,7 @@ const links = [
   { name: 'trades', label: 'nav.trades' },
   { name: 'missions', label: 'nav.missions' },
   { name: 'achievements', label: 'nav.achievements' },
+  { name: 'upgrades', label: 'nav.upgrades' },
 ] as const
 </script>
 

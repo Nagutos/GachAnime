@@ -190,6 +190,7 @@ export const gemTransactionReason = pgEnum('gem_transaction_reason', [
   'mission_reward',
   'achievement_reward',
   'admin_adjustment',
+  'upgrade_purchase',
 ])
 
 /** Append-only gem ledger: per user, `sum(amount) = gem_balance`. */

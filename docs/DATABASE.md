@@ -12,6 +12,7 @@ user (Better Auth) 1─1 player_profiles ─┬─< gem_transactions
                                         ├─< user_cards >── characters >──< series_characters >── series ─< media
                                         │                  characters >──< character_media >── media
                                         ├─< wishlist_items >── characters                     media ─< media_tags >── anilist_tags
+                                        ├─< player_upgrades
                                         ├─< booster_openings ─< booster_opening_cards
                                         ├─< trades ─< trade_items
                                         ├─< market_listings
@@ -44,11 +45,17 @@ only**: `account.account_id` holds the Discord user id (used by `ADMIN_DISCORD_I
 Why a separate table: keeps Better Auth tables untouched (upgrades) and gives one row per player to
 `SELECT … FOR UPDATE`.
 
+### `player_upgrades`
+
+`user_id (FK player_profiles), key (enum upgrade_key: booster_storage, booster_speed,
+recycle_bonus), level (smallint ≥ 1), updated_at`, PK `(user_id, key)`. No row = level 0. The
+effect of each level lives in the `upgrades.*` settings (GAME_DESIGN §9).
+
 ### `gem_transactions` (append-only ledger)
 
 `id, user_id, amount (bigint, signed), balance_after, reason (enum: booster_purchase, recycle,
-market_sale, market_purchase, mission_reward, achievement_reward, admin_adjustment), ref_type, ref_id,
-created_at`.
+market_sale, market_purchase, mission_reward, achievement_reward, admin_adjustment,
+upgrade_purchase), ref_type, ref_id, created_at`.
 Index `(user_id, created_at desc)`. Invariant checked by a test/admin tool:
 `sum(amount) = gem_balance` per user.
 
@@ -208,7 +215,7 @@ bigint, reward_gems, icon_token, is_active, sort_order)`.
 
 - `settings(key PK, value jsonb, updated_at, updated_by)` — validated with a Zod schema per key in
   `@app/shared` (free booster interval/cap, mission reset hour/timezone, market limits, rarity
-  thresholds toggle, image cache enabled…).
+  thresholds toggle, image cache enabled, recycle multiplier, upgrade levels…).
 - `catalog_state(id = 1, version uuid)` — a single row. Statement-level triggers on `characters`
   (insert, delete, `is_active`, `rarity_id`), `series` (delete, `is_active`), `series_characters`
   and `theme_characters` give it a new random version whenever drawability or a pack pool may

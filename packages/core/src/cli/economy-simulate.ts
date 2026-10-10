@@ -1,9 +1,10 @@
 import { parseArgs } from 'node:util'
 import { boosterTiers, createDatabase, drawableCharacters } from '@gachanime/db'
-import { seededRng, simulateEconomy } from '@gachanime/game'
+import { recycleFactor, recycleValuePerCopy, seededRng, simulateEconomy } from '@gachanime/game'
 import { rateWeightsSchema } from '@gachanime/shared'
 import { asc, count, eq, isNotNull } from 'drizzle-orm'
 import { listAdminRarities } from '../admin/economy'
+import { getSetting } from '../settings'
 import { cliArgs } from './args'
 
 /**
@@ -51,12 +52,14 @@ try {
     .where(isNotNull(boosterTiers.priceGems))
     .orderBy(asc(boosterTiers.sortOrder))
 
+  // Base recycle rate only: a player without the recycle upgrade.
+  const factor = recycleFactor((await getSetting(db, 'recycle')).multiplier, 1)
   const result = simulateEconomy({
     rarityOrder: rarityRows.map((rarity) => rarity.key),
     poolSizes,
     weights: rateWeightsSchema.parse(free.weights),
     recycleValues: Object.fromEntries(
-      rarityRows.map((rarity) => [rarity.key, rarity.recycleValue]),
+      rarityRows.map((rarity) => [rarity.key, recycleValuePerCopy(rarity.recycleValue, factor)]),
     ),
     days,
     freeBoostersPerDay: freePerDay,

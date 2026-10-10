@@ -10,7 +10,7 @@ import {
   wishlistItems,
   type Executor,
 } from '@gachanime/db'
-import { recyclableCopies } from '@gachanime/game'
+import { recyclableCopies, recycleValuePerCopy } from '@gachanime/game'
 import type {
   Paginated,
   ProgressionUpdate,
@@ -39,6 +39,7 @@ import { containsPattern } from '../catalog/admin-series'
 import { publicImageUrl } from '../catalog/images'
 import { AppError } from '../errors'
 import { emitEvents } from '../progression/engine'
+import { getPlayerRecycleFactor } from './upgrades'
 import { activeSeriesList } from './cards'
 
 /**
@@ -370,7 +371,7 @@ export async function getWikiCharacter(
     quantity: row.quantity ?? 0,
     lockedQuantity: row.lockedQuantity ?? 0,
     recyclable: recyclableCopies(row.quantity ?? 0, row.lockedQuantity ?? 0),
-    recycleValue: row.recycleValue,
+    recycleValue: recycleValuePerCopy(row.recycleValue, await getPlayerRecycleFactor(db, userId)),
     wishlisted: row.wishlisted,
     favorite: row.favorite,
     firstObtainedAt: row.firstObtainedAt.toISOString(),

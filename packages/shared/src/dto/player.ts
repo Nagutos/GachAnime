@@ -240,6 +240,7 @@ export const GEM_TRANSACTION_REASONS = [
   'mission_reward',
   'achievement_reward',
   'admin_adjustment',
+  'upgrade_purchase',
 ] as const
 export type GemTransactionReason = (typeof GEM_TRANSACTION_REASONS)[number]
 

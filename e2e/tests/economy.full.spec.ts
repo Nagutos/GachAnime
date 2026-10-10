@@ -38,3 +38,26 @@ test('a player buys a paid booster, recycles duplicates and sees the gem history
   await expect(rows.nth(1)).toContainText('Booster purchase')
   await expect(rows.nth(2)).toContainText('Adjustment by an admin')
 })
+
+test('a player buys an upgrade and stores more free boosters', async ({ page, context }) => {
+  const { userId } = await signInNewPlayer(context)
+  await grantGems(userId, 1_500)
+
+  await page.goto('/upgrades')
+  const storage = page.getByTestId('upgrade-booster_storage')
+  await expect(storage.getByTestId('upgrade-current')).toHaveText('None', { timeout: 30_000 })
+  await expect(page.getByTestId('upgrade-buy-booster_speed')).toBeEnabled()
+  await storage.getByTestId('upgrade-buy-booster_storage').click()
+  await expect(storage.getByTestId('upgrade-current')).toHaveText('+2 boosters')
+  await expect(page.getByTestId('upgrades-balance')).toHaveText('500 gems')
+  // 1,000 gems for the next level: not enough left.
+  await expect(storage.getByTestId('upgrade-buy-booster_storage')).toBeDisabled()
+
+  await page.getByTestId('nav-boosters').click()
+  await expect(page.getByTestId('charges')).toHaveText('15 / 17')
+
+  await page.getByTestId('header-gems').click()
+  await expect(page.locator('tbody tr').first()).toContainText('Upgrade purchase', {
+    timeout: 30_000,
+  })
+})

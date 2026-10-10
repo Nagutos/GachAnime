@@ -14,7 +14,6 @@ import {
   consumeFreeCharges,
   drawCards,
   freeChargeState,
-  type FreeChargeRules,
   type Rng,
   wishChance,
 } from '@gachanime/game'
@@ -37,24 +36,14 @@ import { loadWishedInPool } from '../players/wishlist'
 import { emitEvents } from '../progression/engine'
 import { ensureThemePools, rebuildThemePool } from '../themes/pools'
 import { getSetting } from '../settings'
+import { getPlayerFreeRules } from '../players/upgrades'
+import { toFreeStatus } from './free-status'
 
 export interface GameClock {
   /** Defaults to `cryptoRng`. */
   rng?: Rng
   /** Defaults to the current time. */
   now?: Date
-}
-
-function toFreeStatus(anchor: Date, now: Date, rules: FreeChargeRules): FreeBoosterStatus {
-  const state = freeChargeState(anchor, now, rules)
-  return {
-    available: state.available,
-    max: state.max,
-    intervalSeconds: rules.intervalSeconds,
-    nextChargeAt: state.nextChargeAt?.toISOString() ?? null,
-    fullAt: state.fullAt?.toISOString() ?? null,
-    serverTime: now.toISOString(),
-  }
 }
 
 async function loadProfile(db: Executor, userId: string) {
@@ -73,7 +62,7 @@ export async function getFreeBoosterStatus(
 ): Promise<FreeBoosterStatus> {
   const [profile, rules] = await Promise.all([
     loadProfile(db, userId),
-    getSetting(db, 'boosters.free'),
+    getPlayerFreeRules(db, userId),
   ])
   return toFreeStatus(profile.anchor, now, rules)
 }
@@ -167,7 +156,7 @@ export async function openBoosters(
       if (!theme.poolBuiltAt) await rebuildThemePool(tx, theme.id)
     }
 
-    const rules = await getSetting(tx, 'boosters.free')
+    const rules = await getPlayerFreeRules(tx, userId)
     const gemsSpent = isFree ? 0 : boosterPrice(tier.priceGems!, input.quantity)
     let nextAnchor = player.freeBoosterAnchorAt
     if (isFree) {
