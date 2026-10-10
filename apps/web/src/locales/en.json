@@ -623,8 +623,7 @@
     "cardProgress": "Card {current} of {total}",
     "slots": "{revealed} of {total} cards revealed",
     "series": {
-      "title": "Series in this booster ({count})",
-      "showAll": "See all {count} series",
+      "showAll": "See the series | See the {count} series",
       "show": "Series in this booster",
       "dialogTitle": "Series — {pack}",
       "dialogHelp": "Every series this booster can draw from, with how many of their characters you own.",

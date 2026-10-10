@@ -17,15 +17,15 @@ const badges = computed<Record<string, number>>(() => ({
   trades: summary.data.value?.pendingTrades ?? 0,
 }))
 
+/** Achievements are in the user menu (with their badge). */
 const links = [
   { name: 'boosters', label: 'nav.boosters' },
+  { name: 'upgrades', label: 'nav.upgrades' },
   { name: 'collection', label: 'nav.collection' },
   { name: 'wiki', label: 'nav.wiki' },
   { name: 'market', label: 'nav.market' },
   { name: 'trades', label: 'nav.trades' },
   { name: 'missions', label: 'nav.missions' },
-  { name: 'achievements', label: 'nav.achievements' },
-  { name: 'upgrades', label: 'nav.upgrades' },
 ] as const
 </script>
 
@@ -71,7 +71,12 @@ const links = [
         {{ t('nav.gems', { count: n(me.gemBalance, 'integer') }) }}
       </RouterLink>
       <LocaleSwitcher @change="changeLocale" />
-      <UserMenu v-if="me" :me="me" @sign-out="signOut" />
+      <UserMenu
+        v-if="me"
+        :me="me"
+        :claimable-achievements="badges.achievements ?? 0"
+        @sign-out="signOut"
+      />
     </div>
   </header>
 </template>

@@ -356,3 +356,7 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   `onReorder`); a refused move must not re-render (that fed the loop).
 - 2026-10-10 — Rarity thresholds revised by the maintainer (AniList favourites): Rare ≥ 250,
   Epic ≥ 1 000, Legendary ≥ 5 000, Mythic ≥ 15 000 (GAME_DESIGN §1).
+- 2026-10-10 — Shop: packs in a `justify-evenly` flex, series only behind "See the N series",
+  sticky ×1/×5/×10 bar (direct child of the section, or sticky cannot reach the viewport).
+  Header order Boosters, Upgrades, Collection, Wiki, Market, Trades, Missions; Achievements moved
+  to the user menu (badge on the menu button and on the item). Trades pages of 10.

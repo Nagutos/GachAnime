@@ -27,6 +27,8 @@ export default tseslint.config(
       '**/coverage/**',
       '**/next-env.d.ts',
       'packages/db/migrations/**',
+      // Local research folder (git-ignored).
+      'scraping_mudae/**',
       'e2e/playwright-report/**',
       'e2e/test-results/**',
     ],

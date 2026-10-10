@@ -109,13 +109,16 @@ export function usePlayerWishlistQuery(username: MaybeRefOrGetter<string>) {
 
 // ─── Trades ──────────────────────────────────────────────────────────────────
 
+/** Trade cards are tall: a short page. */
+const TRADES_PAGE_SIZE = 10
+
 export function useTradesQuery(
   filters: MaybeRefOrGetter<{ page: number; box: 'incoming' | 'outgoing' | 'history' }>,
 ) {
   return useQuery({
     queryKey: computed(() => [...socialKeys.trades, 'list', toValue(filters)]),
     queryFn: () =>
-      apiFetch(`/trades${toQueryString({ ...toValue(filters), pageSize: 20 })}`, {
+      apiFetch(`/trades${toQueryString({ ...toValue(filters), pageSize: TRADES_PAGE_SIZE })}`, {
         schema: tradesListSchema,
       }),
     placeholderData: keepPreviousData,
@@ -130,9 +133,12 @@ export function usePublicTradesQuery(
   return useQuery({
     queryKey: computed(() => [...socialKeys.trades, 'public', toValue(page)]),
     queryFn: () =>
-      apiFetch(`/trades/public${toQueryString({ page: toValue(page), pageSize: 20 })}`, {
-        schema: publicTradesListSchema,
-      }),
+      apiFetch(
+        `/trades/public${toQueryString({ page: toValue(page), pageSize: TRADES_PAGE_SIZE })}`,
+        {
+          schema: publicTradesListSchema,
+        },
+      ),
     placeholderData: keepPreviousData,
     enabled,
   })

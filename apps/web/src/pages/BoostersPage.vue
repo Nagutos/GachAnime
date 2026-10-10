@@ -276,7 +276,7 @@ function openAgain(quantity: BoosterQuantity): void {
             </p>
           </div>
           <div
-            class="grid grid-cols-3 gap-x-4 gap-y-4 sm:max-w-xl"
+            class="flex flex-wrap justify-evenly gap-x-4 gap-y-4"
             role="radiogroup"
             :aria-label="t('boosters.weekly.title')"
           >
@@ -286,7 +286,7 @@ function openAgain(quantity: BoosterQuantity): void {
               type="button"
               role="radio"
               :aria-checked="themeKey === theme.key"
-              class="flex flex-col items-center gap-2 rounded-xl p-1 text-center"
+              class="flex w-26 flex-col items-center gap-2 rounded-xl p-1 text-center sm:w-32"
               :data-testid="`pack-${theme.key}`"
               @click="themeKey = theme.key"
             >
@@ -316,7 +316,7 @@ function openAgain(quantity: BoosterQuantity): void {
 
         <!-- Each pack is a free booster of its own: pick one, then open it -->
         <div
-          class="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 lg:grid-cols-8"
+          class="flex flex-wrap justify-evenly gap-x-4 gap-y-6"
           role="radiogroup"
           :aria-label="t('boosters.packs.title')"
           data-testid="pack-selector"
@@ -325,7 +325,7 @@ function openAgain(quantity: BoosterQuantity): void {
             type="button"
             role="radio"
             :aria-checked="themeKey === null"
-            class="flex flex-col items-center gap-2 rounded-xl p-1 text-center"
+            class="flex w-26 flex-col items-center gap-2 rounded-xl p-1 text-center sm:w-32"
             data-testid="pack-all"
             @click="themeKey = null"
           >
@@ -349,7 +349,7 @@ function openAgain(quantity: BoosterQuantity): void {
             type="button"
             role="radio"
             :aria-checked="themeKey === theme.key"
-            class="flex flex-col items-center gap-2 rounded-xl p-1 text-center"
+            class="flex w-26 flex-col items-center gap-2 rounded-xl p-1 text-center sm:w-32"
             :data-testid="`pack-${theme.key}`"
             @click="themeKey = theme.key"
           >
@@ -394,30 +394,43 @@ function openAgain(quantity: BoosterQuantity): void {
           <PoolSeriesPreview
             :theme="themeKey"
             :label="selectedTheme ? themeName(selectedTheme) : t('boosters.packs.all')"
-            inline
           />
-          <div class="flex flex-wrap gap-3">
-            <button
-              v-for="quantity in QUANTITIES"
-              :key="quantity"
-              type="button"
-              class="min-w-28 rounded-xl bg-sakura-600 px-5 py-3 font-semibold text-white shadow-lg shadow-sakura-500/20 transition hover:bg-sakura-700 disabled:cursor-not-allowed disabled:bg-night-700 disabled:text-mist-300 disabled:shadow-none"
-              :disabled="!canOpen(tier, quantity)"
-              :data-testid="`open-${quantity}`"
-              @click="openBoosters(tier, quantity)"
-            >
-              {{ t('boosters.open', { count: quantity }) }}
-            </button>
-          </div>
-          <p v-if="errorMessage && lastTier === tier.key" :class="playerUi.error" role="alert">
-            {{ errorMessage }}
-          </p>
           <TierRates
             v-if="selectedTheme?.weekly"
             :weights="selectedTheme.weekly.weights"
             :base="tier.weights"
           />
           <TierRates v-else :weights="tier.weights" />
+        </div>
+        <!--
+          Stays at the bottom of the screen while the section is in view: the packs can be
+          browsed and opened without scrolling down to the buttons.
+        -->
+        <div
+          class="sticky bottom-3 z-20 flex flex-col gap-2 rounded-xl border border-night-700 bg-night-900/95 p-2 shadow-xl shadow-night-950/60 sm:p-3"
+          data-testid="open-bar"
+        >
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p class="min-w-0 flex-1 truncate px-1 text-sm font-semibold sm:text-base">
+              {{ selectedTheme ? themeName(selectedTheme) : t('boosters.packs.all') }}
+            </p>
+            <div class="flex w-full gap-2 sm:w-auto">
+              <button
+                v-for="quantity in QUANTITIES"
+                :key="quantity"
+                type="button"
+                class="min-w-0 flex-1 rounded-xl bg-sakura-600 px-2 py-2 text-sm font-semibold whitespace-nowrap text-white shadow-lg shadow-sakura-500/20 transition hover:bg-sakura-700 disabled:cursor-not-allowed disabled:bg-night-700 disabled:text-mist-300 disabled:shadow-none sm:min-w-28 sm:flex-none sm:px-4 sm:py-2.5 sm:text-base"
+                :disabled="!canOpen(tier, quantity)"
+                :data-testid="`open-${quantity}`"
+                @click="openBoosters(tier, quantity)"
+              >
+                {{ t('boosters.open', { count: quantity }) }}
+              </button>
+            </div>
+          </div>
+          <p v-if="errorMessage && lastTier === tier.key" :class="playerUi.error" role="alert">
+            {{ errorMessage }}
+          </p>
         </div>
       </section>
 

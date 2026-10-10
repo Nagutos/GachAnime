@@ -235,8 +235,10 @@ Days are counted with the same reset hour as daily missions.
   艶 Ecchi, 女 Waifus, 男 Husbandos, 動 Anime, 遊 Video games; 招 for the whole catalog). Same rates, one charge each.
 - **Premium tiers** (Epic, Legendary, Mythic, Divine, paid with gems) always draw from the whole
   catalog at their base price: packs do not apply to them (ADR-018).
-- **Series preview** before opening: the selected pack (or the whole catalog) lists the active
-  series it can draw from, most popular first, with how many of their drawable characters the
+- **Shop layout**: packs spread evenly (flex, `justify-evenly`); the ×1/×5/×10 buttons of the
+  free booster sit in a bar that stays at the bottom of the screen while the section is in view.
+- **Series preview** before opening: a "See the N series" button (the selected pack, or the whole
+  catalog) opens the active series it can draw from, most popular first, with how many of their drawable characters the
   pool holds and how many the player owns (`GET /boosters/series?theme=`); the admin pack editor
   shows the same breakdown in its live preview.
 - **Opening summary and back**: the opening id goes in the shop URL (`/boosters?opening=<id>`)

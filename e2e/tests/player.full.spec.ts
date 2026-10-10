@@ -183,10 +183,11 @@ test('the shop previews the series of a booster, and back from a card shows the 
 }) => {
   await signInNewPlayer(context)
   await page.goto('/boosters')
-  const series = page.getByTestId('tier-free').getByTestId('pool-series')
-  await expect(series.getByRole('link', { name: E2E_SERIES_TITLE })).toBeVisible({
-    timeout: 30_000,
-  })
+  // Only a button with the number of series: the list opens in a dialog.
+  await expect(page.getByTestId('tier-free').getByTestId('pool-series-open')).toHaveText(
+    'See the series',
+    { timeout: 30_000 },
+  )
   // Paid tiers draw from the whole catalog: their full list opens in a dialog.
   await page.getByTestId('tier-epic').getByTestId('pool-series-open').click()
   const list = page.getByTestId('pool-series-list')

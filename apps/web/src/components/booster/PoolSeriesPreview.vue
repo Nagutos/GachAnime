@@ -7,22 +7,15 @@ import BaseDialog from '@/components/BaseDialog.vue'
 import { playerUi } from '@/components/ui'
 
 /**
- * Series a booster can draw from, before opening it: a few of them inline and the full list
- * (searchable, with the player's progress) in a dialog. `inline: false` shows only the button.
+ * Series a booster can draw from, before opening it: a button with their count, opening the
+ * full list (searchable, with the player's progress) in a dialog.
  */
-const props = withDefaults(
-  defineProps<{ theme: string | null; label: string; inline?: boolean }>(),
-  { inline: false },
-)
+const props = defineProps<{ theme: string | null; label: string }>()
 const { t, n } = useI18n()
 const dialogOpen = ref(false)
-const query = usePoolSeriesQuery(
-  () => props.theme,
-  () => props.inline || dialogOpen.value,
-)
+const query = usePoolSeriesQuery(() => props.theme)
 const series = computed(() => query.data.value?.series ?? [])
 
-const INLINE_COUNT = 8
 const search = ref('')
 const filtered = computed(() => {
   const term = search.value.trim().toLocaleLowerCase()
@@ -34,31 +27,15 @@ const filtered = computed(() => {
 
 <template>
   <div class="flex flex-col gap-2" data-testid="pool-series">
-    <template v-if="inline">
-      <h4 class="text-sm font-semibold text-mist-300">
-        {{ t('boosters.series.title', { count: n(series.length, 'integer') }) }}
-      </h4>
-      <ul v-if="series.length" class="flex flex-wrap gap-1.5">
-        <li v-for="row in series.slice(0, INLINE_COUNT)" :key="row.id">
-          <RouterLink
-            :to="{ name: 'wiki-series', params: { id: row.id } }"
-            class="inline-block rounded-full border border-night-700 bg-night-950/60 px-3 py-1 text-xs text-mist-100 hover:border-sakura-400/60"
-          >
-            {{ row.title }}
-          </RouterLink>
-        </li>
-      </ul>
-    </template>
     <button
-      v-if="!inline || series.length > INLINE_COUNT"
       type="button"
       class="w-fit text-sm font-semibold text-sakura-400 hover:underline"
       data-testid="pool-series-open"
       @click="dialogOpen = true"
     >
       {{
-        inline
-          ? t('boosters.series.showAll', { count: n(series.length, 'integer') })
+        query.data.value
+          ? t('boosters.series.showAll', { count: n(series.length, 'integer') }, series.length)
           : t('boosters.series.show')
       }}
     </button>

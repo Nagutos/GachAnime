@@ -51,6 +51,10 @@ test('a new player claims missions and unlocks achievements', async ({ page, con
     await expect(toasts).toHaveCount(0, { timeout: 500 })
   }).toPass({ timeout: 15_000 })
 
+  // Achievements are in the user menu, its button shows what is left to claim.
+  await expect(page.getByTestId('badge-user-menu')).toBeVisible()
+  await page.getByTestId('user-menu').click()
+  await expect(page.getByTestId('badge-achievements')).toBeVisible()
   await page.getByTestId('nav-achievements').click()
   const firstSteps = page.getByTestId('achievement-open_10')
   await firstSteps.getByTestId('claim-achievement').click()
