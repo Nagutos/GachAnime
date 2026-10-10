@@ -1,4 +1,5 @@
 import {
+  leaderboardResponseSchema,
   listingActionResultSchema,
   listingSchema,
   listingsResponseSchema,
@@ -7,6 +8,7 @@ import {
   playerProfileSchema,
   playersListSchema,
   playerWishlistResponseSchema,
+  publicTradesListSchema,
   tradeActionResultSchema,
   tradeSchema,
   tradesListSchema,
@@ -60,6 +62,15 @@ export function usePlayersQuery(filters: MaybeRefOrGetter<{ page: number; search
   })
 }
 
+/** Players with the most characters (home page). */
+export function useLeaderboardQuery(enabled: MaybeRefOrGetter<boolean> = true) {
+  return useQuery({
+    queryKey: [...socialKeys.players, 'leaderboard'],
+    queryFn: () => apiFetch('/leaderboard', { schema: leaderboardResponseSchema }),
+    enabled,
+  })
+}
+
 export function usePlayerProfileQuery(username: MaybeRefOrGetter<string>) {
   return useQuery({
     queryKey: computed(() => [...socialKeys.players, 'profile', toValue(username)]),
@@ -108,6 +119,22 @@ export function useTradesQuery(
         schema: tradesListSchema,
       }),
     placeholderData: keepPreviousData,
+  })
+}
+
+/** Pending trades between other players (read only). */
+export function usePublicTradesQuery(
+  page: MaybeRefOrGetter<number>,
+  enabled: MaybeRefOrGetter<boolean> = true,
+) {
+  return useQuery({
+    queryKey: computed(() => [...socialKeys.trades, 'public', toValue(page)]),
+    queryFn: () =>
+      apiFetch(`/trades/public${toQueryString({ page: toValue(page), pageSize: 20 })}`, {
+        schema: publicTradesListSchema,
+      }),
+    placeholderData: keepPreviousData,
+    enabled,
   })
 }
 

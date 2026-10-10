@@ -67,6 +67,11 @@ async function scheduleRepeatedJobs(): Promise<void> {
     { name: 'market.sweep', data: {}, opts: { removeOnComplete: true, removeOnFail: true } },
   )
   await queue.upsertJobScheduler(
+    'boosters-weekly',
+    { every: SWEEP_INTERVAL_MS },
+    { name: 'boosters.weekly', data: {}, opts: { removeOnComplete: true, removeOnFail: true } },
+  )
+  await queue.upsertJobScheduler(
     'images-cache',
     { every: IMAGE_CACHE_INTERVAL_MS },
     { name: 'images.cache', data: {}, opts: { removeOnComplete: true, removeOnFail: true } },

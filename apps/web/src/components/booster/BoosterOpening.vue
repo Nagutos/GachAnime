@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OpenBoostersResponse } from '@gachanime/shared'
+import type { BoosterQuantity, OpenBoostersResponse } from '@gachanime/shared'
 import { useMediaQuery } from '@vueuse/core'
 import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'motion-v'
 import {
@@ -46,13 +46,28 @@ const props = withDefaults(
     packSeal?: string
     /** Shown again (back from a card's page): straight to the summary, every card revealed. */
     resume?: boolean
+    /** Open the same booster again from the summary (gems: total price of that quantity). */
+    again?: { quantity: BoosterQuantity; disabled: boolean; price: number | null }[]
+    /** What is left to open with (charges or gems). */
+    againHint?: string | null
+    againPending?: boolean
+    againError?: string | null
   }>(),
-  { packArt: 'free', packColor: null, packSeal: '招', resume: false },
+  {
+    packArt: 'free',
+    packColor: null,
+    packSeal: '招',
+    resume: false,
+    again: () => [],
+    againHint: null,
+    againPending: false,
+    againError: null,
+  },
 )
 /** `navigate`: a card of the summary was opened (its page replaces the scene). */
-const emit = defineEmits<{ close: []; navigate: [] }>()
+const emit = defineEmits<{ close: []; navigate: []; again: [quantity: BoosterQuantity] }>()
 
-const { t } = useI18n()
+const { t, n } = useI18n()
 const { rankOf } = usePlayerRarities()
 const reduced = useReducedMotion()
 
@@ -620,6 +635,36 @@ onBeforeUnmount(() => {
                 >
                   {{ t('boosters.done') }}
                 </button>
+              </div>
+              <!-- Chain openings: the same booster again, without going back to the shop -->
+              <div
+                v-if="allRevealed && again.length"
+                class="flex flex-col items-center gap-2"
+                data-testid="open-again"
+              >
+                <p class="text-sm text-mist-300">
+                  {{ t('boosters.again.title') }}
+                  <template v-if="againHint">· {{ againHint }}</template>
+                </p>
+                <div class="flex flex-wrap justify-center gap-2">
+                  <button
+                    v-for="option in again"
+                    :key="option.quantity"
+                    type="button"
+                    class="flex items-center gap-2 rounded-xl border border-night-700 bg-night-900/80 px-4 py-2 font-semibold transition hover:border-sakura-400 hover:bg-night-800 disabled:cursor-not-allowed disabled:opacity-40"
+                    :disabled="option.disabled || againPending"
+                    :data-testid="`open-again-${option.quantity}`"
+                    @click="emit('again', option.quantity)"
+                  >
+                    {{ t('boosters.open', { count: option.quantity }) }}
+                    <span v-if="option.price !== null" class="text-sm text-gold-400 tabular-nums">
+                      {{ t('nav.gems', { count: n(option.price, 'integer') }) }}
+                    </span>
+                  </button>
+                </div>
+                <p v-if="againError" class="text-sm text-rarity-mythic" role="alert">
+                  {{ againError }}
+                </p>
               </div>
             </motion.div>
           </AnimatePresence>

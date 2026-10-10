@@ -110,6 +110,11 @@ export async function listCollection(
     conditions.push(sql`EXISTS (SELECT 1 FROM theme_characters tc JOIN themes t ON t.id = tc.theme_id
       WHERE tc.character_id = "characters"."id" AND t.key = ${query.theme})`)
   }
+  if (query.gender) {
+    conditions.push(
+      sql`coalesce(${characters.genderOverride}, ${characters.genderClass}) = ${query.gender}`,
+    )
+  }
   if (query.duplicates) conditions.push(gt(userCards.quantity, 1))
   if (query.wishlist) conditions.push(sql`${wishlistItems.userId} IS NOT NULL`)
   if (query.favorites) conditions.push(sql`${favoriteItems.userId} IS NOT NULL`)

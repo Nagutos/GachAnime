@@ -213,3 +213,34 @@ test('the shop previews the series of a booster, and back from a card shows the 
   await expect(opening).toBeHidden()
   await expect(page).not.toHaveURL(/opening=/)
 })
+
+test('a pack of the week opens with boosted rates, and opens again from the summary', async ({
+  page,
+  context,
+}) => {
+  await signInNewPlayer(context, 'Weekly Opener')
+  await page.goto('/boosters')
+  const weekly = page.getByTestId('weekly-packs')
+  await expect(weekly).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByTestId('weekly-countdown')).toContainText('Changes in')
+  await weekly.getByRole('radio', { name: new RegExp(E2E_SERIES_TITLE) }).click()
+  await expect(page.getByTestId('pack-summary')).toContainText('Pack of the week')
+  await expect(page.getByTestId('tier-free')).toContainText('Drop rates (boosted)')
+
+  await page.getByTestId('open-1').click()
+  const opening = page.getByTestId('booster-opening')
+  await expect(opening).toContainText(E2E_SERIES_TITLE)
+  await opening.getByTestId('skip').click()
+  const firstUrl = page.url()
+  // Chain: the same pack again, from the summary, while free boosters are left.
+  const again = opening.getByTestId('open-again')
+  await expect(again).toContainText('free boosters left')
+  await again.getByTestId('open-again-5').click()
+  await expect(opening.getByTestId('pack')).toBeVisible()
+  await expect(page).not.toHaveURL(firstUrl)
+  await opening.getByTestId('skip').click()
+  await expect(opening.locator('[data-testid="flip-card"][data-revealed="true"]')).toHaveCount(25)
+  // 15 charges at first: 9 left, so ×10 is out of reach.
+  await expect(again.getByTestId('open-again-10')).toBeDisabled()
+  await expect(again.getByTestId('open-again-1')).toBeEnabled()
+})

@@ -8,6 +8,7 @@ import { settingsSchemas } from '../settings'
 
 export const adminSettingsSchema = z.object({
   'boosters.free': settingsSchemas['boosters.free'],
+  'boosters.weekly': settingsSchemas['boosters.weekly'],
   'missions.reset': settingsSchemas['missions.reset'],
   'market.limits': settingsSchemas['market.limits'],
   wishlist: settingsSchemas.wishlist,

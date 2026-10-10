@@ -19,6 +19,9 @@ import {
   type PlayerProfile,
   PROFILE_SHOWCASE_SIZE,
   type CharacterCard,
+  LEADERBOARD_SIZE,
+  type LeaderboardEntry,
+  type LeaderboardResponse,
   type PlayerSummary,
   type PlayerWishlistResponse,
 } from '@gachanime/shared'
@@ -97,6 +100,57 @@ export async function listPlayers(
     page: query.page,
     pageSize: query.pageSize,
   }
+}
+
+/**
+ * Players with the most distinct characters owned now (then the most copies), banned players
+ * and players without a card left out; the viewer's own line is added when outside the top.
+ */
+export async function getLeaderboard(db: Executor, viewerId: string): Promise<LeaderboardResponse> {
+  const result = await db.execute<{
+    user_id: string
+    username: string
+    display_name: string
+    avatar_url: string | null
+    owned: number
+    cards: number
+    rank: number
+  }>(sql`
+    WITH counts AS (
+      SELECT uc.user_id, count(*)::int AS owned, sum(uc.quantity)::int AS cards
+      FROM user_cards uc WHERE uc.quantity > 0 GROUP BY uc.user_id
+    ), ranked AS (
+      SELECT c.*, p.username, u.name AS display_name, u.image AS avatar_url,
+        rank() OVER (ORDER BY c.owned DESC, c.cards DESC)::int AS rank,
+        row_number() OVER (ORDER BY c.owned DESC, c.cards DESC, p.username) AS position
+      FROM counts c
+      JOIN player_profiles p ON p.user_id = c.user_id
+      JOIN users u ON u.id = c.user_id
+      WHERE NOT u.banned
+    )
+    SELECT user_id, username, display_name, avatar_url, owned, cards, rank FROM ranked
+    WHERE position <= ${LEADERBOARD_SIZE} OR user_id = ${viewerId}
+    ORDER BY position`)
+  const [featured, drawable] = await Promise.all([
+    loadFavoriteCards(
+      db,
+      result.rows.map((row) => row.user_id),
+    ),
+    loadDrawableIds(db),
+  ])
+  const lines: LeaderboardEntry[] = result.rows.map((row) => ({
+    username: row.username,
+    displayName: row.display_name,
+    avatarUrl: row.avatar_url,
+    rank: row.rank,
+    owned: row.owned,
+    cards: row.cards,
+    featured: featured.get(row.user_id)?.[0] ?? null,
+    isMe: row.user_id === viewerId,
+  }))
+  const entries = lines.slice(0, LEADERBOARD_SIZE)
+  const me = lines.slice(LEADERBOARD_SIZE).find((line) => line.isMe) ?? null
+  return { entries, me, catalog: drawable.size }
 }
 
 /** Public profile: stats and completed achievements (achievements are sticky, never revoked). */

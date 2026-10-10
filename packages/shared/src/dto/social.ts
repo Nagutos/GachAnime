@@ -29,6 +29,30 @@ export const playersListSchema = paginatedSchema(
   playerSummarySchema.extend({ owned: z.number().int().nonnegative(), featured: featuredSchema }),
 )
 
+/** Players with the most characters (home page). */
+export const LEADERBOARD_SIZE = 10
+
+export const leaderboardEntrySchema = playerSummarySchema.extend({
+  /** 1-based; players with the same counts share a rank. */
+  rank: z.number().int().positive(),
+  /** Distinct characters owned now. */
+  owned: z.number().int().nonnegative(),
+  /** Every copy owned. */
+  cards: z.number().int().nonnegative(),
+  featured: featuredSchema,
+  isMe: z.boolean(),
+})
+export type LeaderboardEntry = z.infer<typeof leaderboardEntrySchema>
+
+export const leaderboardResponseSchema = z.object({
+  entries: z.array(leaderboardEntrySchema),
+  /** The viewer's own line when they are not in the top entries (null without a card). */
+  me: leaderboardEntrySchema.nullable(),
+  /** Drawable characters in the catalog. */
+  catalog: z.number().int().nonnegative(),
+})
+export type LeaderboardResponse = z.infer<typeof leaderboardResponseSchema>
+
 export const playerProfileSchema = playerSummarySchema.extend({
   memberSince: z.iso.datetime(),
   /** First favorites in the player's order; the first one is their main favorite. */
@@ -163,6 +187,21 @@ export const tradesQuerySchema = paginationQuerySchema.extend({
 export const tradesListSchema = paginatedSchema(tradeSchema).extend({
   pendingIncoming: z.number().int().nonnegative(),
 })
+
+/** A pending trade between two other players: read only, without its private message. */
+export const publicTradeSchema = z.object({
+  id: idSchema,
+  proposer: playerSummarySchema.extend({ featured: featuredSchema }),
+  recipient: playerSummarySchema.extend({ featured: featuredSchema }),
+  proposerGives: z.array(tradeItemSchema),
+  recipientGives: z.array(tradeItemSchema),
+  parentTradeId: z.number().int().nullable(),
+  createdAt: z.iso.datetime(),
+  expiresAt: z.iso.datetime().nullable(),
+})
+export type PublicTradeDto = z.infer<typeof publicTradeSchema>
+export const publicTradesQuerySchema = paginationQuerySchema
+export const publicTradesListSchema = paginatedSchema(publicTradeSchema)
 
 export const tradeActionResultSchema = z.object({
   trade: tradeSchema,

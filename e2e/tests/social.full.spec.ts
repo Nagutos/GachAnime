@@ -69,3 +69,44 @@ test('a player sells a card that another one buys', async ({ browser }) => {
   await sellerContext.close()
   await buyerContext.close()
 })
+
+test('a third player watches a pending trade and sees the leaderboard', async ({ browser }) => {
+  const aliceContext = await browser.newContext({ locale: 'en-US' })
+  const carolContext = await browser.newContext({ locale: 'en-US' })
+  const alice = await signInNewPlayer(aliceContext, 'Alice Watched')
+  const bob = await signInNewPlayer(await browser.newContext(), 'Bob Watched')
+  const carol = await signInNewPlayer(carolContext, 'Carol Watcher')
+  const [aliceCard] = await giveCards(alice.userId, 1, 1, 2)
+  const [bobCard] = await giveCards(bob.userId, 1, 1, 3)
+  await giveCards(carol.userId, 20, 1)
+
+  const alicePage = await aliceContext.newPage()
+  await alicePage.goto(`/trades/new?to=${bob.username}`)
+  await alicePage
+    .getByTestId('my-cards')
+    .getByTestId(`pick-${aliceCard}`)
+    .click({ timeout: 30_000 })
+  await alicePage.getByTestId('their-cards').getByTestId(`pick-${bobCard}`).click()
+  await alicePage.getByTestId('send-trade').click()
+  await expect(alicePage).toHaveURL(/\/trades$/)
+
+  const carolPage = await carolContext.newPage()
+  await carolPage.goto('/trades')
+  await carolPage.getByTestId('trades-others').click({ timeout: 30_000 })
+  const watched = carolPage.locator('[data-testid^="public-trade-"]').filter({
+    hasText: 'Alice Watched',
+  })
+  await expect(watched).toContainText('Bob Watched')
+  // Read only: nothing to accept, decline or cancel.
+  await expect(watched.getByRole('button')).toHaveCount(0)
+
+  // Carol owns the whole catalog: first of the leaderboard.
+  await carolPage.goto('/')
+  const leaderboard = carolPage.getByTestId('leaderboard')
+  await expect(leaderboard.getByTestId(`leaderboard-${carol.username}`)).toContainText(
+    '20 characters',
+    { timeout: 30_000 },
+  )
+  await aliceContext.close()
+  await carolContext.close()
+})

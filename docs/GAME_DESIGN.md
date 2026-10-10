@@ -24,17 +24,18 @@ is never touched by re-imports).
 
 | Rarity    | Favourites ≥ (default) |
 | --------- | ---------------------- |
-| Mythic    | 20 000                 |
-| Legendary | 8 000                  |
-| Epic      | 3 000                  |
-| Rare      | 500                    |
-| Common    | < 500                  |
+| Mythic    | 15 000                 |
+| Legendary | 5 000                  |
+| Epic      | 1 000                  |
+| Rare      | 250                    |
+| Common    | 0                      |
 
 The admin shows the resulting distribution so thresholds can be tuned after the first import.
 
-Calibrated on a top-200 import (October 2026, 11 429 characters): Mythic ≈ 30 characters (Gojou,
-Levi, Luffy, Frieren, Kaguya…), Legendary ≈ 135, Epic ≈ 290, Rare ≈ 890. AniList favourites grow
-over time, so these thresholds may need raising later (Admin → Rarities).
+Revised 2026-10-10 by the maintainer (previously 20 000 / 8 000 / 3 000 / 500). On the top-200
+AniList catalog (12 509 characters): Mythic ≈ 54 characters, Legendary ≈ 241, Epic ≈ 654,
+Rare ≈ 859, Common ≈ 10 700. AniList favourites grow over time, so these thresholds may need
+raising later (Admin → Rarities).
 
 Video game characters (IGDB, §10) have no favourites: their default rarity comes from the IGDB
 rating count of their **most popular game**, with thresholds of their own (ADR-026; defaults
@@ -241,6 +242,19 @@ Days are counted with the same reset hour as daily missions.
 - **Opening summary and back**: the opening id goes in the shop URL (`/boosters?opening=<id>`)
   and the opening is kept in session storage, so going back from a card's wiki page shows the
   summary again; "Done" clears both.
+- **Open again**: once every card of an opening is shown, the summary offers the same booster
+  (same tier, same pack) again ×1/×5/×10, as far as the player's charges or gems allow.
+- **Packs of the week** (decided 2026-10-10): every Monday at 00:00 UTC, three packs are picked at
+  random: one **genre**, one **tag** (rank ≥ `tagMinRank`, adult tags excluded) and one **series**
+  (among the `topSeries` most popular active ones), each with at least `minCharacters` drawable
+  characters and, when possible, not picked in the previous `cooldownWeeks` weeks. They are free
+  boosters (one charge each) with the free tier's rates **boosted**: the weight of `boostedFrom`
+  (default Epic) and every rarer rarity is multiplied by `rareMultiplier` (default ×1.5), the most
+  common rarities giving the difference (`boostWeights`). They are shown in a golden frame above
+  the other packs with a countdown and their boosted rates, never appear in the admin pack list,
+  and are retired (pools dropped) when their week ends; an expired one can no longer be opened.
+  Settings `boosters.weekly` (Admin → Settings, can be turned off); the rotation runs on shop
+  visits and every 5 minutes in the worker (`ensureWeeklyThemes`). Their seal is 週.
 - **Top rarity reveal** (mythic): the card shakes and charges up (0.7 s, rising sound), flips,
   flashes white and pops, while iridescent rays turn behind it, sparks fly out and the scene
   lights up (`flipTiming`, `.mythic-*` in main.css; transform and opacity only).
@@ -278,8 +292,8 @@ Starting packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos.
 
 ## 6. Collection, wiki, wishlist
 
-- Collection shows owned characters with count; filters: series, rarity, theme, owned / not owned,
-  duplicates, wishlist, name search; multi-key sort (rarity, name, series, date obtained, count).
+- Collection shows owned characters with count; filters: series, rarity, theme, gender (admin
+  override first), owned / not owned, duplicates, wishlist, name search; multi-key sort (rarity, name, series, date obtained, count).
 - Series progress `owned active characters / active characters`. A series is **complete** when all
   its active characters are owned (quantity ≥ 1).
 - Wiki entry unlocks when the character is first obtained and **stays unlocked** even if the card is
@@ -318,6 +332,8 @@ Starting packs: Shōnen, Shōjo, Seinen, Sports, Ecchi, Waifus, Husbandos.
 - Proposer's offered copies are locked while pending. Recipient's requested copies are checked at
   acceptance; if unavailable the trade fails cleanly (`failed`, nothing moves).
 - Optional expiry (setting `trade_offer_ttl_days`, default 0 = never). Proposer can cancel while pending.
+- **Watching** (2026-10-10): every player can see the pending trades between other players
+  (Trades → Other players): both players and both sides, never the private message, no action.
 - Players **may** trade or sell their last copy of a character, after an explicit warning in the UI;
   the wiki entry stays unlocked. (Only recycling is forbidden on the first copy.)
 

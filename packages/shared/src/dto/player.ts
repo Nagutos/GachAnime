@@ -1,5 +1,11 @@
 import { z } from 'zod'
-import { catalogSourceSchema, rarityKeySchema, seriesKindSchema, slugSchema } from '../catalog'
+import {
+  catalogSourceSchema,
+  genderClassSchema,
+  rarityKeySchema,
+  seriesKindSchema,
+  slugSchema,
+} from '../catalog'
 import { localizedTextSchema } from '../localized-text'
 import { booleanQuery, paginatedSchema, paginationQuerySchema } from './pagination'
 import { themeDtoSchema, themeKeySchema } from '../themes'
@@ -172,6 +178,8 @@ export const collectionQuerySchema = paginationQuerySchema.extend({
   seriesId: z.coerce.number().int().positive().optional(),
   /** Pack (theme) key. */
   theme: themeKeySchema.optional(),
+  /** Effective gender (admin override, else the imported class). */
+  gender: genderClassSchema.optional(),
   /** Owned now (default), missing (never obtained or no copy left), or the whole catalog. */
   ownership: z.enum(COLLECTION_OWNERSHIP).default('owned'),
   /** Only characters owned more than once. */

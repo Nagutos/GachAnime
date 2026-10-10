@@ -42,7 +42,16 @@
       }
     },
     "openBoosters": "Open boosters",
-    "myCollection": "My collection"
+    "myCollection": "My collection",
+    "leaderboard": {
+      "title": "Top collectors",
+      "subtitle": "Players with the most characters.",
+      "empty": "Nobody has a card yet.",
+      "rank": "Rank {rank}",
+      "you": "(you)",
+      "owned": "{count} characters",
+      "details": "{percent} · {cards} cards"
+    }
   },
   "notFound": {
     "title": "This page does not exist.",
@@ -384,6 +393,17 @@
           "value": "Multiplier"
         },
         "removeLevel": "Remove level {level}"
+      },
+      "weekly": {
+        "title": "Weekly packs",
+        "help": "Every Monday at 00:00 UTC, three packs are picked at random: one from a genre, one from a tag and one from a series. They are opened with free boosters, with boosted rates.",
+        "enabled": "Offer weekly packs",
+        "rareMultiplier": "Rate multiplier of the boosted rarities",
+        "boostedFrom": "Boosted from this rarity (and rarer)",
+        "minCharacters": "Minimum characters in a pack",
+        "tagMinRank": "Minimum tag rank (0-100)",
+        "topSeries": "Series pack: among the N most popular series",
+        "cooldownWeeks": "Weeks before a genre, tag or series can come back"
       }
     },
     "rarities": {
@@ -611,6 +631,25 @@
       "search": "Search a series",
       "none": "No series found.",
       "progress": "{owned} / {total} owned"
+    },
+    "again": {
+      "title": "Open again",
+      "charges": "{available} free boosters left",
+      "gems": "{count} gems"
+    },
+    "weekly": {
+      "title": "Packs of the week",
+      "help": "Picked at random every Monday, with better odds for the rarest cards. Opened with your free boosters.",
+      "endsIn": "Changes in {time}",
+      "daysHours": "{days} d {hours} h",
+      "badge": "Pack of the week",
+      "rates": "Drop rates (boosted)",
+      "boosted": "Boosted:",
+      "slots": {
+        "genre": "Genre",
+        "tag": "Theme",
+        "series": "Series"
+      }
     }
   },
   "collection": {
@@ -662,7 +701,14 @@
     "noSeries": "No series here yet.",
     "pack": "Pack",
     "allPacks": "All packs",
-    "favoritesOnly": "Favorites only"
+    "favoritesOnly": "Favorites only",
+    "gender": "Gender",
+    "allGenders": "All genders",
+    "genders": {
+      "female": "Female",
+      "male": "Male",
+      "unclassified": "Unclassified"
+    }
   },
   "wiki": {
     "title": "Wiki",
@@ -815,7 +861,8 @@
       "cards": "Cards",
       "series": "Series completed",
       "achievements": "Achievements",
-      "achievementsValue": "{done} / {total}"
+      "achievementsValue": "{done} / {total}",
+      "ownedValue": "{owned} / {catalog}"
     },
     "tabs": {
       "cards": "Cards",
@@ -862,12 +909,14 @@
     "boxes": {
       "incoming": "Received",
       "outgoing": "Sent",
-      "history": "History"
+      "history": "History",
+      "others": "Other players"
     },
     "empty": {
       "incoming": "No offer waiting for your answer.",
       "outgoing": "No pending offer sent.",
-      "history": "No past trade."
+      "history": "No past trade.",
+      "others": "No trade in progress between other players."
     },
     "status": {
       "pending": "Pending",
@@ -878,7 +927,14 @@
       "expired": "Expired",
       "failed": "Failed"
     },
-    "lastFavoriteWarning": "Including favorites: {names}."
+    "lastFavoriteWarning": "Including favorites: {names}.",
+    "public": {
+      "help": "Trades in progress between other players. You can watch them, not take part.",
+      "since": "Proposed on {date}",
+      "counter": "counter-offer",
+      "gives": "gives",
+      "wished": "Wished"
+    }
   },
   "market": {
     "title": "Market",

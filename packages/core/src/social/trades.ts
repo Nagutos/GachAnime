@@ -15,6 +15,7 @@ import type {
   Paginated,
   ProgressionUpdate,
   ProposeTradeRequest,
+  PublicTradeDto,
   TradeDto,
   TradeItem,
 } from '@gachanime/shared'
@@ -48,9 +49,8 @@ async function loadItems(db: Executor, tradeIds: number[]) {
     .where(inArray(tradeItems.tradeId, tradeIds))
 }
 
-/** Trades as seen by `viewerId` (give / receive sides, wishlist highlights). */
-async function toTradeDtos(db: Executor, viewerId: string, rows: TradeRow[]): Promise<TradeDto[]> {
-  if (rows.length === 0) return []
+/** Items, players, wishes and main favorites of these trades. */
+async function loadTradeContext(db: Executor, rows: TradeRow[]) {
   const items = await loadItems(
     db,
     rows.map((row) => row.id),
@@ -80,32 +80,37 @@ async function toTradeDtos(db: Executor, viewerId: string, rows: TradeRow[]): Pr
   ])
   const playerOf = new Map(players.map((player) => [player.userId, player]))
   const wished = new Set(wishes.map((wish) => `${wish.userId}:${wish.characterId}`))
+  const player = (userId: string) => {
+    const { username, displayName, avatarUrl } = playerOf.get(userId)!
+    return { username, displayName, avatarUrl, featured: featured.get(userId)?.[0] ?? null }
+  }
+  /** Proposer items go to the recipient and vice versa. */
+  const side = (row: TradeRow, key: 'proposer' | 'recipient'): TradeItem[] => {
+    const receiverId = key === 'proposer' ? row.recipientId : row.proposerId
+    return items
+      .filter((item) => item.tradeId === row.id && item.side === key)
+      .map((item) => ({
+        quantity: item.quantity,
+        character: toCharacterCard(item),
+        wishedByReceiver: wished.has(`${receiverId}:${item.id}`),
+      }))
+  }
+  return { player, side }
+}
 
+/** Trades as seen by `viewerId` (give / receive sides, wishlist highlights). */
+async function toTradeDtos(db: Executor, viewerId: string, rows: TradeRow[]): Promise<TradeDto[]> {
+  if (rows.length === 0) return []
+  const { player, side } = await loadTradeContext(db, rows)
   return rows.map((row) => {
     const outgoing = row.proposerId === viewerId
-    const counterpartId = outgoing ? row.recipientId : row.proposerId
-    const counterpart = playerOf.get(counterpartId)!
-    const side = (key: 'proposer' | 'recipient', receiverId: string): TradeItem[] =>
-      items
-        .filter((item) => item.tradeId === row.id && item.side === key)
-        .map((item) => ({
-          quantity: item.quantity,
-          character: toCharacterCard(item),
-          wishedByReceiver: wished.has(`${receiverId}:${item.id}`),
-        }))
-    // Proposer items go to the recipient and vice versa.
-    const proposerGives = side('proposer', row.recipientId)
-    const recipientGives = side('recipient', row.proposerId)
+    const proposerGives = side(row, 'proposer')
+    const recipientGives = side(row, 'recipient')
     return {
       id: row.id,
       status: row.status,
       outgoing,
-      counterpart: {
-        username: counterpart.username,
-        displayName: counterpart.displayName,
-        avatarUrl: counterpart.avatarUrl,
-        featured: featured.get(counterpartId)?.[0] ?? null,
-      },
+      counterpart: player(outgoing ? row.recipientId : row.proposerId),
       give: outgoing ? proposerGives : recipientGives,
       receive: outgoing ? recipientGives : proposerGives,
       message: row.message,
@@ -438,3 +443,48 @@ export async function listTrades(
 }
 
 export const getTrade = loadTrade
+
+/**
+ * Pending trades between other players, read only (GAME_DESIGN §7): both sides and the players,
+ * never the private message.
+ */
+export async function listPublicTrades(
+  db: Executor,
+  viewerId: string,
+  query: { page: number; pageSize: number },
+  now = new Date(),
+): Promise<Paginated<PublicTradeDto>> {
+  const where = and(
+    isPendingNow(now),
+    ne(trades.proposerId, viewerId),
+    ne(trades.recipientId, viewerId),
+  )
+  const [rows, [total]] = await Promise.all([
+    db
+      .select()
+      .from(trades)
+      .where(where)
+      .orderBy(desc(trades.createdAt), desc(trades.id))
+      .limit(query.pageSize)
+      .offset((query.page - 1) * query.pageSize),
+    db.select({ value: count() }).from(trades).where(where),
+  ])
+  const { player, side } = rows.length
+    ? await loadTradeContext(db, rows)
+    : { player: null, side: null }
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      proposer: player!(row.proposerId),
+      recipient: player!(row.recipientId),
+      proposerGives: side!(row, 'proposer'),
+      recipientGives: side!(row, 'recipient'),
+      parentTradeId: row.parentTradeId,
+      createdAt: row.createdAt.toISOString(),
+      expiresAt: row.expiresAt?.toISOString() ?? null,
+    })),
+    total: total?.value ?? 0,
+    page: query.page,
+    pageSize: query.pageSize,
+  }
+}

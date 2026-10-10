@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   COLLECTION_OWNERSHIP,
+  GENDER_CLASSES,
   formatCollectionSort,
   resolveLocalizedText,
   type CollectionQueryInput,
@@ -36,6 +37,11 @@ const search = ref('')
 const debouncedSearch = refDebounced(search, 300)
 const rarity = ref('')
 const theme = ref('')
+const gender = ref('')
+const genderOptions = computed(() => [
+  { value: '', label: t('collection.allGenders') },
+  ...GENDER_CLASSES.map((value) => ({ value, label: t(`collection.genders.${value}`) })),
+])
 const boosters = useBoostersQuery()
 const themes = computed(() => boosters.data.value?.themes ?? [])
 const themeOptions = computed(() => [
@@ -71,6 +77,8 @@ const filters = computed((): CollectionQueryInput => ({
   ownership: ownership.value,
   search: debouncedSearch.value || undefined,
   rarity: rarity.value || undefined,
+  theme: theme.value || undefined,
+  gender: (gender.value || undefined) as CollectionQueryInput['gender'],
   sort: formatCollectionSort(sorts.value),
   duplicates: duplicates.value ? 'true' : undefined,
   wishlist: wishlist.value ? 'true' : undefined,
@@ -78,7 +86,18 @@ const filters = computed((): CollectionQueryInput => ({
   seriesId: seriesId.value,
 }))
 watch(
-  [ownership, debouncedSearch, rarity, theme, sorts, duplicates, wishlist, favorites, seriesId],
+  [
+    ownership,
+    debouncedSearch,
+    rarity,
+    theme,
+    gender,
+    sorts,
+    duplicates,
+    wishlist,
+    favorites,
+    seriesId,
+  ],
   () => {
     page.value = 1
   },
@@ -91,6 +110,7 @@ const hasFilters = computed(() =>
     debouncedSearch.value ||
     rarity.value ||
     theme.value ||
+    gender.value ||
     duplicates.value ||
     wishlist.value ||
     favorites.value ||
@@ -170,6 +190,12 @@ function clearSeries(): void {
             v-model="rarity"
             :options="rarityOptions"
             :aria-label="t('collection.rarity')"
+          />
+          <AppSelect
+            v-model="gender"
+            :options="genderOptions"
+            :aria-label="t('collection.gender')"
+            data-testid="filter-gender"
           />
           <AppSelect
             v-if="themes.length"

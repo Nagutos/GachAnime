@@ -345,3 +345,14 @@ before an answer. Ask the maintainer (in French) before any architecture or game
   (`?opening=<id>` + `app/last-opening.ts` session storage, `resume` prop). Mythic reveal rebuilt
   (charge-up, flash, rays, sparks, screen burst; `SPECTACULAR_RARITIES`, `flipTiming`); the
   charge plays only on a live reveal, never for cards mounted revealed.
+- 2026-10-10 — Packs of the week (`themes.weekly_slot/weekly_from`, migration 0021, core
+  `themes/weekly`, setting `boosters.weekly`, worker job `boosters.weekly`): genre + tag + series
+  picked every Monday 00:00 UTC, boosted rates (`boostWeights`), golden frame in the shop, hidden
+  from the admin pack list. Open again ×1/×5/×10 from the opening summary. Home leaderboard
+  (`GET /leaderboard`), watching other players' pending trades (`GET /trades/public`, no message),
+  collection gender filter (and the pack filter was never sent: fixed), profile "Characters" stat
+  showed its label. Favorites drag and drop froze when held where four cards meet (ReorderGroup
+  cycled around the corner): orders already shown need the pointer to move first (FavoritesPage
+  `onReorder`); a refused move must not re-render (that fed the loop).
+- 2026-10-10 — Rarity thresholds revised by the maintainer (AniList favourites): Rare ≥ 250,
+  Epic ≥ 1 000, Legendary ≥ 5 000, Mythic ≥ 15 000 (GAME_DESIGN §1).

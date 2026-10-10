@@ -7,7 +7,7 @@ import {
   type ThemeRuleOptions,
   type UpdateThemeRequest,
 } from '@gachanime/shared'
-import { asc, desc, eq, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm'
 import { recordAdminAction } from '../admin/audit'
 import type { AdminActor } from '../catalog/admin-series'
 import { AppError } from '../errors'
@@ -22,6 +22,8 @@ export async function listAdminThemes(db: Executor): Promise<AdminTheme[]> {
   const rows = await db
     .select({ theme: themes, characterCount: themePoolSize })
     .from(themes)
+    // Weekly packs are picked by the rotation, not edited (Admin → Settings).
+    .where(isNull(themes.weeklySlot))
     .orderBy(asc(themes.sortOrder), asc(themes.id))
   return rows.map(({ theme, characterCount }) => ({
     id: theme.id,
@@ -78,7 +80,11 @@ export async function updateTheme(
   actor: AdminActor,
 ): Promise<void> {
   await database.transaction(async (tx) => {
-    const [before] = await tx.select().from(themes).where(eq(themes.id, id)).for('update')
+    const [before] = await tx
+      .select()
+      .from(themes)
+      .where(and(eq(themes.id, id), isNull(themes.weeklySlot)))
+      .for('update')
     if (!before) throw new AppError('NOT_FOUND', `Pack #${id} not found`)
     const [after] = await tx.update(themes).set(input).where(eq(themes.id, id)).returning()
     const poolSize = input.rules ? await rebuildThemePool(tx, id) : undefined
@@ -103,6 +109,7 @@ export async function reorderThemes(
     const before = await tx
       .select({ id: themes.id, key: themes.key })
       .from(themes)
+      .where(isNull(themes.weeklySlot))
       .orderBy(asc(themes.sortOrder), asc(themes.id))
       .for('update')
     const known = new Set(before.map((theme) => theme.id))
@@ -136,7 +143,10 @@ export async function deleteTheme(
   actor: AdminActor,
 ): Promise<void> {
   await database.transaction(async (tx) => {
-    const [deleted] = await tx.delete(themes).where(eq(themes.id, id)).returning()
+    const [deleted] = await tx
+      .delete(themes)
+      .where(and(eq(themes.id, id), isNull(themes.weeklySlot)))
+      .returning()
     if (!deleted) throw new AppError('NOT_FOUND', `Pack #${id} not found`)
     await recordAdminAction(tx, {
       ...actor,

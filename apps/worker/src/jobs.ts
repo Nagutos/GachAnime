@@ -1,6 +1,7 @@
 import type { Database } from '@gachanime/db'
 import {
   cacheRemoteImages,
+  ensureWeeklyThemes,
   expireListings,
   expireTrades,
   rebuildAllThemePools,
@@ -65,6 +66,11 @@ export const jobHandlers: Record<string, JobHandler> = {
     const result = { listings: await expireListings(db), trades: await expireTrades(db) }
     if (result.listings || result.trades) logger.info(result, 'expired listings and trades')
     return result
+  },
+  /** Repeated every few minutes: the weekly packs change on Monday 00:00 UTC. */
+  'boosters.weekly': async (_data, { db }) => {
+    await ensureWeeklyThemes(db)
+    return { rotated: true }
   },
   /** Repeated: downloads remote catalog images when the `images.cache` setting is on. */
   'images.cache': async (_data, { db, logger, uploadsDir }) => {

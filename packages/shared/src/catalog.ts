@@ -7,6 +7,7 @@ export const catalogSourceSchema = z.enum(['anilist', 'manual', 'igdb'])
 export type CatalogSource = z.infer<typeof catalogSourceSchema>
 
 export const genderClassSchema = z.enum(['female', 'male', 'unclassified'])
+export const GENDER_CLASSES = genderClassSchema.options
 export type GenderClassValue = z.infer<typeof genderClassSchema>
 
 export const characterRoleSchema = z.enum(['MAIN', 'SUPPORTING', 'BACKGROUND'])

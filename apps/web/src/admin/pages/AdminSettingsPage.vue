@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { AdminSettings } from '@gachanime/shared'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsQuery, useUpdateSettingMutation } from '@/api/admin'
 import { useErrorMessage } from '@/app/errors'
+import { usePlayerRarities } from '@/app/rarities'
+import AppSelect from '@/components/AppSelect.vue'
 import UpgradeLevelsEditor from '../components/UpgradeLevelsEditor.vue'
 import { ui } from '../ui'
 
@@ -14,6 +16,20 @@ const errorMessage = useErrorMessage(update.error)
 const saved = ref<string | null>(null)
 
 const free = ref<AdminSettings['boosters.free']>({ intervalSeconds: 600, maxCharges: 15 })
+const weekly = ref<AdminSettings['boosters.weekly']>({
+  enabled: true,
+  rareMultiplier: 1.5,
+  boostedFrom: 'epic',
+  minCharacters: 40,
+  tagMinRank: 60,
+  topSeries: 100,
+  cooldownWeeks: 4,
+})
+const weeklyFields = ['minCharacters', 'tagMinRank', 'topSeries', 'cooldownWeeks'] as const
+const { rarities, nameOf } = usePlayerRarities()
+const rarityOptions = computed(() =>
+  rarities.value.map((rarity) => ({ value: rarity.key, label: nameOf(rarity.key) })),
+)
 const reset = ref<AdminSettings['missions.reset']>({ hour: 0, timeZone: 'Europe/Paris' })
 const market = ref<AdminSettings['market.limits']>({
   maxActiveListings: 20,
@@ -49,6 +65,7 @@ watch(
   (value) => {
     if (!value) return
     free.value = { ...value['boosters.free'] }
+    weekly.value = { ...value['boosters.weekly'] }
     reset.value = { ...value['missions.reset'] }
     market.value = { ...value['market.limits'] }
     tradeOffers.value = { ...value['trades.offers'] }
@@ -109,6 +126,52 @@ async function save<K extends keyof AdminSettings>(key: K, value: AdminSettings[
         </div>
         <div class="flex items-center justify-end gap-3">
           <span v-if="saved === 'boosters.free'" class="text-sm text-emerald-400">
+            {{ t('admin.common.saved') }}
+          </span>
+          <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">
+            {{ t('admin.common.save') }}
+          </button>
+        </div>
+      </form>
+
+      <form
+        :class="[ui.card, 'flex flex-col gap-4']"
+        data-testid="weekly-settings"
+        @submit.prevent="save('boosters.weekly', weekly)"
+      >
+        <h2 class="font-display text-xl font-bold">{{ t('admin.settings.weekly.title') }}</h2>
+        <p class="text-sm text-mist-300">{{ t('admin.settings.weekly.help') }}</p>
+        <label class="flex items-center gap-2">
+          <input v-model="weekly.enabled" type="checkbox" class="size-4 accent-sakura-500" />
+          {{ t('admin.settings.weekly.enabled') }}
+        </label>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label :class="ui.label">
+            {{ t('admin.settings.weekly.rareMultiplier') }}
+            <input
+              v-model.number="weekly.rareMultiplier"
+              type="number"
+              min="1"
+              max="10"
+              step="0.05"
+              :class="ui.input"
+            />
+          </label>
+          <div :class="ui.label">
+            {{ t('admin.settings.weekly.boostedFrom') }}
+            <AppSelect
+              v-model="weekly.boostedFrom"
+              :options="rarityOptions"
+              :aria-label="t('admin.settings.weekly.boostedFrom')"
+            />
+          </div>
+          <label v-for="field in weeklyFields" :key="field" :class="ui.label">
+            {{ t(`admin.settings.weekly.${field}`) }}
+            <input v-model.number="weekly[field]" type="number" min="0" :class="ui.input" />
+          </label>
+        </div>
+        <div class="flex items-center justify-end gap-3">
+          <span v-if="saved === 'boosters.weekly'" class="text-sm text-emerald-400">
             {{ t('admin.common.saved') }}
           </span>
           <button type="submit" :class="ui.buttonPrimary" :disabled="update.isPending.value">

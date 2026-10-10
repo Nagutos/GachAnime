@@ -12,6 +12,7 @@ import {
   smallint,
   text,
   timestamp,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core'
 import type { LocalizedText, ThemeRule } from '@gachanime/shared'
 import { characters, rarities } from './catalog'
@@ -56,6 +57,9 @@ export const themeCategory = pgEnum('theme_category', [
   'custom',
 ])
 
+/** What a weekly pack is built from (picked at random each week). */
+export const weeklySlot = pgEnum('weekly_slot', ['genre', 'tag', 'series'])
+
 /** A pack: rules selecting characters (GAME_DESIGN §5), opened with free boosters only. */
 export const themes = pgTable(
   'themes',
@@ -74,6 +78,12 @@ export const themes = pgTable(
     sortOrder: smallint().notNull().default(0),
     /** Last rebuild of `theme_characters`; null = never built. */
     poolBuiltAt: timestamp({ withTimezone: true }),
+    /**
+     * Weekly packs (created by the rotation, boosted rates): their slot and the start of their
+     * week (Monday 00:00 UTC). Null for the packs made by admins.
+     */
+    weeklySlot: weeklySlot(),
+    weeklyFrom: timestamp({ withTimezone: true }),
     updatedAt: timestamp({ withTimezone: true })
       .notNull()
       .defaultNow()
@@ -82,6 +92,8 @@ export const themes = pgTable(
   (table) => [
     check('themes_seal_length', sql`char_length(${table.seal}) BETWEEN 1 AND 2`),
     check('themes_color_hex', sql`${table.color} ~ '^#[0-9a-f]{6}$'`),
+    check('themes_weekly_both', sql`(${table.weeklySlot} IS NULL) = (${table.weeklyFrom} IS NULL)`),
+    uniqueIndex('themes_weekly_unique').on(table.weeklySlot, table.weeklyFrom),
   ],
 )
 

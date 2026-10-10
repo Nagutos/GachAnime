@@ -1,6 +1,6 @@
 import { themes, type Database, type Executor } from '@gachanime/db'
 import { themeRuleSchema, type ThemePreview, type ThemeRule } from '@gachanime/shared'
-import { eq, isNull, sql } from 'drizzle-orm'
+import { eq, isNull, or, sql } from 'drizzle-orm'
 import { publicImageUrl } from '../catalog/images'
 import { loadRarities } from '../catalog/rarities'
 import { themeRuleSql } from './rules'
@@ -24,9 +24,15 @@ export async function rebuildThemePool(tx: Executor, themeId: number): Promise<n
   return result.rowCount ?? 0
 }
 
-/** Every pack, each in its own transaction (worker job after catalog changes and imports). */
+/**
+ * Every pack, each in its own transaction (worker job after catalog changes and imports). Weekly
+ * packs of past weeks are left out: retired, their pools were dropped.
+ */
 export async function rebuildAllThemePools(database: Database): Promise<number> {
-  const rows = await database.select({ id: themes.id }).from(themes)
+  const rows = await database
+    .select({ id: themes.id })
+    .from(themes)
+    .where(or(isNull(themes.weeklySlot), eq(themes.isActive, true)))
   for (const row of rows) {
     await database.transaction((tx) => rebuildThemePool(tx, row.id))
   }

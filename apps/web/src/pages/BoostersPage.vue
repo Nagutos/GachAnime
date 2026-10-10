@@ -103,8 +103,32 @@ const themeKey = ref<string | null>(null)
 const selectedTheme = computed<ThemeDto | null>(
   () => data.value?.themes.find((theme) => theme.key === themeKey.value) ?? null,
 )
+// A pack gone from the shop (last week's pack, disabled by an admin): back to the whole catalog.
+watch(selectedTheme, (theme) => {
+  if (!theme && data.value) themeKey.value = null
+})
 /** Packs in the order set by the admin (Admin → Packs → Reorder). */
-const themes = computed(() => data.value?.themes ?? [])
+const themes = computed(() => (data.value?.themes ?? []).filter((theme) => !theme.weekly))
+/** The packs of the week (genre, tag, series), picked automatically, with boosted rates. */
+const weeklyThemes = computed(() => (data.value?.themes ?? []).filter((theme) => theme.weekly))
+const weeklyEndsMs = computed(() => {
+  const endsAt = weeklyThemes.value[0]?.weekly?.endsAt
+  return endsAt ? Date.parse(endsAt) : null
+})
+const weeklyCountdown = computed(() => {
+  if (weeklyEndsMs.value === null) return null
+  const left = weeklyEndsMs.value - now.value
+  const days = Math.floor(left / 86_400_000)
+  return days >= 1
+    ? t('boosters.weekly.daysHours', { days, hours: Math.floor((left % 86_400_000) / 3_600_000) })
+    : formatCountdown(weeklyEndsMs.value, now.value)
+})
+// The week is over: the server picks the new packs.
+watch(now, (value) => {
+  if (weeklyEndsMs.value !== null && value >= weeklyEndsMs.value && !boosters.isFetching.value) {
+    void boosters.refetch()
+  }
+})
 
 function tierName(tier: BoosterTierDto): string {
   return resolveLocalizedText(tier.name, locale.value)
@@ -121,9 +145,12 @@ function canOpen(tier: BoosterTierDto, quantity: BoosterQuantity): boolean {
   return data.value.gemBalance >= tier.priceGems * quantity
 }
 
-async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Promise<void> {
+async function openBoosters(
+  tier: BoosterTierDto,
+  quantity: BoosterQuantity,
+  theme = tier.priceGems === null ? selectedTheme.value : null,
+): Promise<void> {
   lastTier.value = tier.key
-  const theme = tier.priceGems === null ? selectedTheme.value : null
   const result = await open
     .mutateAsync({ tier: tier.key, quantity, theme: theme?.key })
     .catch(() => null)
@@ -134,6 +161,40 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
         : { result, label: tierName(tier), art: tier.artToken, color: null, seal: '招' },
     )
   }
+}
+
+/** Opening again from the summary: same tier and pack, any quantity the player can afford. */
+const againTier = computed(() =>
+  opening.value ? data.value?.tiers.find((tier) => tier.key === opening.value!.result.tier) : null,
+)
+const againTheme = computed(() => {
+  const key = opening.value?.result.theme
+  return key ? (data.value?.themes.find((theme) => theme.key === key) ?? null) : null
+})
+const again = computed(() => {
+  const tier = againTier.value
+  // A pack gone from the shop (weekly rotation, disabled) cannot be opened again.
+  if (!tier || (opening.value?.result.theme && !againTheme.value)) return []
+  return QUANTITIES.map((quantity) => ({
+    quantity,
+    disabled: !canOpen(tier, quantity),
+    price: tier.priceGems === null ? null : tier.priceGems * quantity,
+  }))
+})
+const againHint = computed(() => {
+  const tier = againTier.value
+  if (!tier || !data.value) return null
+  return tier.priceGems === null
+    ? t('boosters.again.charges', { available: free.value?.available ?? 0 })
+    : t('boosters.again.gems', { count: n(data.value.gemBalance, 'integer') })
+})
+const againError = computed(() =>
+  opening.value && lastTier.value === opening.value.result.tier ? errorMessage.value : null,
+)
+
+function openAgain(quantity: BoosterQuantity): void {
+  const tier = againTier.value
+  if (tier) void openBoosters(tier, quantity, againTheme.value)
 }
 </script>
 
@@ -190,6 +251,66 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
               <template v-if="countdown">{{ t('boosters.nextIn', { time: countdown }) }}</template>
               <template v-else>{{ t('boosters.full') }}</template>
             </p>
+          </div>
+        </div>
+
+        <!-- Packs of the week: picked automatically every Monday, boosted rates -->
+        <div
+          v-if="weeklyThemes.length"
+          class="weekly-frame flex flex-col gap-4 rounded-2xl p-4"
+          data-testid="weekly-packs"
+        >
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <h3 class="font-display text-xl font-bold text-gold-400">
+                {{ t('boosters.weekly.title') }}
+              </h3>
+              <p class="text-sm text-mist-300">{{ t('boosters.weekly.help') }}</p>
+            </div>
+            <p
+              v-if="weeklyCountdown"
+              class="rounded-full bg-night-950/70 px-3 py-1 text-sm text-mist-100 tabular-nums"
+              data-testid="weekly-countdown"
+            >
+              {{ t('boosters.weekly.endsIn', { time: weeklyCountdown }) }}
+            </p>
+          </div>
+          <div
+            class="grid grid-cols-3 gap-x-4 gap-y-4 sm:max-w-xl"
+            role="radiogroup"
+            :aria-label="t('boosters.weekly.title')"
+          >
+            <button
+              v-for="theme in weeklyThemes"
+              :key="theme.key"
+              type="button"
+              role="radio"
+              :aria-checked="themeKey === theme.key"
+              class="flex flex-col items-center gap-2 rounded-xl p-1 text-center"
+              :data-testid="`pack-${theme.key}`"
+              @click="themeKey = theme.key"
+            >
+              <BoosterPack
+                :label="themeName(theme)"
+                :cards="data!.cardsPerBooster"
+                :color="theme.color"
+                :seal="theme.seal"
+                :front="themeKey === theme.key"
+                :idle="themeKey === theme.key"
+              />
+              <span class="text-xs font-semibold tracking-wide text-gold-400 uppercase">
+                {{ t(`boosters.weekly.slots.${theme.weekly!.slot}`) }}
+              </span>
+              <span
+                class="-mt-1.5 text-sm font-semibold"
+                :class="themeKey === theme.key ? 'text-mist-100' : 'text-mist-300'"
+              >
+                {{ themeName(theme) }}
+              </span>
+              <span class="-mt-2 text-xs text-mist-300 tabular-nums">
+                {{ t('boosters.packs.characters', { count: n(theme.characterCount, 'integer') }) }}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -256,6 +377,12 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
           <div>
             <h3 class="font-display text-xl font-bold" data-testid="pack-summary">
               {{ selectedTheme ? themeName(selectedTheme) : t('boosters.packs.all') }}
+              <span
+                v-if="selectedTheme?.weekly"
+                class="ml-2 rounded-full bg-gold-400/15 px-2 py-0.5 align-middle text-xs font-semibold text-gold-400"
+              >
+                {{ t('boosters.weekly.badge') }}
+              </span>
             </h3>
             <p v-if="selectedTheme?.description" class="text-mist-300">
               {{ resolveLocalizedText(selectedTheme.description, locale) }}
@@ -285,7 +412,12 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
           <p v-if="errorMessage && lastTier === tier.key" :class="playerUi.error" role="alert">
             {{ errorMessage }}
           </p>
-          <TierRates :tier="tier" />
+          <TierRates
+            v-if="selectedTheme?.weekly"
+            :weights="selectedTheme.weekly.weights"
+            :base="tier.weights"
+          />
+          <TierRates v-else :weights="tier.weights" />
         </div>
       </section>
 
@@ -337,19 +469,25 @@ async function openBoosters(tier: BoosterTierDto, quantity: BoosterQuantity): Pr
             <p v-if="errorMessage && lastTier === tier.key" :class="playerUi.error" role="alert">
               {{ errorMessage }}
             </p>
-            <TierRates :tier="tier" />
+            <TierRates :weights="tier.weights" />
           </li>
         </ul>
       </section>
 
       <BoosterOpening
         v-if="opening"
+        :key="opening.result.openingId"
         :result="opening.result"
         :pack-label="opening.label"
         :pack-art="opening.art"
         :pack-color="opening.color"
         :pack-seal="opening.seal"
         :resume="opening.resume"
+        :again="again"
+        :again-hint="againHint"
+        :again-pending="open.isPending.value"
+        :again-error="againError"
+        @again="openAgain"
         @close="closeOpening"
         @navigate="opening = null"
       />

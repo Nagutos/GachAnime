@@ -45,7 +45,7 @@ const stats = computed(() =>
     ? ([
         [
           'owned',
-          t('profile.stats.owned', {
+          t('profile.stats.ownedValue', {
             owned: n(data.value.stats.owned, 'integer'),
             catalog: n(data.value.stats.catalog, 'integer'),
           }),

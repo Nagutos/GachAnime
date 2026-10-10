@@ -101,3 +101,13 @@ export function nextResetAt(now: Date, reset: DailyReset): Date {
 
 /** Key of missions done once per account (welcome mission…). */
 export const ONCE_PERIOD_KEY = 'once'
+
+const DAY_MS = 86_400_000
+export const WEEK_MS = 7 * DAY_MS
+
+/** Weekly packs: their week starts on Monday at 00:00 UTC (the same instant for everyone). */
+export function weekStartUtc(instant: Date): Date {
+  const day = Date.UTC(instant.getUTCFullYear(), instant.getUTCMonth(), instant.getUTCDate())
+  const sinceMonday = (new Date(day).getUTCDay() + 6) % 7
+  return new Date(day - sinceMonday * DAY_MS)
+}

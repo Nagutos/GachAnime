@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useSession } from '@/app/session'
 import DiscordSignInButton from '@/components/DiscordSignInButton.vue'
+import LeaderboardPanel from '@/components/social/LeaderboardPanel.vue'
 
 const { t, n } = useI18n()
 const { isPending, isSignedIn, me } = useSession()
@@ -44,6 +45,8 @@ const features = ['collect', 'trade', 'wiki'] as const
         </div>
       </div>
     </section>
+
+    <LeaderboardPanel v-if="me" class="max-w-3xl" />
 
     <ul class="grid w-full gap-4 sm:grid-cols-3">
       <li

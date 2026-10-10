@@ -37,6 +37,7 @@ import { emitEvents } from '../progression/engine'
 import { ensureThemePools, rebuildThemePool } from '../themes/pools'
 import { getSetting } from '../settings'
 import { getPlayerFreeRules } from '../players/upgrades'
+import { ensureWeeklyThemes, weeklyInfo, weeklyThemeExpired, weeklyWeights } from '../themes/weekly'
 import { toFreeStatus } from './free-status'
 
 export interface GameClock {
@@ -73,8 +74,9 @@ export async function listBoosters(
   userId: string,
   now = new Date(),
 ): Promise<BoostersResponse> {
+  await ensureWeeklyThemes(db, { now })
   await ensureThemePools(db)
-  const [tiers, free, profile, themeRows, poolSizes] = await Promise.all([
+  const [tiers, free, profile, themeRows, poolSizes, rarityRows, weekly] = await Promise.all([
     db
       .select()
       .from(boosterTiers)
@@ -88,7 +90,18 @@ export async function listBoosters(
       .where(eq(themes.isActive, true))
       .orderBy(asc(themes.sortOrder), asc(themes.id)),
     loadThemePoolSizes(db),
+    loadRarities(db),
+    getSetting(db, 'boosters.weekly'),
   ])
+  // Weekly packs draw with the free tier's rates, boosted.
+  const freeTier = tiers.find((tier) => tier.priceGems === null)
+  const weeklyRates = freeTier
+    ? weeklyWeights(
+        rateWeightsSchema.parse(freeTier.weights),
+        rarityRows.map((rarity) => rarity.key),
+        weekly,
+      )
+    : null
   return {
     tiers: tiers.map((tier) => ({
       key: tier.key,
@@ -112,6 +125,10 @@ export async function listBoosters(
         color: theme.color,
         seal: theme.seal,
         characterCount,
+        weekly:
+          theme.weeklySlot && theme.weeklyFrom && weeklyRates
+            ? weeklyInfo(theme.weeklySlot, theme.weeklyFrom, weeklyRates)
+            : null,
       })),
   }
 }
@@ -150,7 +167,7 @@ export async function openBoosters(
         .select()
         .from(themes)
         .where(and(eq(themes.key, input.theme), eq(themes.isActive, true)))
-      if (!theme) {
+      if (!theme || weeklyThemeExpired(theme.weeklyFrom, now)) {
         throw new AppError('THEME_UNAVAILABLE', `Pack "${input.theme}" is not available`)
       }
       if (!theme.poolBuiltAt) await rebuildThemePool(tx, theme.id)
@@ -191,9 +208,14 @@ export async function openBoosters(
       throw new AppError('EMPTY_POOL', 'There is no character to draw yet')
     }
 
+    const rarityOrder = rarityRows.map((rarity) => rarity.key)
+    const tierWeights = rateWeightsSchema.parse(tier.weights)
     const drawn = drawCards({
-      rarityOrder: rarityRows.map((rarity) => rarity.key),
-      weights: rateWeightsSchema.parse(tier.weights),
+      rarityOrder,
+      // Weekly packs: boosted rates.
+      weights: theme?.weeklySlot
+        ? weeklyWeights(tierWeights, rarityOrder, await getSetting(tx, 'boosters.weekly'))
+        : tierWeights,
       poolSizes,
       count: input.quantity * CARDS_PER_BOOSTER,
       rng,

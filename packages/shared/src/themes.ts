@@ -89,6 +89,19 @@ export const themeSealSchema = z
     message: 'Use one or two characters',
   })
 
+export const WEEKLY_SLOTS = ['genre', 'tag', 'series'] as const
+export type WeeklySlot = (typeof WEEKLY_SLOTS)[number]
+
+/** A weekly pack: picked automatically for one week, with boosted rates. */
+export const weeklyInfoSchema = z.object({
+  slot: z.enum(WEEKLY_SLOTS),
+  startsAt: z.iso.datetime(),
+  endsAt: z.iso.datetime(),
+  /** The free tier's rates, boosted for this pack (`{ rarityKey: ppm }`). */
+  weights: z.record(z.string(), z.number().int().nonnegative()),
+})
+export type WeeklyInfo = z.infer<typeof weeklyInfoSchema>
+
 /** A pack as offered in the shop (free boosters only). */
 export const themeDtoSchema = z.object({
   key: themeKeySchema,
@@ -101,12 +114,14 @@ export const themeDtoSchema = z.object({
   seal: z.string(),
   /** Drawable characters in the pack. */
   characterCount: z.number().int().nonnegative(),
+  /** Set for the packs of the week. */
+  weekly: weeklyInfoSchema.nullable(),
 })
 export type ThemeDto = z.infer<typeof themeDtoSchema>
 
 // ─── Admin ───────────────────────────────────────────────────────────────────
 
-export const adminThemeSchema = themeDtoSchema.extend({
+export const adminThemeSchema = themeDtoSchema.omit({ weekly: true }).extend({
   id: z.number().int().positive(),
   rules: themeRuleSchema,
   isActive: z.boolean(),

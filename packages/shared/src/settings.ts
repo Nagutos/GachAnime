@@ -27,6 +27,27 @@ export const settingsSchemas = {
     intervalSeconds: z.number().int().min(10).default(600),
     maxCharges: z.number().int().min(1).max(1000).default(15),
   }),
+  /**
+   * Weekly packs (GAME_DESIGN §5): every Monday (00:00 UTC) three packs are picked at random, one
+   * from a genre, one from a tag and one from a series, each with at least `minCharacters`
+   * drawable characters and not picked in the previous `cooldownWeeks` weeks. They are opened
+   * with free boosters, with the weight of `boostedFrom` and rarer rarities multiplied by
+   * `rareMultiplier` (the common rarities give the difference).
+   */
+  'boosters.weekly': z.object({
+    enabled: z.boolean().default(true),
+    rareMultiplier: z.number().min(1).max(10).default(1.5),
+    boostedFrom: z
+      .string()
+      .regex(/^[a-z][a-z0-9_]{0,31}$/)
+      .default('epic'),
+    minCharacters: z.number().int().min(1).max(100_000).default(40),
+    /** Tags count for a series from this AniList rank (0-100) of one of its media. */
+    tagMinRank: z.number().int().min(0).max(100).default(60),
+    /** The series pack picks among the most popular active series. */
+    topSeries: z.number().int().min(1).max(10_000).default(100),
+    cooldownWeeks: z.number().int().min(0).max(52).default(4),
+  }),
   'missions.reset': z.object({
     hour: z.number().int().min(0).max(23).default(0),
     timeZone: z.string().min(1).default('Europe/Paris'),

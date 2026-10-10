@@ -14,7 +14,7 @@ import {
 } from '@gachanime/db'
 import { seededRng } from '@gachanime/game'
 import { collectionQuerySchema, createThemeSchema, type ThemeRule } from '@gachanime/shared'
-import { eq } from 'drizzle-orm'
+import { asc, eq, isNotNull } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { listBoosters, openBoosters } from '../boosters/boosters'
 import { listPoolSeries } from '../boosters/pool-series'
@@ -28,8 +28,10 @@ import {
   setupTestDatabase,
   testDatabaseUrl,
 } from '../test/database'
+import { updateSetting } from '../admin/economy'
 import { createTheme, deleteTheme, listAdminThemes, reorderThemes, updateTheme } from './admin'
 import { previewTheme, rebuildThemePool } from './pools'
+import { ensureWeeklyThemes } from './weekly'
 
 const actor = { actorId: 'admin', ip: null }
 const NOW = new Date('2026-10-07T12:00:00Z')
@@ -292,6 +294,17 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
     expect(
       collection.items.every((item) => !item.locked && ['Ace', 'Captain'].includes(item.name)),
     ).toBe(true)
+    // Gender filter (the admin override wins over the imported class).
+    await db
+      .update(characters)
+      .set({ genderOverride: 'female' })
+      .where(eq(characters.id, ids.Hero!))
+    const women = await listCollection(
+      db,
+      'p1',
+      collectionQuerySchema.parse({ ownership: 'all', gender: 'female', sort: 'name' }),
+    )
+    expect(women.items.map((item) => item.name)).toEqual(['Ace', 'Hero', 'Heroine'])
 
     await deleteTheme(db, id, actor)
     expect(
@@ -364,5 +377,117 @@ describe.skipIf(!testDatabaseUrl)('themed packs (integration)', () => {
       reorderThemes(db, [...reversed.slice(1), reversed[1]!], actor),
     ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' })
     expect(seeded.length).toBeGreaterThan(0)
+  })
+  describe('weekly packs', () => {
+    const MONDAY = new Date('2026-10-05T00:00:00Z')
+    const NEXT_WEEK = new Date(NOW.getTime() + 7 * 86_400_000)
+    const weeklyRows = () =>
+      db
+        .select()
+        .from(themes)
+        .where(isNotNull(themes.weeklySlot))
+        .orderBy(asc(themes.weeklyFrom), asc(themes.sortOrder))
+    const poolSize = async (themeId: number) =>
+      (await db.select().from(themeCharacters).where(eq(themeCharacters.themeId, themeId))).length
+
+    beforeEach(async () => {
+      await updateSetting(
+        db,
+        'boosters.weekly',
+        { minCharacters: 1, cooldownWeeks: 1, tagMinRank: 60 },
+        actor,
+      )
+    })
+
+    it('picks a genre, a tag and a series pack for the week, once', async () => {
+      await ensureWeeklyThemes(db, { now: NOW, rng: seededRng(3) })
+      await ensureWeeklyThemes(db, { now: NOW, rng: seededRng(4) })
+      const rows = await weeklyRows()
+      expect(rows.map((row) => [row.weeklySlot, row.weeklyFrom, row.isActive, row.seal])).toEqual([
+        ['genre', MONDAY, true, '週'],
+        ['tag', MONDAY, true, '週'],
+        ['series', MONDAY, true, '週'],
+      ])
+      const [genre, tag, seriesPack] = rows
+      expect(['Action', 'Sports']).toContain(genre!.name.en)
+      // Only "Shounen" reaches rank 60 on an active series.
+      expect(tag!.name.en).toBe('Shounen')
+      expect(['hero-academy', 'court-kings', 'tennis-game']).toContain(seriesPack!.name.en)
+      for (const row of rows) expect(await poolSize(row.id)).toBeGreaterThan(0)
+      // Picked by the rotation: not in the admin pack list.
+      expect((await listAdminThemes(db)).some((theme) => theme.key.startsWith('weekly-'))).toBe(
+        false,
+      )
+    })
+
+    it('shows them in the shop with boosted rates and opens them with free boosters', async () => {
+      const shop = await listBoosters(db, 'p1', NOW)
+      const weekly = shop.themes.filter((theme) => theme.weekly)
+      expect(weekly.map((theme) => theme.weekly!.slot)).toEqual(['genre', 'tag', 'series'])
+      const free = shop.tiers.find((tier) => tier.key === 'free')!
+      const rates = weekly[0]!.weekly!
+      expect(rates.endsAt).toBe('2026-10-12T00:00:00.000Z')
+      expect(rates.weights.epic).toBe(Math.round(free.weights.epic! * 1.5))
+      expect(rates.weights.common).toBeLessThan(free.weights.common!)
+      expect(Object.values(rates.weights).reduce((sum, value) => sum + value, 0)).toBe(1_000_000)
+      expect(shop.themes.filter((theme) => !theme.weekly).every((theme) => !theme.weekly)).toBe(
+        true,
+      )
+
+      const tagPack = weekly.find((theme) => theme.weekly!.slot === 'tag')!
+      const opened = await openBoosters(
+        db,
+        'p1',
+        { tier: 'free', quantity: 1, theme: tagPack.key },
+        { now: NOW, rng: seededRng(1) },
+      )
+      expect(opened.theme).toBe(tagPack.key)
+      for (const card of opened.cards) {
+        expect(['Hero', 'Heroine']).toContain(card.character.name)
+      }
+    })
+
+    it('retires last week packs and avoids picking the same genre again', async () => {
+      await ensureWeeklyThemes(db, { now: NOW, rng: seededRng(3) })
+      const [lastGenre] = await weeklyRows()
+      await ensureWeeklyThemes(db, { now: NEXT_WEEK, rng: seededRng(3) })
+      const rows = await weeklyRows()
+      expect(rows).toHaveLength(6)
+      const [past, current] = [rows.slice(0, 3), rows.slice(3)]
+      expect(past.every((row) => !row.isActive)).toBe(true)
+      for (const row of past) expect(await poolSize(row.id)).toBe(0)
+      expect(current.every((row) => row.isActive)).toBe(true)
+      expect(current[0]!.name.en).not.toBe(lastGenre!.name.en)
+      // A pack of a past week cannot be opened any more, even before the rotation ran.
+      await expect(
+        openBoosters(
+          db,
+          'p1',
+          { tier: 'free', quantity: 1, theme: lastGenre!.key },
+          { now: NEXT_WEEK },
+        ),
+      ).rejects.toMatchObject({ code: 'THEME_UNAVAILABLE' })
+    })
+
+    it('a pack of the week is refused once its week is over', async () => {
+      await ensureWeeklyThemes(db, { now: NOW, rng: seededRng(3) })
+      const [genre] = await weeklyRows()
+      await expect(
+        openBoosters(
+          db,
+          'p1',
+          { tier: 'free', quantity: 1, theme: genre!.key },
+          { now: NEXT_WEEK },
+        ),
+      ).rejects.toMatchObject({ code: 'THEME_UNAVAILABLE' })
+    })
+
+    it('turning weekly packs off takes them out of the shop', async () => {
+      await ensureWeeklyThemes(db, { now: NOW, rng: seededRng(3) })
+      await updateSetting(db, 'boosters.weekly', { enabled: false }, actor)
+      const shop = await listBoosters(db, 'p1', NOW)
+      expect(shop.themes.some((theme) => theme.weekly)).toBe(false)
+      expect((await weeklyRows()).every((row) => !row.isActive)).toBe(true)
+    })
   })
 })

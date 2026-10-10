@@ -1,5 +1,5 @@
 import { users, type Database } from '@gachanime/db'
-import { importRoster } from '@gachanime/core'
+import { importRoster, updateSetting } from '@gachanime/core'
 import { rosterImportSchema } from '@gachanime/shared'
 
 export const E2E_SERIES_TITLE = 'Starlight Academy'
@@ -24,4 +24,11 @@ export async function seedE2eCatalog(db: Database): Promise<void> {
     .values({ id: 'e2e-admin', name: 'E2E admin', email: 'e2e-admin@example.test', role: 'admin' })
     .onConflictDoNothing()
   await importRoster(db, roster, { actorId: 'e2e-admin' })
+  // The small catalog gets a weekly pack (its one series: no genre or tag to pick).
+  await updateSetting(
+    db,
+    'boosters.weekly',
+    { minCharacters: 5 },
+    { actorId: 'e2e-admin', ip: null },
+  )
 }

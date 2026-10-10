@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nextResetAt, periodKey, periodStartAt } from './period'
+import { nextResetAt, periodKey, periodStartAt, weekStartUtc } from './period'
 
 const PARIS = { hour: 0, timeZone: 'Europe/Paris' }
 
@@ -62,5 +62,15 @@ describe('periodStartAt', () => {
     expect(periodStartAt(new Date('2026-10-25T12:00:00Z'), PARIS)).toEqual(
       new Date('2026-10-24T22:00:00Z'),
     )
+  })
+})
+
+describe('weekStartUtc', () => {
+  it('is the Monday 00:00 UTC of the week', () => {
+    // Saturday 2026-10-10.
+    expect(weekStartUtc(new Date('2026-10-10T15:30:00Z'))).toEqual(new Date('2026-10-05T00:00:00Z'))
+    expect(weekStartUtc(new Date('2026-10-05T00:00:00Z'))).toEqual(new Date('2026-10-05T00:00:00Z'))
+    expect(weekStartUtc(new Date('2026-10-04T23:59:59Z'))).toEqual(new Date('2026-09-28T00:00:00Z'))
+    expect(weekStartUtc(new Date('2026-10-11T23:59:59Z'))).toEqual(new Date('2026-10-05T00:00:00Z'))
   })
 })

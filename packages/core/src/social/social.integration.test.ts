@@ -33,13 +33,20 @@ import {
   myListings,
   withdrawListing,
 } from './market'
-import { getPlayerProfile, getPlayerWishlist, listPlayerCards, listPlayers } from './players'
+import {
+  getLeaderboard,
+  getPlayerProfile,
+  getPlayerWishlist,
+  listPlayerCards,
+  listPlayers,
+} from './players'
 import {
   acceptTrade,
   cancelTrade,
   counterTrade,
   declineTrade,
   expireTrades,
+  listPublicTrades,
   listTrades,
   proposeTrade,
 } from './trades'
@@ -263,6 +270,34 @@ describe.skipIf(!testDatabaseUrl)('social: market, trades, profiles (integration
       await give('bob', 'Rare A', 2)
     })
 
+    it('lets the other players watch pending trades, without the message', async () => {
+      const trade = await proposeTrade(
+        db,
+        'alice',
+        {
+          recipient: 'bob',
+          offer: [{ characterId: ids['Epic A']!, quantity: 1 }],
+          request: [{ characterId: ids['Rare A']!, quantity: 2 }],
+          message: 'Just between us',
+        },
+        NOW,
+      )
+      const watched = await listPublicTrades(db, 'carol', { page: 1, pageSize: 10 }, NOW)
+      expect(watched.total).toBe(1)
+      expect(watched.items[0]).toMatchObject({
+        id: trade.id,
+        proposer: { username: 'alice' },
+        recipient: { username: 'bob' },
+        proposerGives: [{ quantity: 1, character: { name: 'Epic A' } }],
+        recipientGives: [{ quantity: 2, character: { name: 'Rare A' } }],
+      })
+      expect(JSON.stringify(watched)).not.toContain('Just between us')
+      // Not listed for the two players in it, nor once it is over.
+      expect((await listPublicTrades(db, 'alice', { page: 1, pageSize: 10 }, NOW)).total).toBe(0)
+      await declineTrade(db, 'bob', trade.id, NOW)
+      expect((await listPublicTrades(db, 'carol', { page: 1, pageSize: 10 }, NOW)).total).toBe(0)
+    })
+
     it('locks the offer, then swaps the cards on acceptance', async () => {
       const trade = await proposeTrade(
         db,
@@ -438,6 +473,31 @@ describe.skipIf(!testDatabaseUrl)('social: market, trades, profiles (integration
   })
 
   describe('profiles', () => {
+    it('ranks the players with the most characters, then the most copies', async () => {
+      await give('alice', 'Epic A', 1)
+      await give('alice', 'Rare A', 1)
+      await give('bob', 'Epic A', 5)
+      await give('bob', 'Common A', 1)
+      await give('carol', 'Common A', 1)
+      const board = await getLeaderboard(db, 'carol')
+      expect(board.catalog).toBe(4)
+      expect(
+        board.entries.map((entry) => [entry.username, entry.rank, entry.owned, entry.cards]),
+      ).toEqual([
+        ['bob', 1, 2, 6],
+        ['alice', 2, 2, 2],
+        ['carol', 3, 1, 1],
+      ])
+      expect(board.entries.find((entry) => entry.isMe)?.username).toBe('carol')
+      expect(board.me).toBeNull()
+      // Banned players and players without a card are left out.
+      await db.update(users).set({ banned: true }).where(eq(users.id, 'bob'))
+      await db.update(userCards).set({ quantity: 0 }).where(eq(userCards.userId, 'carol'))
+      expect((await getLeaderboard(db, 'carol')).entries.map((entry) => entry.username)).toEqual([
+        'alice',
+      ])
+    })
+
     it("shows a player's wishlist with what each side owns", async () => {
       await setWishlisted(db, 'alice', ids['Legendary A']!, true)
       await setWishlisted(db, 'alice', ids['Rare A']!, true)

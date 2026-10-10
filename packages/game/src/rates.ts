@@ -56,3 +56,47 @@ export function rateWeightsIssues(weights: RateWeights): string[] {
   if (sum !== RATE_TOTAL) issues.push(`Weights sum to ${sum}, expected ${RATE_TOTAL}`)
   return issues
 }
+
+/**
+ * Boosted rate table (weekly packs, GAME_DESIGN §5): the weight of `boostedFrom` and every rarer
+ * rarity is multiplied by `multiplier`; the more common rarities give the difference, the most
+ * common first, never below zero. When they cannot give it all, the boost is scaled down. The
+ * result still sums to `RATE_TOTAL`. `rarityOrder` lists the rarity keys, most common first; an
+ * unknown `boostedFrom` or a multiplier ≤ 1 leaves the table as it is.
+ */
+export function boostWeights(
+  weights: RateWeights,
+  rarityOrder: string[],
+  boostedFrom: string,
+  multiplier: number,
+): RateWeights {
+  const from = rarityOrder.indexOf(boostedFrom)
+  if (from < 0 || multiplier <= 1) return { ...weights }
+  const boosted = rarityOrder.slice(from)
+  const donors = rarityOrder.slice(0, from)
+  const extra = new Map(
+    boosted.map((key) => {
+      const weight = weights[key] ?? 0
+      return [key, Math.round(weight * multiplier) - weight]
+    }),
+  )
+  const wanted = [...extra.values()].reduce((sum, value) => sum + value, 0)
+  const available = donors.reduce((sum, key) => sum + (weights[key] ?? 0), 0)
+  if (wanted === 0 || available === 0) return { ...weights }
+  // Not enough to give: every boost shrinks in proportion (rounded down, so it always fits).
+  if (wanted > available) {
+    for (const [key, value] of extra) extra.set(key, Math.floor((value * available) / wanted))
+  }
+  const result: RateWeights = { ...weights }
+  let toTake = 0
+  for (const [key, value] of extra) {
+    result[key] = (weights[key] ?? 0) + value
+    toTake += value
+  }
+  for (const key of donors) {
+    const taken = Math.min(result[key] ?? 0, toTake)
+    if (key in result) result[key] = result[key]! - taken
+    toTake -= taken
+  }
+  return result
+}

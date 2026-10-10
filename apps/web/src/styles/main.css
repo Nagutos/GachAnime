@@ -287,6 +287,45 @@
   }
 }
 
+/* Weekly packs: a golden frame, a soft light sweeping across it now and then. */
+.weekly-frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--color-night-900), var(--color-night-900)) padding-box,
+    linear-gradient(
+        135deg,
+        var(--color-gold-400),
+        var(--color-sakura-400) 50%,
+        var(--color-gold-400)
+      )
+      border-box;
+  box-shadow: 0 0 24px -6px rgb(245 185 66 / 0.35);
+}
+
+.weekly-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 -40%;
+  z-index: -1;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 214 120 / 0.12), transparent);
+  pointer-events: none;
+  animation: weekly-sweep 6s ease-in-out infinite;
+}
+
+@keyframes weekly-sweep {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  60%,
+  to {
+    transform: translate3d(350%, 0, 0);
+  }
+}
+
 @keyframes sheen-slide {
   from {
     transform: translate3d(0, 0, 0);
@@ -713,7 +752,8 @@ body.scene-open #app {
   .select-pop[data-state='open'],
   .pack-sheen,
   .group\/pack:hover .pack-sheen,
-  .pack-pose-front .pack-sheen {
+  .pack-pose-front .pack-sheen,
+  .weekly-frame::before {
     animation: none;
   }
 

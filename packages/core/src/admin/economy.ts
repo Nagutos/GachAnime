@@ -21,6 +21,7 @@ import { recordAdminAction } from './audit'
 export async function getAdminSettings(db: Executor): Promise<AdminSettings> {
   return {
     'boosters.free': await getSetting(db, 'boosters.free'),
+    'boosters.weekly': await getSetting(db, 'boosters.weekly'),
     'missions.reset': await getSetting(db, 'missions.reset'),
     'market.limits': await getSetting(db, 'market.limits'),
     wishlist: await getSetting(db, 'wishlist'),

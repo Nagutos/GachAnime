@@ -42,7 +42,16 @@
       }
     },
     "openBoosters": "Ouvrir des boosters",
-    "myCollection": "Ma collection"
+    "myCollection": "Ma collection",
+    "leaderboard": {
+      "title": "Meilleurs collectionneurs",
+      "subtitle": "Les joueurs qui ont le plus de personnages.",
+      "empty": "Personne n'a encore de carte.",
+      "rank": "Rang {rank}",
+      "you": "(toi)",
+      "owned": "{count} persos",
+      "details": "{percent} · {cards} cartes"
+    }
   },
   "notFound": {
     "title": "Cette page n'existe pas.",
@@ -384,6 +393,17 @@
           "value": "Multiplicateur"
         },
         "removeLevel": "Retirer le niveau {level}"
+      },
+      "weekly": {
+        "title": "Packs de la semaine",
+        "help": "Chaque lundi à 00:00 UTC, trois packs sont tirés au sort : un genre, un tag et une série. Ils s'ouvrent avec les boosters gratuits, avec des taux améliorés.",
+        "enabled": "Proposer les packs de la semaine",
+        "rareMultiplier": "Multiplicateur des raretés améliorées",
+        "boostedFrom": "Améliorer à partir de cette rareté (et au-dessus)",
+        "minCharacters": "Personnages minimum dans un pack",
+        "tagMinRank": "Rang minimum du tag (0-100)",
+        "topSeries": "Pack série : parmi les N séries les plus populaires",
+        "cooldownWeeks": "Semaines avant qu'un genre, tag ou série puisse revenir"
       }
     },
     "rarities": {
@@ -611,6 +631,25 @@
       "search": "Chercher une série",
       "none": "Aucune série trouvée.",
       "progress": "{owned} / {total} possédés"
+    },
+    "again": {
+      "title": "Ouvrir encore",
+      "charges": "{available} boosters gratuits restants",
+      "gems": "{count} gemmes"
+    },
+    "weekly": {
+      "title": "Packs de la semaine",
+      "help": "Tirés au sort chaque lundi, avec plus de chances d'obtenir les cartes les plus rares. S'ouvrent avec tes boosters gratuits.",
+      "endsIn": "Change dans {time}",
+      "daysHours": "{days} j {hours} h",
+      "badge": "Pack de la semaine",
+      "rates": "Taux de drop (améliorés)",
+      "boosted": "Amélioré :",
+      "slots": {
+        "genre": "Genre",
+        "tag": "Thème",
+        "series": "Série"
+      }
     }
   },
   "collection": {
@@ -662,7 +701,14 @@
     "noSeries": "Aucune série ici pour le moment.",
     "pack": "Pack",
     "allPacks": "Tous les packs",
-    "favoritesOnly": "Favoris uniquement"
+    "favoritesOnly": "Favoris uniquement",
+    "gender": "Sexe",
+    "allGenders": "Tous les sexes",
+    "genders": {
+      "female": "Féminin",
+      "male": "Masculin",
+      "unclassified": "Non classé"
+    }
   },
   "wiki": {
     "title": "Wiki",
@@ -815,7 +861,8 @@
       "cards": "Cartes",
       "series": "Séries complètes",
       "achievements": "Succès",
-      "achievementsValue": "{done} / {total}"
+      "achievementsValue": "{done} / {total}",
+      "ownedValue": "{owned} / {catalog}"
     },
     "tabs": {
       "cards": "Cartes",
@@ -862,12 +909,14 @@
     "boxes": {
       "incoming": "Reçus",
       "outgoing": "Envoyés",
-      "history": "Historique"
+      "history": "Historique",
+      "others": "Autres joueurs"
     },
     "empty": {
       "incoming": "Aucune offre en attente de ta réponse.",
       "outgoing": "Aucune offre envoyée en attente.",
-      "history": "Aucun échange passé."
+      "history": "Aucun échange passé.",
+      "others": "Aucun échange en cours entre les autres joueurs."
     },
     "status": {
       "pending": "En attente",
@@ -878,7 +927,14 @@
       "expired": "Expiré",
       "failed": "Échoué"
     },
-    "lastFavoriteWarning": "Dont des favoris : {names}."
+    "lastFavoriteWarning": "Dont des favoris : {names}.",
+    "public": {
+      "help": "Les échanges en cours entre les autres joueurs. Tu peux les suivre, pas y participer.",
+      "since": "Proposé le {date}",
+      "counter": "contre-proposition",
+      "gives": "donne",
+      "wished": "Recherchée"
+    }
   },
   "market": {
     "title": "Marché",

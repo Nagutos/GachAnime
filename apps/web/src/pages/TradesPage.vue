@@ -2,19 +2,32 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
-import { useTradesQuery } from '@/api/social'
+import { usePublicTradesQuery, useTradesQuery } from '@/api/social'
 import PaginationBar from '@/components/PaginationBar.vue'
 import RequireSignIn from '@/components/RequireSignIn.vue'
+import PublicTradeCard from '@/components/social/PublicTradeCard.vue'
 import TradeCard from '@/components/social/TradeCard.vue'
 import { playerUi } from '@/components/ui'
 
-const BOXES = ['incoming', 'outgoing', 'history'] as const
+/** `others`: pending trades between other players, read only. */
+const BOXES = ['incoming', 'outgoing', 'history', 'others'] as const
 const { t } = useI18n()
 const box = ref<(typeof BOXES)[number]>('incoming')
 const page = ref(1)
 watch(box, () => (page.value = 1))
-const trades = useTradesQuery(computed(() => ({ page: page.value, box: box.value })))
+const watching = computed(() => box.value === 'others')
+const trades = useTradesQuery(
+  computed(() => ({
+    page: watching.value ? 1 : page.value,
+    box: box.value === 'others' ? 'incoming' : box.value,
+  })),
+)
+const publicTrades = usePublicTradesQuery(page, watching)
 const data = computed(() => trades.data.value)
+const shown = computed(() => (watching.value ? publicTrades.data.value : data.value))
+const pending = computed(() =>
+  watching.value ? publicTrades.isPending.value : trades.isPending.value,
+)
 </script>
 
 <template>
@@ -57,18 +70,26 @@ const data = computed(() => trades.data.value)
           </span>
         </button>
       </div>
-      <p v-if="trades.isPending.value" class="text-mist-300">{{ t('common.loading') }}</p>
-      <p v-else-if="data && data.items.length === 0" :class="playerUi.panel">
+      <p v-if="watching" class="text-sm text-mist-300">{{ t('trades.public.help') }}</p>
+      <p v-if="pending" class="text-mist-300">{{ t('common.loading') }}</p>
+      <p v-else-if="shown && shown.items.length === 0" :class="playerUi.panel">
         {{ t(`trades.empty.${box}`) }}
       </p>
+      <div v-else-if="watching && publicTrades.data.value" class="flex flex-col gap-4">
+        <PublicTradeCard
+          v-for="trade in publicTrades.data.value.items"
+          :key="trade.id"
+          :trade="trade"
+        />
+      </div>
       <div v-else-if="data" class="flex flex-col gap-4">
         <TradeCard v-for="trade in data.items" :key="trade.id" :trade="trade" />
       </div>
       <PaginationBar
-        v-if="data"
+        v-if="shown"
         :page="page"
-        :page-size="data.pageSize"
-        :total="data.total"
+        :page-size="shown.pageSize"
+        :total="shown.total"
         @update:page="(value: number) => (page = value)"
       />
     </RequireSignIn>

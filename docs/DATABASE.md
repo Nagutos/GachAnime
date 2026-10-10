@@ -153,7 +153,11 @@ price_gems bigint NULL (NULL = free tier), is_active, sort_order, art_token)`.
   Weights sum = 1 000 000 enforced by Zod + test.
 - `themes(id, key UNIQUE, category enum(demographic, genre, characters, media_type, custom),
 name jsonb, description jsonb, rules jsonb, seal text (1–2 characters, default 招), art_token,
-is_active, sort_order, pool_built_at, updated_at)`. Packs are opened with free boosters only.
+is_active, sort_order, pool_built_at, weekly_slot enum(genre, tag, series) NULL, weekly_from
+timestamptz NULL, updated_at)`. Packs are opened with free boosters only. Weekly packs (migration
+
+21. have both weekly columns (check), unique `(weekly_slot, weekly_from)`.
+
 - `theme_characters(theme_id, character_id)` PK both; index `character_id`. Materialized membership.
 
 An opening = tier + optional pack (`theme_id`, free tier only; NULL = whole catalog) (ADR-018).

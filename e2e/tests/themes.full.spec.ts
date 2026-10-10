@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { e2eDatabaseUrl } from '../support/env'
-import { grantGems } from '../support/player-data'
+import { giveCards, grantGems } from '../support/player-data'
 import { signInNewPlayer } from '../support/session'
 
 test.use({ locale: 'en-US' })
@@ -71,4 +71,29 @@ test('an admin builds a pack with the rule editor and its live preview', async (
   const packs = page.getByTestId('pack-selector').getByRole('radio')
   // The whole catalog first, then the packs in the admin's order.
   await expect(packs.nth(1)).toHaveAttribute('data-testid', `pack-${key}`, { timeout: 30_000 })
+})
+
+test('the collection filters by gender and by pack', async ({ page, context }) => {
+  const { userId } = await signInNewPlayer(context)
+  await giveCards(userId, 6, 1)
+  await page.goto('/collection')
+  const cards = page.getByTestId('collection-grid').getByTestId('character-card')
+  await expect(cards).toHaveCount(6, { timeout: 30_000 })
+
+  await page.getByRole('combobox', { name: 'Gender', exact: true }).click()
+  await page.getByRole('option', { name: 'Female', exact: true }).click()
+  await expect(cards).toHaveCount(3)
+  for (const name of await cards.locator('p.font-bold').allTextContents()) {
+    expect(name).toMatch(FEMALE)
+  }
+  await page.getByRole('combobox', { name: 'Gender', exact: true }).click()
+  await page.getByRole('option', { name: 'All genders', exact: true }).click()
+  await expect(cards).toHaveCount(6)
+
+  await page.getByRole('combobox', { name: 'Pack', exact: true }).click()
+  await page.getByRole('option', { name: 'Husbandos', exact: true }).click()
+  await expect(cards).toHaveCount(3)
+  for (const name of await cards.locator('p.font-bold').allTextContents()) {
+    expect(name).not.toMatch(FEMALE)
+  }
 })
