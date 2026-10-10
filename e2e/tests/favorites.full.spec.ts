@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { giveCards } from '../support/player-data'
+import { baseUrl } from '../support/env'
 import { signInNewPlayer } from '../support/session'
 
 test.use({ locale: 'en-US' })
@@ -67,4 +68,44 @@ test('a player stars cards, filters them and arranges the favorites', async ({ p
   const showcase = page.getByTestId('profile-showcase')
   await expect(showcase.getByTestId('character-card')).toHaveCount(2, { timeout: 30_000 })
   await expect(page.getByTestId('featured-card')).toBeVisible()
+})
+
+test('a card held where four cards meet does not keep reordering the grid', async ({
+  page,
+  context,
+}) => {
+  const { userId } = await signInNewPlayer(context)
+  for (const id of await giveCards(userId, 14, 1)) {
+    const response = await context.request.put(`/api/v1/favorites/${id}`, {
+      headers: { Origin: baseUrl },
+    })
+    expect(response.ok()).toBe(true)
+  }
+  await page.goto('/collection/favorites')
+  await page.getByTestId('favorites-arrange').click({ timeout: 30_000 })
+  const grid = page.getByTestId('favorites-grid')
+  await grid.evaluate((element) => {
+    const counter = window as unknown as { reorders: number }
+    counter.reorders = 0
+    new MutationObserver(() => counter.reorders++).observe(element, { childList: true })
+  })
+  const items = grid.locator('> li')
+  const [first, second, below, start] = await Promise.all(
+    [0, 1, 7, 9].map(async (index) => (await items.nth(index).boundingBox())!),
+  )
+  // The corner between the first two cards of the first two rows.
+  const corner = {
+    x: (first!.x + first!.width + second!.x) / 2,
+    y: (first!.y + first!.height + below!.y) / 2,
+  }
+  await page.mouse.move(start!.x + start!.width / 2, start!.y + start!.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(corner.x, corner.y, { steps: 40 })
+  // Wiggling on the spot: the order settles instead of cycling around the corner.
+  for (let step = 0; step < 60; step++) {
+    await page.mouse.move(corner.x + (step % 2 ? 2 : -2), corner.y + (step % 2 ? 2 : -2))
+  }
+  const reorders = await page.evaluate(() => (window as unknown as { reorders: number }).reorders)
+  expect(reorders).toBeLessThan(10)
+  await page.mouse.up()
 })

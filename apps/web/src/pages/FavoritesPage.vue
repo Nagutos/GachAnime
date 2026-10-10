@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
 import { ReorderGroup, ReorderItem, useReducedMotion } from 'motion-v'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useFavoritesQuery, useReorderFavoritesMutation } from '@/api/player'
@@ -65,11 +65,47 @@ const transition = computed(() =>
 )
 function pickUp(id: number): void {
   dragging.value = id
+  visited.clear()
+  blockedAt = null
+  window.addEventListener('pointermove', trackPointer)
   playFlip(0.6)
 }
 function drop(): void {
   dragging.value = null
+  window.removeEventListener('pointermove', trackPointer)
   playFlip(0.4)
+}
+onBeforeUnmount(() => window.removeEventListener('pointermove', trackPointer))
+
+/**
+ * Hysteresis: a card held where slots meet (the corner between four cards) made the grid cycle
+ * through the slots around it, each move re-rendering the grid, which measured the layouts again
+ * and asked for the next move: the page froze. An order already shown during this drag comes
+ * back only once the pointer has moved away from where that order was shown. A refused move is
+ * not rendered (that would feed the loop): ReorderGroup then waits for an update, given when the
+ * pointer really moves.
+ */
+const SETTLE_DISTANCE = 40
+const pointer = { x: 0, y: 0 }
+const visited = new Map<string, { x: number; y: number }>()
+let blockedAt: { x: number; y: number } | null = null
+function trackPointer(event: PointerEvent): void {
+  pointer.x = event.clientX
+  pointer.y = event.clientY
+  if (blockedAt && Math.hypot(pointer.x - blockedAt.x, pointer.y - blockedAt.y) >= 12) {
+    blockedAt = null
+    order.value = [...order.value]
+  }
+}
+function onReorder(next: number[]): void {
+  const seen = visited.get(next.join())
+  if (seen && Math.hypot(pointer.x - seen.x, pointer.y - seen.y) < SETTLE_DISTANCE) {
+    blockedAt = { ...pointer }
+    return
+  }
+  visited.set(order.value.join(), { ...pointer })
+  visited.set(next.join(), { ...pointer })
+  order.value = next
 }
 
 function cancel(): void {
@@ -174,10 +210,11 @@ async function save(): Promise<void> {
       </div>
       <ReorderGroup
         v-else-if="data"
-        v-model:values="order"
+        :values="order"
         as="ol"
         :class="gridClass"
         data-testid="favorites-grid"
+        @update:values="onReorder"
       >
         <ReorderItem
           v-for="(item, index) in items"
