@@ -367,7 +367,6 @@
         "costOf": "Coût du niveau {level}",
         "actions": "Actions",
         "add": "Ajouter un niveau",
-        "remove": "Retirer",
         "noLevel": "Aucun niveau : les joueurs ne peuvent pas acheter cette amélioration.",
         "boosterStorage": {
           "title": "Amélioration : stockage de boosters",
@@ -383,7 +382,8 @@
           "title": "Amélioration : bonus de recyclage",
           "help": "Multiplie les gemmes des doublons recyclés (en plus du multiplicateur de base). Chaque niveau donne sa propre valeur ; les valeurs doivent augmenter.",
           "value": "Multiplicateur"
-        }
+        },
+        "removeLevel": "Retirer le niveau {level}"
       }
     },
     "rarities": {

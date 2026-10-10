@@ -367,7 +367,6 @@
         "costOf": "Cost of level {level}",
         "actions": "Actions",
         "add": "Add a level",
-        "remove": "Remove",
         "noLevel": "No level: players cannot buy this upgrade.",
         "boosterStorage": {
           "title": "Upgrade: booster storage",
@@ -383,7 +382,8 @@
           "title": "Upgrade: recycling bonus",
           "help": "Multiplies the gems of recycled duplicates (on top of the base multiplier). Each level gives its own value; values must increase.",
           "value": "Multiplier"
-        }
+        },
+        "removeLevel": "Remove level {level}"
       }
     },
     "rarities": {
