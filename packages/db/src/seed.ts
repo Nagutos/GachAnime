@@ -32,7 +32,7 @@ export const DEFAULT_RARITIES = [
     sortOrder: 2,
     name: { en: 'Rare', fr: 'Rare' },
     colorToken: 'rare',
-    favouritesThreshold: 500,
+    favouritesThreshold: 250,
     gamePopularityThreshold: 150,
   },
   {
@@ -43,7 +43,7 @@ export const DEFAULT_RARITIES = [
     sortOrder: 3,
     name: { en: 'Epic', fr: 'Épique' },
     colorToken: 'epic',
-    favouritesThreshold: 3_000,
+    favouritesThreshold: 1_000,
     gamePopularityThreshold: 500,
   },
   {
@@ -54,7 +54,7 @@ export const DEFAULT_RARITIES = [
     sortOrder: 4,
     name: { en: 'Legendary', fr: 'Légendaire' },
     colorToken: 'legendary',
-    favouritesThreshold: 8_000,
+    favouritesThreshold: 5_000,
     gamePopularityThreshold: 1200,
   },
   {
@@ -65,7 +65,7 @@ export const DEFAULT_RARITIES = [
     sortOrder: 5,
     name: { en: 'Mythic', fr: 'Mythique' },
     colorToken: 'mythic',
-    favouritesThreshold: 20_000,
+    favouritesThreshold: 15_000,
     gamePopularityThreshold: 2500,
   },
 ] as const

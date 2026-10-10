@@ -259,11 +259,11 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
             rarityOverridden: overridden,
           })
           .returning({ id: characters.id })
-      // Legendary with the default thresholds (8 000 ≤ favourites < 20 000).
-      const [famous] = await insert(1, 15_000)
-      const [pinned] = await insert(2, 15_000, true)
+      // Legendary with the default thresholds (5 000 ≤ favourites < 15 000).
+      const [famous] = await insert(1, 10_000)
+      const [pinned] = await insert(2, 10_000, true)
 
-      const result = await updateRarity(db, 'mythic', { favouritesThreshold: 12_000 }, actor)
+      const result = await updateRarity(db, 'mythic', { favouritesThreshold: 8_000 }, actor)
       expect(result.recomputedCharacters).toBe(1)
       const rarityOf = async (id: number) =>
         (await db.query.characters.findFirst({ where: eq(characters.id, id) }))!.rarityId
@@ -271,7 +271,7 @@ describe.skipIf(!testDatabaseUrl)('economy (integration)', () => {
       expect(await rarityOf(pinned!.id)).toBe(table.idForKey('legendary'))
 
       await expect(
-        updateRarity(db, 'mythic', { favouritesThreshold: 5_000 }, actor),
+        updateRarity(db, 'mythic', { favouritesThreshold: 4_000 }, actor),
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' })
       await expect(
         updateRarity(db, 'rare', { marketMinPrice: 500, marketMaxPrice: 100 }, actor),
