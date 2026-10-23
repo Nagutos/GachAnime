@@ -15,8 +15,12 @@ import {
 
 const env = parseWorkerEnv(process.env)
 const logger = pino({ name: 'worker', level: env.LOG_LEVEL })
-const { db, pool } = createDatabase(env.DATABASE_URL, { max: env.WORKER_CONCURRENCY + 1 })
+const { db, pool } = createDatabase(env.DATABASE_URL, {
+  max: env.WORKER_CONCURRENCY + 1,
+  onError: (error) => logger.error({ err: error }, 'postgres pool error'),
+})
 const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null })
+connection.on('error', (error) => logger.error({ err: error }, 'redis error'))
 // One client per process: AniList's rate limit is per IP.
 const anilist = new AniListClient({ logger: logger.child({ component: 'anilist' }) })
 const igdb =
@@ -40,12 +44,15 @@ const worker = new Worker(
   { connection, concurrency: env.WORKER_CONCURRENCY },
 )
 
+// `error` events without a listener are thrown and kill the process.
+worker.on('error', (error) => logger.error({ err: error }, 'worker error'))
 worker.on('failed', (job, error) => logger.error({ err: error, job: job?.name }, 'job failed'))
 worker.on('ready', () => logger.info({ queue: QUEUE_NAME }, 'worker ready'))
 
 /** Imports interrupted by a restart (or queued while Redis was flushed) are queued again. */
 async function requeueUnfinishedImports(): Promise<void> {
   const queue = new Queue(QUEUE_NAME, { connection })
+  queue.on('error', (error) => logger.error({ err: error }, 'queue error'))
   for (const importJobId of await listUnfinishedImportJobs(db)) {
     await queue.add(
       'catalog.import',
@@ -61,6 +68,7 @@ requeueUnfinishedImports().catch((error) => logger.error({ err: error }, 'requeu
 /** Repeated jobs (idempotent: upserting a scheduler keeps a single one). */
 async function scheduleRepeatedJobs(): Promise<void> {
   const queue = new Queue(QUEUE_NAME, { connection })
+  queue.on('error', (error) => logger.error({ err: error }, 'queue error'))
   await queue.upsertJobScheduler(
     'market-sweep',
     { every: SWEEP_INTERVAL_MS },

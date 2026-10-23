@@ -1,6 +1,7 @@
 import { Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 import { getEnv } from './env'
+import { logger } from './logger'
 import { singleton } from './singleton'
 
 /** Same queue name and job names as `apps/worker`. */
@@ -9,7 +10,11 @@ export const QUEUE_NAME = 'gachanime'
 function getQueue(): Queue {
   return singleton('queue', () => {
     const connection = new Redis(getEnv().REDIS_URL, { maxRetriesPerRequest: null })
-    return new Queue(QUEUE_NAME, { connection })
+    connection.on('error', (error) => logger.error({ err: error }, 'queue redis error'))
+    const queue = new Queue(QUEUE_NAME, { connection })
+    // An `error` event without a listener is thrown and kills the process.
+    queue.on('error', (error) => logger.error({ err: error }, 'queue error'))
+    return queue
   })
 }
 
