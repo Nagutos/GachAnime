@@ -37,7 +37,14 @@
 	}
 
 	handle /api/* {
-		reverse_proxy api:3000
+		reverse_proxy api:3000 {
+			transport http {
+				# Node closes idle keep-alive connections after 5 s. Caddy keeps them 2 min by
+				# default, so it could send a request on a socket the API was closing: a random
+				# 502 (and POSTs are never retried). Drop idle connections before Node does.
+				keepalive 4s
+			}
+		}
 	}
 
 	handle_path /media/* {
